@@ -433,7 +433,18 @@ if ((isset($_POST["MM_update"])) && ($_POST["MM_update"] == "formDiskon")) {
 ?>
 
 
-
+<style>
+@keyframes fadeInScale {
+  from {
+    opacity: 0;
+    transform: scale(0.9);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+</style>
 <div class="row">
 	<div class="col-md-8 col-xs-12">
 		<label for="" class="small">SCAN BARCODE DISINI</label>
@@ -444,7 +455,8 @@ if ((isset($_POST["MM_update"])) && ($_POST["MM_update"] == "formDiskon")) {
 				<input type="text" name="search" placeholder="Masukkan Kode / Nama Produk" class="form-control" autofocus required>
 
 				<span class="input-group-btn">
-					<button type="submit" class="btn btn-info btn-flat">Search</button>
+					<button type="submit" class="btn btn-info btn-flat"><i class="fa fa-search"></i> Search</button>
+					<a href="javascript:void(0)"  class="btn btn-primary btn-flat" onclick="openCamera()"><i class="fa fa-barcode"></i> Scan</a>
 				</span>
 			</div>
 		</form>
@@ -946,6 +958,49 @@ if ((isset($_POST["MM_update"])) && ($_POST["MM_update"] == "formDiskon")) {
 		</div>
 	</div>
 </div>
+<script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
+<!-- Modal kamera -->
+<!-- Modal -->
+<div id="scanModal" style="
+  display: none;
+  position: fixed;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
+  background: rgba(0, 0, 0, 0.5);
+  z-index: 1050;
+  justify-content: center;
+  align-items: center;
+  font-family: Arial, sans-serif;
+">
+  <div style="
+    background: #fff;
+    border-radius: 0.5rem;
+    padding: 1.5rem;
+    width: 90%;
+    max-width: 500px;
+    box-shadow: 0 0.5rem 1rem rgba(0,0,0,0.3);
+    position: relative;
+    animation: fadeInScale 0.3s ease;
+  ">
+    <!-- Modal Header -->
+    <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #dee2e6; padding-bottom: 0.5rem; margin-bottom: 1rem;">
+      <h5 style="margin: 0;">Scan Barcode</h5>
+      <button onclick="closeCamera()" style="
+        background: none;
+        border: none;
+        font-size: 1.5rem;
+        line-height: 1;
+        cursor: pointer;
+        color: #aaa;
+      ">&times;</button>
+    </div>
+
+    <!-- Modal Body -->
+    <div style="text-align: center;">
+      <div id="reader" style="width: 100%; max-width: 300px; margin: auto;"></div>
+    </div>
+  </div>
+</div>
 
 <script type="text/javascript">
 	function formatRupiah(angka) {
@@ -978,7 +1033,51 @@ if ((isset($_POST["MM_update"])) && ($_POST["MM_update"] == "formDiskon")) {
 			kembaliInput.value = "0";
 		}
 	}
+let html5QrcodeScanner;
 
+function openCamera() {
+    document.getElementById('scanModal').style.display = 'flex';
+
+    html5QrcodeScanner = new Html5Qrcode("reader");
+
+    html5QrcodeScanner.start(
+        { facingMode: "environment" },
+        {
+            fps: 10,
+            qrbox: { width: 250, height: 250 }
+        },
+        onScanSuccess
+    ).catch(err => {
+        console.error("Camera start error", err);
+    });
+}
+
+function closeCamera() {
+    document.getElementById('scanModal').style.display = 'none';
+    if (html5QrcodeScanner) {
+        html5QrcodeScanner.stop().then(() => {
+            html5QrcodeScanner.clear();
+        }).catch(err => {
+            console.error("Stop failed", err);
+        });
+    }
+}
+
+function onScanSuccess(decodedText, decodedResult) {
+    // Kirim ke ?page=scan/add pakai POST
+    const form = document.createElement('form');
+    form.method = 'POST';
+    form.action = 'welcome.php?page=scan/add';
+
+    const input = document.createElement('input');
+    input.type = 'hidden';
+    input.name = 'search';
+    input.value = decodedText;
+
+    form.appendChild(input);
+    document.body.appendChild(form);
+    form.submit();
+}
 </script>
 
 
