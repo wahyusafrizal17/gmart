@@ -86,7 +86,7 @@ $qty = $row_barcode['qtybarcode'];
 
             <!-- Barcode image using barcode.tec-it.com -->
             <img 
-              src="https://barcode.tec-it.com/barcode.ashx?data=<?= $row_barcode['barcode']; ?>&code=EAN13&dpi=96"
+              src="https://barcode.tec-it.com/barcode.ashx?data=<?= $row_barcode['barcode']; ?>"
               alt="<?= $row_barcode['barcode']; ?>" 
               style="height:50px;" 
             /><br />
