@@ -968,10 +968,11 @@ if ((isset($_POST["MM_update"])) && ($_POST["MM_update"] == "formDiskon")) {
 		if (!isNaN(tunai)) {
 			tunaiInput.value = formatRupiah(tunai);
 			let balek = tunai - total;
-			if (balek >= 0) {
-				kembaliInput.value = formatRupiah(balek);
-			} else {
-				kembaliInput.value = "0";
+			
+			// Tampilkan nilai kembalian termasuk jika minus
+			kembaliInput.value = formatRupiah(Math.abs(balek));
+			if (balek < 0) {
+				kembaliInput.value = '-' + kembaliInput.value;
 			}
 		} else {
 			kembaliInput.value = "0";
