@@ -1,0 +1,5 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<info>
+	<infoitem key="UD_search" value="name:idproduk;datatype:int,name:namaproduk;datatype:string,name:kategori;datatype:int,name:deskproduk;datatype:string,name:hargadasar;datatype:real,name:hargajual;datatype:real,name:kodeproduk;datatype:string,name:satuan;datatype:string,name:stok;datatype:int,name:statusproduk;datatype:string,name:addedproduk;datatype:int,name:updatedproduk;datatype:int,name:addbyproduk;datatype:int,name:imageproduk;datatype:string" />
+	<infoitem key="UD_history" value="name:id_stok;datatype:int,name:status;datatype:string,name:qty;datatype:int,name:produkID;datatype:int,name:barcode;datatype:string,name:namaproduk;datatype:string,name:ket;datatype:string,name:added;datatype:int,name:addby;datatype:int,name:tercatat;datatype:timestamp" />
+</info>

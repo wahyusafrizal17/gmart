@@ -1,0 +1,3 @@
+margin-left: -2.5px;
+
+margin untuk print epson

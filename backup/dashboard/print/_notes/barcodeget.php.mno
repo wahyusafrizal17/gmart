@@ -1,0 +1,4 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<info>
+	<infoitem key="UD_barcode" value="name:id_barcode;datatype:int,name:barcode;datatype:string,name:qtybarcode;datatype:int,name:added;datatype:int,name:addby;datatype:int,name:tercatat;datatype:timestamp" />
+</info>

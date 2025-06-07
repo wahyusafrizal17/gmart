@@ -1,0 +1,4 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<info>
+	<infoitem key="UD_rs_print" value="name:id_paket;datatype:int,name:kode_paket;datatype:string,name:nama_paket;datatype:string,name:berat_paket;datatype:real,name:tujuan_paket;datatype:blob,name:ket_paket;datatype:blob,name:penerima_paket;datatype:blob,name:tgl_paket;datatype:date,name:jumlah_paket;datatype:int,name:telppenerima_paket;datatype:string,name:pengirim_paket;datatype:int,name:ta_paket;datatype:string,name:addby_paket;datatype:int,name:added_paket;datatype:timestamp,name:id_pengirim;datatype:int,name:nama_pengirim;datatype:string,name:alamat_pengirim;datatype:blob,name:jk_pengirim;datatype:string,name:notelp_pengirim;datatype:string,name:email_pengirim;datatype:string,name:stt_pengirim;datatype:string,name:addby_pengirim;datatype:int,name:added_pengirim;datatype:timestamp" />
+</info>

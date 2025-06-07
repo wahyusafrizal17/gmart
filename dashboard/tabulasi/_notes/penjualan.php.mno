@@ -1,0 +1,4 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<info>
+	<infoitem key="UD_Penjualan" value="name:kodefaktur;datatype:string,name:JumlahItem;datatype:int,name:totalbelanja;datatype:real,name:tglfaktur;datatype:date,name:addby;datatype:int,name:statusfaktur;datatype:string" />
+</info>
