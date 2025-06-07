@@ -300,7 +300,9 @@ if ((isset($_POST["MM_insert"])) && ($_POST["MM_insert"] == "formCari")) {
 //--------------- UBAH STATUS Y PADA FAKTUR --------------
 if ((isset($_POST["MM_update"])) && ($_POST["MM_update"] == "formSelesai")) {
 	$Start = mysql_query("START TRANSACTION", $koneksi) or die(errorQuery(mysql_error($koneksi)));
-	if ($_POST["bayar"] >= $_POST["textfield3"]) {
+	$v_bayar = str_replace('.', '', $_POST['bayar']);
+	$v_balek = str_replace('.', '', $_POST['balek']);
+	if ($v_bayar >= $_POST["textfield3"]) {
 		mysql_select_db($database_koneksi, $koneksi);
 		$query_temp = sprintf(
 			"SELECT * FROM transaksitemp WHERE faktur = %s ORDER BY id ASC",
@@ -357,9 +359,9 @@ if ((isset($_POST["MM_update"])) && ($_POST["MM_update"] == "formSelesai")) {
 			"UPDATE faktur SET jenisbayar=%s, statusfaktur=%s, kembalian=%s, potongan=%s, totalbayar=%s, nohp=%s, namapelanggan=%s WHERE kodefaktur = %s",
 			GetSQLValueString($_POST['jenisbayar'], "text"),
 			GetSQLValueString('Y', "text"),
-			GetSQLValueString($_POST['balek'], "double"),
+			GetSQLValueString($v_balek, "double"),
 			GetSQLValueString($_POST['diskon'], "double"),
-			GetSQLValueString($_POST['bayar'], "double"),
+			GetSQLValueString($v_bayar, "double"),
 			GetSQLValueString($_POST['nohp'], "double"),
 			GetSQLValueString($_POST['namapelanggan'], "text"),
 			GetSQLValueString($faktur, "text")
@@ -373,7 +375,7 @@ if ((isset($_POST["MM_update"])) && ($_POST["MM_update"] == "formSelesai")) {
 			$row_cek = mysql_fetch_assoc($cek);
 
 			// $point = ($_POST['bayar'] - $_POST['balek']) / 10000;
-			$selisih = $_POST['bayar'] - $_POST['balek'];
+			$selisih = $v_bayar - $v_balek;
 			if ($selisih >= 0) {
     			$point = floor($selisih / 10000);
 			} else {
@@ -708,14 +710,15 @@ if ((isset($_POST["MM_update"])) && ($_POST["MM_update"] == "formDiskon")) {
 	  <table class="table no-border">
 								<tr>
 									<td width="40%"><strong>UANG BAYAR</strong></td> 
-									<td><input type="hidden" name="textfield3" id="gt" value="<?=  $grand; ?>" />
+									<td>
+										<input type="hidden" name="textfield3" id="gt" value="<?= $grand; ?>" />
 										<input type="text" name="bayar" id="tunai" placeholder="<?= $grand; ?>" class="form-control input-lg text-right" style="font-size: 45px;" onkeyup="kembalian();" autofocus />
 									</td>
 								</tr>
 								<tr>
 									<td><strong>KEMBALIAN</strong></td>
-									<td><input type="hidden" name="textfield3" id="gt" value="<?=  ($grand); ?>" />
-										<input name="balek" type="text" class="form-control    	text-right" style="font-size: 35px;" id="kembali" onkeyup="kembalian();" value="" readonly />
+									<td>
+										<input name="balek" type="text" class="form-control text-right" style="font-size: 35px;" id="kembali" value="" readonly />
 									</td>
 								</tr>
 								<tr>
@@ -945,20 +948,43 @@ if ((isset($_POST["MM_update"])) && ($_POST["MM_update"] == "formDiskon")) {
 </div>
 
 <script type="text/javascript">
+	function formatRupiah(angka) {
+		if (!angka) return '';
+		return angka.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+	}
+
+	function cleanRupiah(str) {
+		return str.replace(/\./g, '').replace(/[^\d]/g, '');
+	}
+
 	function kembalian() {
-		var tunai = document.getElementById('tunai').value;
-		var total = document.getElementById('gt').value;
-		var balek = parseInt(tunai) - parseInt(total);
-		if (!isNaN(balek)) {
-			document.getElementById('kembali').value = balek;
+		let tunaiInput = document.getElementById('tunai');
+		let kembaliInput = document.getElementById('kembali');
+		let total = parseInt(document.getElementById('gt').value);
+
+		let tunaiRaw = cleanRupiah(tunaiInput.value);
+		let tunai = parseInt(tunaiRaw);
+
+		if (!isNaN(tunai)) {
+			tunaiInput.value = formatRupiah(tunai);
+			let balek = tunai - total;
+			if (balek >= 0) {
+				kembaliInput.value = formatRupiah(balek);
+			} else {
+				kembaliInput.value = "0";
+			}
+		} else {
+			kembaliInput.value = "0";
 		}
 	}
+
 </script>
 
 
 <?php
 if ((isset($_POST["MM_insert"])) && ($_POST["MM_insert"] == "formBarang")) {
 	require('faktur.php');
+
 	$Start = mysql_query("START TRANSACTION", $koneksi) or die(errorQuery(mysql_error($koneksi)));
 	$insertSQL = sprintf(
 		"INSERT INTO `produk`(`kodeproduk`,`namaproduk`, `kategori`,`hargadasar`, `hargajual`, `satuan`, `stok`,`addedproduk`, `addbyproduk`) 

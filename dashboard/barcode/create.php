@@ -201,6 +201,7 @@ $totalRows_barcode = mysql_num_rows($barcode);
           </tbody>
         </table>
         <button class="btn btn-primary btn-block" onclick="window.open('print/barcode-all.php');">Cetak Semua List</button>
+        <a href="?page=barcode/delete-all" class="btn btn-danger btn-block" onclick="return confirm('Yakin ingin menghapus semua data barcode? Tindakan ini tidak bisa dibatalkan.');">Hapus Semua List</a>
         <button class="btn btn-primary btn-block" onclick="window.open('print/barcode-allgnstore.php');">Cetak Semua List GNSTORE</button>
       </div>
     <?php } else {
