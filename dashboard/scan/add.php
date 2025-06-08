@@ -1023,61 +1023,64 @@ if ((isset($_POST["MM_update"])) && ($_POST["MM_update"] == "formDiskon")) {
 		if (!isNaN(tunai)) {
 			tunaiInput.value = formatRupiah(tunai);
 			let balek = tunai - total;
-			
-			// Tampilkan nilai kembalian termasuk jika minus
-			kembaliInput.value = formatRupiah(Math.abs(balek));
-			if (balek < 0) {
-				kembaliInput.value = '-' + kembaliInput.value;
+
+			if (balek === 0) {
+				kembaliInput.value = '0';
+			} else if (balek < 0) {
+				kembaliInput.value = '-' + formatRupiah(Math.abs(balek));
+			} else {
+				kembaliInput.value = formatRupiah(balek);
 			}
 		} else {
 			kembaliInput.value = "0";
 		}
 	}
-let html5QrcodeScanner;
 
-function openCamera() {
-    document.getElementById('scanModal').style.display = 'flex';
+	let html5QrcodeScanner;
 
-    html5QrcodeScanner = new Html5Qrcode("reader");
+	function openCamera() {
+		document.getElementById('scanModal').style.display = 'flex';
 
-    html5QrcodeScanner.start(
-        { facingMode: "environment" },
-        {
-            fps: 10,
-            qrbox: { width: 250, height: 250 }
-        },
-        onScanSuccess
-    ).catch(err => {
-        console.error("Camera start error", err);
-    });
-}
+		html5QrcodeScanner = new Html5Qrcode("reader");
 
-function closeCamera() {
-    document.getElementById('scanModal').style.display = 'none';
-    if (html5QrcodeScanner) {
-        html5QrcodeScanner.stop().then(() => {
-            html5QrcodeScanner.clear();
-        }).catch(err => {
-            console.error("Stop failed", err);
-        });
-    }
-}
+		html5QrcodeScanner.start(
+			{ facingMode: "environment" },
+			{
+				fps: 10,
+				qrbox: { width: 250, height: 250 }
+			},
+			onScanSuccess
+		).catch(err => {
+			console.error("Camera start error", err);
+		});
+	}
 
-function onScanSuccess(decodedText, decodedResult) {
-    // Kirim ke ?page=scan/add pakai POST
-    const form = document.createElement('form');
-    form.method = 'POST';
-    form.action = 'welcome.php?page=scan/add';
+	function closeCamera() {
+		document.getElementById('scanModal').style.display = 'none';
+		if (html5QrcodeScanner) {
+			html5QrcodeScanner.stop().then(() => {
+				html5QrcodeScanner.clear();
+			}).catch(err => {
+				console.error("Stop failed", err);
+			});
+		}
+	}
 
-    const input = document.createElement('input');
-    input.type = 'hidden';
-    input.name = 'search';
-    input.value = decodedText;
+	function onScanSuccess(decodedText, decodedResult) {
+		// Kirim ke ?page=scan/add pakai POST
+		const form = document.createElement('form');
+		form.method = 'POST';
+		form.action = 'welcome.php?page=scan/add';
 
-    form.appendChild(input);
-    document.body.appendChild(form);
-    form.submit();
-}
+		const input = document.createElement('input');
+		input.type = 'hidden';
+		input.name = 'search';
+		input.value = decodedText;
+
+		form.appendChild(input);
+		document.body.appendChild(form);
+		form.submit();
+	}
 </script>
 
 
