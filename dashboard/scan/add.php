@@ -43,77 +43,82 @@ if (isset($_GET['faktur'])) {
 	$faktur = $_GET['faktur'];
 }
 //---------------------------
-
 $colname_search = "--1";
+$totalRows_search = 0; // Inisialisasi agar tidak undefined
+
 if (isset($_POST['search'])) {
-	$colname_search = $_POST['search'];
-	require('faktur.php');
+    $colname_search = $_POST['search'];
+    require('faktur.php');
+
+    mysql_select_db($database_koneksi, $koneksi);
+    $query_search = sprintf(
+        "SELECT * FROM produk WHERE stok > 0 AND (kodeproduk = %s OR namaproduk LIKE %s) LIMIT 10",
+        GetSQLValueString($colname_search, "text"),
+        GetSQLValueString("%" . $colname_search . "%", "text")
+    );
+    $search = mysql_query($query_search, $koneksi) or die(mysql_error());
+    $row_search = mysql_fetch_assoc($search);
+    $totalRows_search = mysql_num_rows($search);
+
+    // Jika hanya 1 produk ditemukan, langsung proses simpan
+    if ($totalRows_search == 1) {
+        require('faktur.php');
+
+        // Cek apakah produk sudah ada di transaksi temp
+        mysql_select_db($database_koneksi, $koneksi);
+        $cek = sprintf(
+            "SELECT kode, faktur, qty FROM transaksitemp 
+             LEFT JOIN produk ON kode = kodeproduk
+             WHERE kode = %s AND faktur = %s",
+            GetSQLValueString($row_search['kodeproduk'], "text"),
+            GetSQLValueString($faktur, "text")
+        );
+        $rs_cek = mysql_query($cek, $koneksi) or die(mysql_error());
+        $row_rs_cek = mysql_fetch_assoc($rs_cek);
+        $totalRows_rs_cek = mysql_num_rows($rs_cek);
+
+        if ($totalRows_rs_cek > 0) {
+            // Jika sudah ada, tambah qty
+            if ($row_rs_cek['qty'] >= $row_search['stok']) {
+                danger('Oops!', $row_search['namaproduk'] . " - Stok terbatas!! Maks. " . $row_rs_cek['qty']);
+            } else {
+                $stok = sprintf(
+                    "UPDATE transaksitemp SET qty = qty + 1 WHERE faktur = %s AND kode = %s",
+                    GetSQLValueString($faktur, "text"),
+                    GetSQLValueString($row_search['kodeproduk'], "text")
+                );
+                mysql_select_db($database_koneksi, $koneksi);
+                $hasilstok = mysql_query($stok, $koneksi) or die(mysql_error());
+            }
+        } else {
+            // Jika belum ada, insert baru
+            $insertSQL = sprintf(
+                "INSERT INTO transaksitemp 
+                (`faktur`, `tanggal`, `kode`, `nama`, `harga`, `hargadasar`, `diskon`, `qty`, `added`, `addby`, `admintt`, `stt`, `periode`) 
+                VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)",
+                GetSQLValueString($faktur, "text"),
+                GetSQLValueString($today, "date"),
+                GetSQLValueString($row_search['kodeproduk'], "text"),
+                GetSQLValueString($row_search['namaproduk'], "text"),
+                GetSQLValueString($row_search['hargajual'], "double"),
+                GetSQLValueString($row_search['hargadasar'], "double"),
+                GetSQLValueString(0, "double"),
+                GetSQLValueString(1, "int"),
+                GetSQLValueString(time(), "int"),
+                GetSQLValueString($ID, "int"),
+                GetSQLValueString($nama, "text"),
+                GetSQLValueString($row_search['statusproduk'], "text"),
+                GetSQLValueString($ta, "text")
+            );
+
+            mysql_select_db($database_koneksi, $koneksi);
+            $Result1 = mysql_query($insertSQL, $koneksi) or die(mysql_error());
+        }
+
+        // Kosongkan input pencarian setelah berhasil
+        unset($_POST['search']);
+    }
 }
-mysql_select_db($database_koneksi, $koneksi);
-$query_search = sprintf(
-	"SELECT * FROM produk WHERE stok > 0 AND (kodeproduk = %s OR namaproduk LIKE %s) LIMIT 10",
-	GetSQLValueString($colname_search, "text"),
-	GetSQLValueString("%" . $colname_search . "%", "text")
-);
-$search = mysql_query($query_search, $koneksi) or die(mysql_error());
-$row_search = mysql_fetch_assoc($search);
-$totalRows_search = mysql_num_rows($search);
-
-//JIKA HASIL PENCARIAN 1 PRODUK MAKA LANGSUNG SIMPAN
-if ($totalRows_search == 1) {
-	require('faktur.php');
-
-	//SEBELUM ITU, DICEK JIKA PRODUK YG SAMA MAKA TAMBAHKAN STOK SAJA
-	mysql_select_db($database_koneksi, $koneksi);
-	$cek =  sprintf(
-		"SELECT kode, faktur, qty FROM transaksitemp 
-		LEFT JOIN produk ON kode = kodeproduk
-		WHERE kode = %s AND faktur = %s",
-		GetSQLValueString($row_search['kodeproduk'], "text"),
-		GetSQLValueString($faktur, "text")
-	);
-	$rs_cek = mysql_query($cek, $koneksi) or die(mysql_error());
-	$row_rs_cek = mysql_fetch_assoc($rs_cek);
-	$totalRows_rs_cek = mysql_num_rows($rs_cek);
-
-	if ($totalRows_rs_cek > 0) {
-		//update / tambah qty produk
-		if ($row_rs_cek['qty'] > $row_search['stok']) {
-			danger('Oops!', '' . $row_search['namaproduk'] . " - Stok terbatas!! Maks. " . $row_rs_cek['qty'] . ' ');
-		} else {
-			$stok = sprintf(
-				"UPDATE transaksitemp SET qty = qty + 1 WHERE faktur = %s AND kode = %s",
-				GetSQLValueString($faktur, "text"),
-				GetSQLValueString($row_search['kodeproduk'], "text")
-			);
-
-			mysql_select_db($database_koneksi, $koneksi);
-			$hasilstok = mysql_query($stok, $koneksi) or die(mysql_error());
-		}
-	} else {
-		require('faktur.php');
-
-		$insertSQL = sprintf(
-			"INSERT INTO transaksitemp (`faktur`, `tanggal`, `kode`, `nama`, `harga`, `hargadasar`, `diskon`,`qty`, `added`, `addby`, `admintt`, `stt`, `periode`) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)",
-			GetSQLValueString($faktur, "text"),
-			GetSQLValueString($today, "date"),
-			GetSQLValueString($row_search['kodeproduk'], "text"),
-			GetSQLValueString($row_search['namaproduk'], "text"),
-			GetSQLValueString($row_search['hargajual'], "double"),
-			GetSQLValueString($row_search['hargadasar'], "double"),
-			GetSQLValueString(0, "double"),
-			GetSQLValueString(1, "int"),
-			GetSQLValueString(time(), "int"),
-			GetSQLValueString($ID, "int"),
-			GetSQLValueString($nama, "text"),
-			GetSQLValueString($row_search['statusproduk'], "text"),
-			GetSQLValueString($ta, "text")
-		);
-
-		mysql_select_db($database_koneksi, $koneksi);
-		$Result1 = mysql_query($insertSQL, $koneksi) or die(mysql_error());
-	} //tutup Cek Produk yg sudah ada	  
-} //tutup pencarian produk
 
 mysql_select_db($database_koneksi, $koneksi);
 $query_trans = sprintf(
@@ -1003,6 +1008,10 @@ if ((isset($_POST["MM_update"])) && ($_POST["MM_update"] == "formDiskon")) {
 </div>
 
 <script type="text/javascript">
+	document.addEventListener("DOMContentLoaded", function() {
+		document.querySelector("input[name='search']").focus();
+	});
+
 	function formatRupiah(angka) {
 		if (!angka) return '';
 		return angka.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".");

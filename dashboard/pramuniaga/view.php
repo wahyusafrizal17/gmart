@@ -34,7 +34,7 @@ $totalRows_Kassa = mysql_num_rows($Kassa);
             <div class="icon">
               <i class="fa fa-user"></i>
             </div>
-            <?php $fungsi($row_Kassa['id_kassa'],'kassa','kassa'); ?>
+            <?php $fungsi($row_Kassa['id_kassa'],'pramuniaga','kassa'); ?>
           </div>
         </div>
    
