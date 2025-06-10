@@ -133,7 +133,7 @@ require_once('preview/page1.php'); ?>
                 <td>Rp. <?= number_format($row_Pendapatan['pendapatan']); ?></td>
                 <td>Rp. <?= number_format($row_Total['jumlah']); ?></td>
                 <td>Rp. <?= number_format($row_Pendapatan['pendapatan'] - $row_Total['jumlah']); ?></td>
-                <td>Rp. <?= number_format($totallaba['laba']); ?></td>
+                <td>Rp. <?= number_format(number_format($row_Pendapatan['pendapatan'] - $row_Total['jumlah'])); ?></td>
               </tr>
 
             </table>
