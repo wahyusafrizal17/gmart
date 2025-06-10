@@ -177,6 +177,15 @@ if (isset($_GET['jenisbayar']) && ($_GET['jenisbayar'] != "") && isset($_GET['ka
 		GetSQLValueString($tgl1, "date"),
 		GetSQLValueString($tgl2, "date")
 	);
+
+	$query_Laba = sprintf(
+		"SELECT SUM(((harga * qty) - (hargadasar * qty)) - diskon) AS laba 
+		FROM transaksidetail
+		INNER JOIN faktur ON transaksidetail.faktur = faktur.kodefaktur
+		WHERE tglfaktur BETWEEN %s AND %s",
+		GetSQLValueString($tgl1, "date"),
+		GetSQLValueString($tgl2, "date")
+	);
 } else {
 	//mysql_select_db($database_koneksi, $koneksi);
 	$query_Penjualan = sprintf(
@@ -199,6 +208,15 @@ if (isset($_GET['jenisbayar']) && ($_GET['jenisbayar'] != "") && isset($_GET['ka
 		GetSQLValueString($tgl1, "date"),
 		GetSQLValueString($tgl2, "date")
 	);
+
+	$query_Laba = sprintf(
+		"SELECT SUM(((harga * qty) - (hargadasar * qty)) - diskon) AS laba 
+		FROM transaksidetail
+		INNER JOIN faktur ON transaksidetail.faktur = faktur.kodefaktur
+		WHERE tglfaktur BETWEEN %s AND %s",
+		GetSQLValueString($tgl1, "date"),
+		GetSQLValueString($tgl2, "date")
+	);
 }
 $query_limit_Penjualan = sprintf("%s LIMIT %d, %d", $query_Penjualan, $startRow_Penjualan, $maxRows_Penjualan);
 $rs_Penjualan = mysql_query($query_limit_Penjualan, $koneksi) or die(mysql_error());
@@ -209,6 +227,9 @@ $row_Total = mysql_fetch_assoc($rs_total);
 
 $rs_pendapatan = mysql_query($query_Pendapatan, $koneksi) or die(mysql_error());
 $row_Pendapatan = mysql_fetch_assoc($rs_pendapatan);
+
+$rs_laba = mysql_query($query_Laba, $koneksi) or die(mysql_error());
+$row_Laba = mysql_fetch_assoc($rs_laba);
 
 //kasir
 $query_Kasir = sprintf(
