@@ -336,7 +336,7 @@ if (isset($_GET['Search'])) {
                 </span>
               </a>
             </li>
-          <?php } while ($row_rs_menu = mysql_fetch_assoc($rs_menu)); ?>
+          <?php } while ($row_rs_menu = mysqli_fetch_assoc($rs_menu)); ?>
         </ul>
       </li>
       <li>

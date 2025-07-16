@@ -3,9 +3,9 @@ require_once('izin.php');
 //mysql_select_db($database_koneksi, $koneksi);
 //$query_Admin = "SELECT id_admin, Login, nama_admin, gender_admin, address_admin, email_admin, hp_admin FROM tb_admin WHERE cabang_id = '".$cabang."' ORDER BY nama_admin ASC";
 $query_Member = "SELECT * FROM member ORDER BY point DESC";
-$Member = mysql_query($query_Member, $koneksi) or die(errorQuery(mysql_error()));
-$row_Member = mysql_fetch_assoc($Member);
-$totalRows_Member = mysql_num_rows($Member);
+$Member = mysqli_query($koneksi, $query_Member) or die(errorQuery(mysqli_error($koneksi)));
+$row_Member = mysqli_fetch_assoc($Member);
+$totalRows_Member = mysqli_num_rows($Member);
 ?>
 <?php if (isset($_GET['sukses'])) { 
    		sukses('Data member berhasil tersimpan');
@@ -43,7 +43,7 @@ $totalRows_Member = mysql_num_rows($Member);
     </tr>
     <?php 
 	$no++;
-	} while ($row_Member = mysql_fetch_assoc($Member)); ?>
+	} while ($row_Member = mysqli_fetch_assoc($Member)); ?>
 </tbody>
 </table>
 </div>  

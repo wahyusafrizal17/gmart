@@ -124,7 +124,7 @@ require_once('preview/page1.php'); ?>
                 <tr>
                   <th>Total Pendapatan</th>
                   <th>Total Pengeluaran</th>
-                  <th>Total </th>
+                  <th>Uang GMART </th>
                   <th>Laba</th>
                 </tr>
               </thead>
@@ -132,7 +132,7 @@ require_once('preview/page1.php'); ?>
               <tr>
                 <td>Rp. <?= number_format($row_Pendapatan['pendapatan']); ?></td>
                 <td>Rp. <?= number_format($row_Total['jumlah']); ?></td>
-                <td>Rp. <?= number_format($row_Pendapatan['pendapatan'] - $row_Total['jumlah']); ?></td>
+                <td>Rp. <?= number_format($row_Pendapatan['pendapatan'] - $row_Total['jumlah'] - $row_Laba['laba']); ?></td>
                 <td>Rp. <?= number_format($row_Laba['laba']); ?></td>
               </tr>
 

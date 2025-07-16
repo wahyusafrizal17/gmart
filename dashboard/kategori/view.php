@@ -1,13 +1,15 @@
 <?php
 //require_once('izin.php');
 //mysql_select_db($database_koneksi, $koneksi);
-$query_Kategori = "SELECT namakategori, COUNT(kategori) AS QTY, kategori.*, vw_login.Nama as Nama FROM kategori 
+$query_Kategori = "SELECT namakategori, COUNT(kategori) AS QTY, kategori.*, MIN(vw_login.Nama) as Nama
+FROM kategori 
 LEFT JOIN produk ON kategori = idkategori
 LEFT JOIN vw_login ON addbykategori = ID 
-GROUP BY idkategori ORDER BY namakategori ASC";
-$Kategori = mysql_query($query_Kategori, $koneksi) or die(errorQuery(mysql_error()));
-$row_Kategori = mysql_fetch_assoc($Kategori);
-$totalRows_Kategori = mysql_num_rows($Kategori);
+GROUP BY idkategori
+ORDER BY namakategori ASC";
+$Kategori = mysqli_query($koneksi, $query_Kategori) or die(errorQuery(mysqli_error($koneksi)));
+$row_Kategori = mysqli_fetch_assoc($Kategori);
+$totalRows_Kategori = mysqli_num_rows($Kategori);
 ?>
 
 
@@ -44,7 +46,7 @@ $totalRows_Kategori = mysql_num_rows($Kategori);
         </div>
    
 <?php $no++;
-	} while ($row_Kategori = mysql_fetch_assoc($Kategori)); 
+	} while ($row_Kategori = mysqli_fetch_assoc($Kategori)); 
 ?>
 <?php }else{
 	danger('Oops!', 'Data belum ada');

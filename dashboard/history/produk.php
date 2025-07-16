@@ -11,9 +11,9 @@ $query_Harga = sprintf(
   "SELECT `kodeproduk`, `hargajual`, `hargabaru`, `hargadasar`, if(hargabaru > hargajual, 'Naik','Turun') as Status, if(hargabaru > hargajual, hargabaru - hargajual,hargajual - hargabaru) as Selisih, `namaprodukOld`, `namaprodukBaru`, addby, tercatat FROM harga WHERE kodeproduk = %s ORDER BY idharga DESC",
   GetSQLValueString($kodeproduk, "text")
 );
-$Harga = mysql_query($query_Harga, $koneksi) or die(errorQuery(mysql_error()));
-$row_Harga = mysql_fetch_assoc($Harga);
-$totalRows_Harga = mysql_num_rows($Harga);
+$Harga = mysqli_query($koneksi, $query_Harga) or die(errorQuery(mysqli_error($koneksi)));
+$row_Harga = mysqli_fetch_assoc($Harga);
+$totalRows_Harga = mysqli_num_rows($Harga);
 ?>
 
 <?php
@@ -67,7 +67,7 @@ title('success', 'DAFTAR PERUBAHAN PRODUK', 'Berikut ini adalah perubahan produk
           <td><?php echo $row_Harga['addby']; ?><br />
             <?php echo $row_Harga['tercatat']; ?></td>
         </tr>
-      <?php } while ($row_Harga = mysql_fetch_assoc($Harga)); ?>
+      <?php } while ($row_Harga = mysqli_fetch_assoc($Harga)); ?>
     </tbody>
   </table>
 <?php } else {

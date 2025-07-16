@@ -49,61 +49,68 @@ $qty = $row_barcode['qtybarcode'];
   <meta charset="utf-8">
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
   <title>Barcode - <?= $header; ?></title>
+  <!-- Tell the browser to be responsive to screen width -->
   <meta content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" name="viewport">
+
+
+  <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
+  <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
+  <!--[if lt IE 9]>
+  <script src="https://oss.maxcdn.com/html5shiv/3.7.3/html5shiv.min.js"></script>
+  <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
+  <![endif]-->
+  <!-- BARCODE FONT -->
   <style>
+    @font-face {
+      font-family: code39;
+      src: url('../../assets/barcode/Code39Azalea.ttf');
+    }
+
     .barcode {
-      height: auto;
-      margin-bottom: 20px;
+      height: 80px;
+top:0px;
+margin-bottom:20px;
     }
 
-    .content {
-      max-width: 500px;
-      margin: auto;
-      background: white;
-    }
+ .content {
+  max-width: 500px;
+  margin: auto;
+  background: white;
 
+}
+  </style>
+  <style type="text/css">
+    <!--
     .style3 {
       font-family: "Courier New", Courier, monospace;
       font-size: 10px;
     }
+    -->
   </style>
+  <!-- Google Font -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,600,700,300italic,400italic,600italic">
 </head>
 
 <body onLoad="window.print()">
   <div class="content">
-    <?php do { ?>
-      <?php for ($i = 1; $i <= $qty; $i++) { ?>
-        <div class="barcode">
-          <div align="center">
-            <div class="style2"><strong>Rp.<?php echo number_format($row_barcode['hargajual']); ?></strong></div>
-            <div class="style3">
-              <strong>
-                <?php if (!isset($_GET['label'])) {
-                  echo $row_barcode['namaproduk'];
-                } ?>
-              </strong>
-            </div>
-
-            <!-- Barcode image using barcode.tec-it.com -->
-            <img 
-              src="https://barcode.tec-it.com/barcode.ashx?data=<?= $row_barcode['barcode']; ?>"
-              alt="<?= $row_barcode['barcode']; ?>" 
-              style="height:50px;" 
-            /><br />
-
-            <div class="style3">
-              <strong>
-                <?= $row_barcode['kategori']; ?> - <?= $row_barcode['barcode']; ?>
-                <?php if (!isset($_GET['harga'])) { ?>
-                  - <?= $row_barcode['hargadasar']; ?>0
-                <?php } ?>
-              </strong>
-            </div>
-          </div>
+  <?php do { ?>
+    <?php for ($i = 1; $i <= $qty; $i++) { ?>
+      <div class="barcode">
+        <div align="center">
+<div class="style2"><strong>Rp.<?php echo number_format($row_barcode['hargajual']); ?></strong></div>
+          <div class="style3"><strong><?php if (!isset($_GET['label'])) { ?><?php echo $row_barcode['namaproduk']; ?><?php } ?></strong></div>
+          <font face="code39" size="6em" line-height="5px" style="letter-spacing:3px;">*<?php echo $row_barcode['barcode']; ?>*</font><br />
+          <div class="style3"><strong><?php echo $row_barcode['kategori']; ?> - <?php echo $row_barcode['barcode']; ?>
+              <?php if (!isset($_GET['harga'])) { ?>
+                - <?php echo $row_barcode['hargadasar']; ?>0
+              <?php } ?>
+            </strong></div>
         </div>
-        <br>
-      <?php } ?>
-    <?php } while ($row_barcode = mysql_fetch_assoc($barcode)); ?>
+      </div>
+<br>
+    <?php } ?>
+  <?php } while ($row_barcode = mysql_fetch_assoc($barcode)); ?>
+
   </div>
 </body>
 

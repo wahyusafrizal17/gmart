@@ -8,11 +8,10 @@ $colname_Cat  = "-1";
 if (isset($_GET['cat'])) {
   $colname_Cat  = $_GET['cat'];
 }
-mysql_select_db($database_koneksi, $koneksi);
 $query_Cat = sprintf("SELECT * FROM kategori WHERE idkategori = %s", GetSQLValueString($colname_Cat, "int"));
-$Cat = mysql_query($query_Cat, $koneksi) or die(errorQuery(mysql_error()));
-$row_Cat = mysql_fetch_assoc($Cat);
-$totalRows_Cat = mysql_num_rows($Cat);
+$Cat = mysqli_query($koneksi, $query_Cat) or die(errorQuery(mysqli_error($koneksi)));
+$row_Cat = mysqli_fetch_assoc($Cat);
+$totalRows_Cat = mysqli_num_rows($Cat);
 
 if ($totalRows_Cat > 0) {
 
@@ -21,13 +20,12 @@ if ($totalRows_Cat > 0) {
     if (str_replace(".", "", $_POST['hargajual']) > str_replace(".", "", $_POST['hargadasar'])) {
 
       //CEK KODE BARANG 
-      mysql_select_db($database_koneksi, $koneksi);
       $sql = sprintf(
         "SELECT kodeproduk FROM produk WHERE kodeproduk = %s",
         GetSQLValueString($_POST['kodeproduk'], "text")
       );
-      $cek = mysql_query($sql, $koneksi) or die(mysql_error());
-      $totalRows_cek = mysql_num_rows($cek);
+      $cek = mysqli_query($koneksi, $sql) or die(mysqli_error($koneksi));
+      $totalRows_cek = mysqli_num_rows($cek);
 
       if ($totalRows_cek == 0) {
         $insertSQL = sprintf(
@@ -45,8 +43,7 @@ if ($totalRows_Cat > 0) {
           GetSQLValueString($ID, "int")
         );
 
-        mysql_select_db($database_koneksi, $koneksi);
-        $Result1 = mysql_query($insertSQL, $koneksi) or die(errorQuery(mysql_error()));
+        $Result1 = mysqli_query($koneksi, $insertSQL) or die(errorQuery(mysqli_error($koneksi)));
 
 
         if ($Result1) {

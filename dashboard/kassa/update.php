@@ -16,15 +16,13 @@ if ((isset($_POST["MM_update"])) && ($_POST["MM_update"] == "form1")) {
 					   GetSQLValueString(time(), "int"),
 					   GetSQLValueString($_POST['idkassa'], "int"));
 
-  mysql_select_db($database_koneksi, $koneksi);
-  $Result1 = mysql_query($updateSQL, $koneksi) or die(errorQuery(mysql_error()));
+  $Result1 = mysqli_query($koneksi, $updateSQL) or die(errorQuery(mysqli_error($koneksi)));
   
   //26 Desember open
   $activitySQL = sprintf("INSERT INTO activity_update (`url`, `oleh`) VALUES (%s, %s)",
   GetSQLValueString($actual_link, "text"),
   GetSQLValueString($ID, "int"));
-  mysql_select_db($database_koneksi, $koneksi);
-  $ResultSQL = mysql_query($activitySQL, $koneksi) or die(errorQuery(mysql_error()));	
+  $ResultSQL = mysqli_query($koneksi, $activitySQL) or die(errorQuery(mysqli_error($koneksi)));	
   //26 desember close
   
   if ($Result1) {
@@ -36,11 +34,10 @@ $colname_Updatekassa  = "-1";
 if (isset($_GET['id_kassa'])) {
   $colname_Updatekassa  = $_GET['id_kassa'];
 }
-mysql_select_db($database_koneksi, $koneksi);
 $query_Updatekassa = sprintf("SELECT * FROM kassa WHERE id_kassa = %s", GetSQLValueString($colname_Updatekassa, "int"));
-$Updatekassa = mysql_query($query_Updatekassa, $koneksi) or die(errorQuery(mysql_error()));
-$row_Updatekassa = mysql_fetch_assoc($Updatekassa);
-$totalRows_Updatekassa = mysql_num_rows($Updatekassa);
+$Updatekassa = mysqli_query($koneksi, $query_Updatekassa) or die(errorQuery(mysqli_error($koneksi)));
+$row_Updatekassa = mysqli_fetch_assoc($Updatekassa);
+$totalRows_Updatekassa = mysqli_num_rows($Updatekassa);
 	
 ?> 
 

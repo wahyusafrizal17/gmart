@@ -1,94 +1,85 @@
 <?php require_once('../../Connections/koneksi.php'); ?>
 <?php
-
-$query_barcode = "SELECT barcode.*, namaproduk, hargajual, kategori, qtybarcode FROM barcode LEFT JOIN produk ON kodeproduk = barcode";
+$query_barcode = "SELECT barcode.*, namaproduk, hargajual, hargadasar, kategori, qtybarcode 
+                  FROM barcode 
+                  LEFT JOIN produk ON kodeproduk = barcode.barcode";
 $barcode = mysql_query($query_barcode, $koneksi) or die(mysql_error());
 $row_barcode = mysql_fetch_assoc($barcode);
 $totalRows_barcode = mysql_num_rows($barcode);
-
-$qty = $row_barcode['qtybarcode'];
-
 ?>
+
 <!DOCTYPE html>
 <html>
-
 <head>
   <meta charset="utf-8">
-  <meta http-equiv="X-UA-Compatible" content="IE=edge">
-  <title>Barcode - <?= $header; ?></title>
-  <!-- Tell the browser to be responsive to screen width -->
-  <meta content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" name="viewport">
-
-
-  <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
-  <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
-  <!--[if lt IE 9]>
-  <script src="https://oss.maxcdn.com/html5shiv/3.7.3/html5shiv.min.js"></script>
-  <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
-  <![endif]-->
-  <!-- BARCODE FONT -->
-<style>
-    @font-face {
-      font-family: code39;
-      src: url('../../assets/barcode/Code39Azalea.ttf');
+  <title>Barcode Print</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <style>
+  @media print {
+    body {
+      width: 48mm;
+      margin: 0;
+      margin-left: 10px;
+      padding: 0;
+      font-family: Arial, sans-serif;
+      font-size: 9px;
     }
 
-    .barcode {
-      display: inline-block;
-      width: 250px;
-      height: 5px;
-      padding: 1px;
-      margin-top: 5px;
-      margin-right: 10px;
-      margin-bottom: 5px;
+    .label-container {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
     }
 
- .content {
-  max-width: 250px;
-  margin: auto;
-  background: white;
+    .label {
+      width: 50%;
+      box-sizing: border-box;
+      text-align: center;
+      padding: 6px 0;
+      margin-bottom: 6px;
+      border: 1px dashed #000;
+    }
 
-}
-  </style>
-  <style type="text/css">
-    <!--
-    .style3 {
-      font-family: "Courier New", Courier, monospace;
-      font-size: 20px;
+    .price {
+      font-weight: bold;
+      font-size: 10px;
     }
-    -->
-  </style>
-   <style type="text/css">
-    <!--
-    .style4 {
-      font-family: "Courier New", Courier, monospace;
-      font-size: 20px;
-      stroke: black;
+
+    .name {
+      font-size: 8px;
+      font-weight: bold;
+      word-wrap: break-word;
+      white-space: normal;
+      
     }
-    -->
-  </style>
-  <!-- Google Font -->
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,600,700,300italic,400italic,600italic">
+
+    .barcode img {
+      height: 40px;
+      width: auto;
+      max-width: 100%;
+    }
+
+    .code {
+      font-size: 10px;
+      letter-spacing: 1px;
+    }
+  }
+</style>
 </head>
 
-<body onLoad="window.print()">
-  <?php do { ?>
-    <?php for ($jumlah = 1; $jumlah <= $row_barcode['qtybarcode']; $jumlah++) { ?>
-        <div class="barcode">
-        <div align="center">
-          <div class="style3"><strong><?php if (!isset($_GET['label'])) { ?><?php echo $row_barcode['namaproduk']; ?><?php } ?></strong></div>
-          <div class="style4"><strong>Rp.<?php echo number_format($row_barcode['hargajual']); ?></strong></div>
-          <font face="code39" size="3em" line-height="5px" style="letter-spacing:2px;">*<?php echo $row_barcode['barcode']; ?>*</font><br />
-          <div class="style3"><strong><?php echo $row_barcode['barcode']; ?>
-              <?php if (!isset($_GET['harga'])) { ?>
-              <?php } ?>
-            </strong></div>
+<body onload="window.print()">
+  <div class="label-container">
+    <?php do { ?>
+      <?php for ($i = 1; $i <= $row_barcode['qtybarcode']; $i++) { ?>
+        <div class="label">
+          <div class="name"><?= $row_barcode['namaproduk']; ?></div>
+          <div class="barcode">
+            <img src="https://barcode.tec-it.com/barcode.ashx?data=<?= $row_barcode['barcode']; ?>" alt="<?= $row_barcode['barcode']; ?>">
+          </div>
+          <div class="price">Rp.<?= number_format($row_barcode['hargajual']); ?></div>
         </div>
-      </div>
-<br>
-    <?php } ?>
-  <?php } while ($row_barcode = mysql_fetch_assoc($barcode)); ?>
-
+      <?php } ?>
+    <?php } while ($row_barcode = mysql_fetch_assoc($barcode)); ?>
+  </div>
 </body>
-
 </html>

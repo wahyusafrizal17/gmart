@@ -2,9 +2,9 @@
 require_once('izin.php');
 //mysql_select_db($database_koneksi, $koneksi);
 $query_Kassa = "SELECT kassa.*, vw_login.Nama FROM kassa LEFT JOIN vw_login ON addby_kassa = ID ORDER BY id_kassa ASC";
-$Kassa = mysql_query($query_Kassa, $koneksi) or die(errorQuery(mysql_error()));
-$row_Kassa = mysql_fetch_assoc($Kassa);
-$totalRows_Kassa = mysql_num_rows($Kassa);
+$Kassa = mysqli_query($koneksi, $query_Kassa) or die(errorQuery(mysqli_error($koneksi)));
+$row_Kassa = mysqli_fetch_assoc($Kassa);
+$totalRows_Kassa = mysqli_num_rows($Kassa);
 ?>
 
 
@@ -39,7 +39,7 @@ $totalRows_Kassa = mysql_num_rows($Kassa);
         </div>
    
 <?php $no++;
-	} while ($row_Kassa = mysql_fetch_assoc($Kassa)); 
+	} while ($row_Kassa = mysqli_fetch_assoc($Kassa)); 
 ?>
 <?php }else{
 	danger('Oops!', 'Data belum ada');

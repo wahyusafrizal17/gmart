@@ -187,7 +187,7 @@ $(document).ready(function() {
   </script>
 <?php } ?>
 
-<?php if (isset($_GET["page"]) && $_GET["page"] == "produk/insert" || $_GET["page"] == "produk/update" || $_GET["page"] == "pengeluaran/add"|| $_GET["page"] == "scan/add") { ?>
+<?php if (isset($_GET["page"]) && $_GET["page"] == "produk/insert" || $_GET["page"] == "produk/update" || $_GET["page"] == "pengeluaran/add") { ?>
   <script>
     /* Tanpa Rupiah */
     var tanpa_rupiah = document.getElementById('tanpa-rupiah');

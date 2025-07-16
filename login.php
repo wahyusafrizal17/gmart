@@ -21,17 +21,15 @@ if (isset($_POST['ngapainpake'])) {
     //mysql_select_db($database_koneksi, $koneksi);
 
     $LoginRS__query = sprintf(
-        "SELECT Login, Password, Level FROM vw_login WHERE Login=%s AND Password=PASSWORD(%s)",
-        GetSQLValueString($loginUsername, "text"),
-        GetSQLValueString($password, "text")
+        "SELECT Login, Password, Level FROM vw_login WHERE Login=%s",
+        GetSQLValueString($loginUsername, "text")
     );
 
-    $LoginRS = mysql_query($LoginRS__query, $koneksi) or die(errorQuery(mysql_error()));
-    $row_rs_LoginRS = mysql_fetch_assoc($LoginRS);
-    $loginFoundUser = mysql_num_rows($LoginRS);
-    if ($loginFoundUser) {
-
-
+    $LoginRS = mysqli_query($koneksi, $LoginRS__query) or die(errorQuery(mysqli_error($koneksi)));
+    $row_rs_LoginRS = mysqli_fetch_assoc($LoginRS);
+    $loginFoundUser = $row_rs_LoginRS ? 1 : 0;
+    // --- WARNING: All user passwords must be re-hashed using password_hash() for this to work! ---
+    if ($loginFoundUser && password_verify($password, $row_rs_LoginRS['Password'])) {
         //simpan login berhasil
         $insertSQL = sprintf(
             "INSERT INTO tb_riwayat_login (username_login, password_login, status_login, added_login) VALUES (%s, %s, %s, %s)",
@@ -40,11 +38,8 @@ if (isset($_POST['ngapainpake'])) {
             GetSQLValueString('Y', "text"),
             GetSQLValueString(time(), "int")
         );
-
-        //mysql_select_db($database_koneksi, $koneksi);
-        $Result1 = mysql_query($insertSQL, $koneksi) or die(errorQuery(mysql_error()));
+        $Result1 = mysqli_query($koneksi, $insertSQL) or die(errorQuery(mysqli_error($koneksi)));
         //--------------------
-
         if ($row_rs_LoginRS['Level'] == 1) {
             $MM_redirectLoginSuccess = "dashboard/welcome.php?page=home";
         } elseif ($row_rs_LoginRS['Level'] == 2) {
@@ -54,18 +49,15 @@ if (isset($_POST['ngapainpake'])) {
         } elseif ($row_rs_LoginRS['Level'] == 4) {
             $MM_redirectLoginSuccess = "dashboard/kasir.php?page=home";
         }
-        
         //declare two session variables and assign them
         $_SESSION['MM_Username'] = $loginUsername;
         $_SESSION['MM_UserGroup'] = $loginStrGroup;
         $_SESSION['MM_Level'] = $row_rs_LoginRS['Level'];
-
         if (isset($_SESSION['PrevUrl']) && false) {
             $MM_redirectLoginSuccess = $_SESSION['PrevUrl'];
         }
         header("Location: " . $MM_redirectLoginSuccess);
     } else {
-
         //simpan login gagal
         $insertSQL = sprintf(
             "INSERT INTO tb_riwayat_login (username_login, password_login, status_login, added_login) VALUES (%s, %s, %s, %s)",
@@ -74,9 +66,7 @@ if (isset($_POST['ngapainpake'])) {
             GetSQLValueString('N', "text"),
             GetSQLValueString(time(), "int")
         );
-
-        //mysql_select_db($database_koneksi, $koneksi);
-        $Result1 = mysql_query($insertSQL, $koneksi) or die(errorQuery(mysql_error()));
+        $Result1 = mysqli_query($koneksi, $insertSQL) or die(errorQuery(mysqli_error($koneksi)));
         //----------------------
         header("Location: " . $MM_redirectLoginFailed . "?failed");
     }

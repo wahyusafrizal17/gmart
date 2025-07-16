@@ -6,9 +6,9 @@ require_once('require/header.php');
 
 ////mysql_select_db($database_koneksi, $koneksi);
 $query_rs_profile = "SELECT * FROM tb_admin WHERE id_admin = '" . $ID . "'";
-$rs_profile = mysql_query($query_rs_profile, $koneksi) or die(errorQuery(mysql_error()));
-$row_rs_profile = mysql_fetch_assoc($rs_profile);
-$totalRows_rs_profile = mysql_num_rows($rs_profile);
+$rs_profile = mysqli_query($koneksi, $query_rs_profile) or die(errorQuery(mysqli_error($koneksi)));
+$row_rs_profile = mysqli_fetch_assoc($rs_profile);
+$totalRows_rs_profile = mysqli_num_rows($rs_profile);
 
 if ($level > 3) {
   pesanlink('Maaf! Ini bukan wilayah Anda.', '../keluar.php');

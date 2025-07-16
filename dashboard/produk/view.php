@@ -17,7 +17,7 @@
     <div class="row">
       <form method="get">
         <div class="col-md-10">
-          <input type="text" name="cari" class="form-control" placeholder="Cari Kode Produk / Nama Produk / Kategori">
+          <input type="text" name="cari" class="form-control" placeholder="Cari Kode Produk / Nama Produk / Kategori" autofocus required>
         </div>
 
         <div class="col-md-2">
@@ -108,7 +108,7 @@
                 </tr>
               <?php
                 $no++;
-              } while ($row_Produk = mysql_fetch_assoc($rs_Produk)); ?>
+              } while ($row_Produk = mysqli_fetch_assoc($rs_Produk)); ?>
             </table>
           <?php } else {
             danger('Oops', 'Produk tersebut tidak dapat kami temukan :(');

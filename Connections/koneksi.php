@@ -8,9 +8,12 @@ error_reporting(E_ALL ^ E_DEPRECATED);
 $hostname_koneksi = "localhost";
 $database_koneksi = "gmart";
 $username_koneksi = "root";
-$password_koneksi = "";
-$koneksi = mysql_connect($hostname_koneksi, $username_koneksi, $password_koneksi);
-mysql_select_db($database_koneksi, $koneksi);
+$password_koneksi = "WahyuJR17_";
+// Update to mysqli for PHP 8 compatibility
+$koneksi = mysqli_connect($hostname_koneksi, $username_koneksi, $password_koneksi, $database_koneksi);
+if (!$koneksi) {
+	die("Koneksi gagal: " . mysqli_connect_error());
+}
 
 
 //TANGGAL
@@ -26,13 +29,13 @@ $thn = substr($tahun, 2);
 $jam = date("H");
 $menit = date("i");
 $detik = date("s");
-$kodeacak = substr(time(), 4);
+$kodeacak = substr(time(), 0);
 $setAngka = 10;
 
 //SET NAMA PIMPINAN
 $kota = "Solok";
 $pimpinan = "Ghalih Mandaveqia";
-$jabatan = "Pimpinan";
+$jabatan = "OWNER";
 
 //PESAN
 function title($class, $judul, $isi)
@@ -248,10 +251,12 @@ $actual_link = (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? "https"
 if (!function_exists("GetSQLValueString")) {
 	function GetSQLValueString($theValue, $theType, $theDefinedValue = "", $theNotDefinedValue = "")
 	{
-		$theValue = get_magic_quotes_gpc() ? stripslashes($theValue) : $theValue;
-
-		$theValue = function_exists("mysql_real_escape_string") ? mysql_real_escape_string($theValue) : mysql_escape_string($theValue);
-
+		global $koneksi;
+		// Remove get_magic_quotes_gpc (deprecated in PHP 7+)
+		// Use mysqli_real_escape_string for escaping
+		if (is_string($theValue)) {
+			$theValue = mysqli_real_escape_string($koneksi, $theValue);
+		}
 		switch ($theType) {
 			case "text":
 				$theValue = ($theValue != "") ? "'" . $theValue . "'" : "NULL";
@@ -277,9 +282,9 @@ if (!function_exists("GetSQLValueString")) {
 //MENAMPILKAN DEFAULT WEB
 //mysql_select_db($database_koneksi, $koneksi);
 $query_rs_config = "SELECT * FROM tb_config";
-$rs_config = mysql_query($query_rs_config, $koneksi) or die(errorQuery(mysql_error()));
-$row_rs_config = mysql_fetch_assoc($rs_config);
-$totalRows_rs_config = mysql_num_rows($rs_config);
+$rs_config = mysqli_query($koneksi, $query_rs_config) or die(errorQuery(mysqli_error($koneksi)));
+$row_rs_config = mysqli_fetch_assoc($rs_config);
+$totalRows_rs_config = mysqli_num_rows($rs_config);
 
 $title = $row_rs_config['title'];
 $deskripsi = $row_rs_config['deskripsi'];
@@ -292,9 +297,9 @@ $text3 = $row_rs_config['text3'];
 //TAHUN PERIODE AKADEMIK
 //mysql_select_db($database_koneksi, $koneksi);
 $query_rs_tap = "SELECT * FROM tb_ta WHERE id_ta = 1";
-$rs_tap = mysql_query($query_rs_tap, $koneksi) or die(errorQuery(mysql_error()));
-$row_rs_tap = mysql_fetch_assoc($rs_tap);
-$totalRows_rs_tap = mysql_num_rows($rs_tap);
+$rs_tap = mysqli_query($koneksi, $query_rs_tap) or die(errorQuery(mysqli_error($koneksi)));
+$row_rs_tap = mysqli_fetch_assoc($rs_tap);
+$totalRows_rs_tap = mysqli_num_rows($rs_tap);
 $ta = $row_rs_tap['kode_ta'];
 
 //FUNCTION UPLOAD PHOTO
@@ -598,4 +603,15 @@ function bulan($bulanke)
 {
 	$namaBulan = array("Bulan", "Januari", "Februari", "Maret", "April", "Mei", "Juni", "Juli", "Agustus", "September", "Oktober", "November", "Desember");
 	echo $namaBulan[$bulanke];
+}
+
+
+function restrict($hakakses, $level)
+{
+	if (!preg_match("/$level/i", $hakakses)) {
+		echo "<div class='alert alert-danger'><h3>Access Forbidden!</h3>";
+		echo "<p>Maaf, Anda tidak memiliki akses untuk ini</p></div>";
+		echo "<button onclick='window.history.back()' class='btn btn-danger'><span class='bx bx-home'></span> Back to home</button>";
+		exit();
+	}
 }

@@ -34,11 +34,14 @@
       <div class="inner">
         <h3>
 
-          Rp. <?php if ($row_pengeluaran['Jumlah'] == NULL) {
+          Rp. <?php
+              if (!$row_pengeluaran || $row_pengeluaran['Jumlah'] == NULL) {
                 echo 0;
               } else {
                 echo number_format($row_pengeluaran['Jumlah'], 0, ",", ".");
-              } ?></h3>
+              }
+              ?>
+        </h3>
 
         <p>TOTAL PENGELUARAN</p>
       </div>
@@ -73,8 +76,13 @@
     <!-- small box -->
     <div class="small-box bg-green">
       <div class="inner">
-        <h3>Rp. <?php echo number_format($row_pendapatan['TotalHarga']); ?></h3>
-        
+        <h3>Rp. <?php
+                if (!$row_pendapatan || $row_pendapatan['TotalHarga'] == NULL) {
+                  echo 0;
+                } else {
+                  echo number_format($row_pendapatan['TotalHarga']);
+                } ?></h3>
+
         <p>TOTAL PENDAPATAN</p>
       </div>
       <div class="icon">

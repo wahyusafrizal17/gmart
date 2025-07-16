@@ -23,8 +23,7 @@ if ((isset($_POST["MM_update"])) && ($_POST["MM_update"] == "form1")) {
       GetSQLValueString($_POST['idproduk'], "int")
     );
 
-    mysql_select_db($database_koneksi, $koneksi);
-    $Result1 = mysql_query($updateSQL, $koneksi) or die(errorQuery(mysql_error()));
+    $Result1 = mysqli_query($koneksi, $updateSQL) or die(errorQuery(mysqli_error($koneksi)));
 
     //MENYIMPAN HISTORY PERUBAHAN PRODUK (NAMA PRODUK DAN HARGA)
     $insertSQL = sprintf(
@@ -40,8 +39,7 @@ if ((isset($_POST["MM_update"])) && ($_POST["MM_update"] == "form1")) {
       GetSQLValueString($ID, "int")
     );
 
-    mysql_select_db($database_koneksi, $koneksi);
-    $Result1 = mysql_query($insertSQL, $koneksi) or die(errorQuery(mysql_error()));
+    $Result1 = mysqli_query($koneksi, $insertSQL) or die(errorQuery(mysqli_error($koneksi)));
 
     //26 Desember open
     $activitySQL = sprintf(
@@ -49,8 +47,7 @@ if ((isset($_POST["MM_update"])) && ($_POST["MM_update"] == "form1")) {
       GetSQLValueString($actual_link, "text"),
       GetSQLValueString($ID, "int")
     );
-    mysql_select_db($database_koneksi, $koneksi);
-    $ResultSQL = mysql_query($activitySQL, $koneksi) or die(errorQuery(mysql_error()));
+    $ResultSQL = mysqli_query($koneksi, $activitySQL) or die(errorQuery(mysqli_error($koneksi)));
     //26 desember close
 
     if ($Result1) {
@@ -65,19 +62,18 @@ $colname_UpdateProduk  = "-1";
 if (isset($_GET['id_produk'])) {
   $colname_UpdateProduk  = $_GET['id_produk'];
 }
-mysql_select_db($database_koneksi, $koneksi);
 $query_UpdateProduk = sprintf("SELECT * FROM produk WHERE idproduk = %s", GetSQLValueString($colname_UpdateProduk, "int"));
-$UpdateProduk = mysql_query($query_UpdateProduk, $koneksi) or die(errorQuery(mysql_error()));
-$row_UpdateProduk = mysql_fetch_assoc($UpdateProduk);
-$totalRows_UpdateProduk = mysql_num_rows($UpdateProduk);
+$UpdateProduk = mysqli_query($koneksi, $query_UpdateProduk) or die(errorQuery(mysqli_error($koneksi)));
+$row_UpdateProduk = mysqli_fetch_assoc($UpdateProduk);
+$totalRows_UpdateProduk = mysqli_num_rows($UpdateProduk);
 
 if ($totalRows_UpdateProduk > 0) {
 
   //mysql_select_db($database_koneksi, $koneksi);
   $query_Kategori = "SELECT kategori.*, vw_login.Nama FROM kategori LEFT JOIN vw_login ON addbykategori = ID ORDER BY idkategori ASC";
-  $Kategori = mysql_query($query_Kategori, $koneksi) or die(errorQuery(mysql_error()));
-  $row_Kategori = mysql_fetch_assoc($Kategori);
-  $totalRows_Kategori = mysql_num_rows($Kategori);
+  $Kategori = mysqli_query($koneksi, $query_Kategori) or die(errorQuery(mysqli_error($koneksi)));
+  $row_Kategori = mysqli_fetch_assoc($Kategori);
+  $totalRows_Kategori = mysqli_num_rows($Kategori);
 ?>
 
   <?php
@@ -98,7 +94,7 @@ if ($totalRows_UpdateProduk > 0) {
                     <option value="<?php echo $row_Kategori['idkategori'] ?>" <?php if (!(strcmp($row_Kategori['idkategori'], htmlentities($row_UpdateProduk['kategori'], ENT_COMPAT, 'utf-8')))) {
                                                                                 echo "SELECTED";
                                                                               } ?>><?php echo $row_Kategori['namakategori'] ?></option>
-                  <?php } while ($row_Kategori = mysql_fetch_assoc($Kategori)); ?>
+                  <?php } while ($row_Kategori = mysqli_fetch_assoc($Kategori)); ?>
                 </select>
               </div>
             </div>

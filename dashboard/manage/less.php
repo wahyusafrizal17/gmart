@@ -20,14 +20,12 @@ if ((isset($_POST["MM_insert"])) && ($_POST["MM_insert"] == "form2")) {
 					   GetSQLValueString($ID, "text"),
 					   GetSQLValueString($ta, "text"));
 
-  mysql_select_db($database_koneksi, $koneksi);
-  $Result1 = mysql_query($insertSQL, $koneksi) or die(mysql_error());
+  $Result1 = mysqli_query($koneksi, $insertSQL) or die(mysqli_error($koneksi));
   
   $stokSQL = sprintf("UPDATE produk SET stok = stok - %s WHERE idproduk=%s",
                        GetSQLValueString($_POST['qty'], "int"),
 					   GetSQLValueString($_POST['produkID'], "int"));
-  mysql_select_db($database_koneksi, $koneksi);
-  $StokResult1 = mysql_query($stokSQL, $koneksi) or die(mysql_error());
+  $StokResult1 = mysqli_query($koneksi, $stokSQL) or die(mysqli_error($koneksi));
   
   }else{
   	echo "<script>
@@ -42,20 +40,18 @@ if (isset($_POST['search'])) {
 }elseif (isset($_GET['search'])){
    $colname_search = $_GET['search'];	
 }
-mysql_select_db($database_koneksi, $koneksi);
 $query_search = sprintf("SELECT * FROM produk WHERE kodeproduk = %s OR namaproduk LIKE %s", GetSQLValueString($colname_search, "text"), GetSQLValueString("%" . $colname_search . "%", "text"));
-$search = mysql_query($query_search, $koneksi) or die(mysql_error());
-$row_search = mysql_fetch_assoc($search);
-$totalRows_search = mysql_num_rows($search);
+$search = mysqli_query($koneksi, $query_search) or die(mysqli_error($koneksi));
+$row_search = mysqli_fetch_assoc($search);
+$totalRows_search = mysqli_num_rows($search);
 
 
-mysql_select_db($database_koneksi, $koneksi);
 $query_history = sprintf("SELECT stok.*, vw_login.Nama FROM stok 
 LEFT JOIN vw_login ON addby = ID 
 WHERE barcode = %s OR namaproduk LIKE %s ORDER BY id_stok DESC", GetSQLValueString($colname_search, "text"), GetSQLValueString("%" . $colname_search . "%", "text"));
-$history = mysql_query($query_history, $koneksi) or die(mysql_error());
-$row_history = mysql_fetch_assoc($history);
-$totalRows_history = mysql_num_rows($history);
+$history = mysqli_query($koneksi, $query_history) or die(mysqli_error($koneksi));
+$row_history = mysqli_fetch_assoc($history);
+$totalRows_history = mysqli_num_rows($history);
 ?>
 <div class="row">
     <div class="col-md-3">  
@@ -154,7 +150,7 @@ $totalRows_history = mysql_num_rows($history);
                 <br /></td>
             <td><?php echo $row_history['ket']; ?></td>
           </tr>
-          <?php } while ($row_history = mysql_fetch_assoc($history)); ?>
+          <?php } while ($row_history = mysqli_fetch_assoc($history)); ?>
           </tbody>
         </table>
       </div>
