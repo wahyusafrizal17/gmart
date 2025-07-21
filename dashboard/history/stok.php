@@ -55,7 +55,7 @@ require_once('history/Page1.php'); ?>
                  </tr>
                  <?php 
 				 $no++;
-				 } while ($row_Produk = mysql_fetch_assoc($rs_Produk)); ?>
+				 } while ($row_Produk = mysqli_fetch_assoc($rs_Produk)); ?>
                </table>
                </div>
              </div>   

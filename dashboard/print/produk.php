@@ -1,12 +1,11 @@
 <?php require_once('../../Connections/koneksi.php'); ?>
 <?php 
-mysql_select_db($database_koneksi, $koneksi);
 $query_rs_produk = "SELECT LEFT(namaproduk, 30) as namaproduk, namakategori, kodeproduk, satuan, stok FROM produk 
 LEFT JOIN kategori ON produk.kategori = kategori.idkategori 
 WHERE stok <= 2";
-$rs_produk = mysql_query($query_rs_produk, $koneksi) or die(mysql_error());
-$row_rs_produk = mysql_fetch_assoc($rs_produk);
-$totalRows_rs_produk = mysql_num_rows($rs_produk);
+$rs_produk = mysqli_query($koneksi, $query_rs_produk) or die(mysqli_error($koneksi));
+$row_rs_produk = mysqli_fetch_assoc($rs_produk);
+$totalRows_rs_produk = mysqli_num_rows($rs_produk);
 ?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
@@ -103,6 +102,6 @@ $totalRows_rs_produk = mysql_num_rows($rs_produk);
       </tr>
     <?php 
 	$no++;
-	} while ($row_rs_produk = mysql_fetch_assoc($rs_produk)); ?>
+	} while ($row_rs_produk = mysqli_fetch_assoc($rs_produk)); ?>
     </tbody>
 </table>

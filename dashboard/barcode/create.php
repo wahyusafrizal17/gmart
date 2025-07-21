@@ -11,14 +11,13 @@ if (isset($_SERVER['QUERY_STRING'])) {
 if ((isset($_POST["MM_insert"])) && ($_POST["MM_insert"] == "form2")) {
 
   //SEBELUM ITU, DICEK JIKA PRODUK YG SAMA MAKA TAMBAHKAN SAJA
-  mysql_select_db($database_koneksi, $koneksi);
   $cek =  sprintf(
     "SELECT barcode, qtybarcode FROM barcode WHERE barcode = %s",
     GetSQLValueString($_POST['barcode'], "text")
   );
-  $rs_cek = mysql_query($cek, $koneksi) or die(mysql_error());
-  $row_rs_cek = mysql_fetch_assoc($rs_cek);
-  $totalRows_rs_cek = mysql_num_rows($rs_cek);
+  $rs_cek = mysqli_query($koneksi, $cek) or die(mysqli_error($koneksi));
+  $row_rs_cek = mysqli_fetch_assoc($rs_cek);
+  $totalRows_rs_cek = mysqli_num_rows($rs_cek);
 
   if ($totalRows_rs_cek > 0) {
 
@@ -28,8 +27,7 @@ if ((isset($_POST["MM_insert"])) && ($_POST["MM_insert"] == "form2")) {
       GetSQLValueString($row_rs_cek['barcode'], "text")
     );
 
-    mysql_select_db($database_koneksi, $koneksi);
-    $hasilstok = mysql_query($stok, $koneksi) or die(mysql_error());
+    $hasilstok = mysqli_query($koneksi, $stok) or die(mysqli_error($koneksi));
   } else {
     $insertSQL = sprintf(
       "INSERT INTO barcode (`barcode`, `qtybarcode`, `added`, `addby`) VALUES (%s, %s, %s, %s)",
@@ -39,8 +37,7 @@ if ((isset($_POST["MM_insert"])) && ($_POST["MM_insert"] == "form2")) {
       GetSQLValueString($ID, "text")
     );
 
-    mysql_select_db($database_koneksi, $koneksi);
-    $Result1 = mysql_query($insertSQL, $koneksi) or die(mysql_error());
+    $Result1 = mysqli_query($koneksi, $insertSQL) or die(mysqli_error($koneksi));
   }
 }
 
@@ -48,17 +45,15 @@ $colname_search = "--1";
 if (isset($_POST['search'])) {
   $colname_search = $_POST['search'];
 }
-mysql_select_db($database_koneksi, $koneksi);
 $query_search = sprintf("SELECT * FROM produk WHERE kodeproduk = %s OR namaproduk LIKE %s", GetSQLValueString($colname_search, "text"), GetSQLValueString("%" . $colname_search . "%", "text"));
-$search = mysql_query($query_search, $koneksi) or die(mysql_error());
-$row_search = mysql_fetch_assoc($search);
-$totalRows_search = mysql_num_rows($search);
+$search = mysqli_query($koneksi, $query_search) or die(mysqli_error($koneksi));
+$row_search = mysqli_fetch_assoc($search);
+$totalRows_search = mysqli_num_rows($search);
 
-mysql_select_db($database_koneksi, $koneksi);
 $query_barcode = "SELECT barcode.*, namaproduk, stok FROM barcode LEFT JOIN produk ON kodeproduk = barcode ORDER BY id_barcode DESC";
-$barcode = mysql_query($query_barcode, $koneksi) or die(mysql_error());
-$row_barcode = mysql_fetch_assoc($barcode);
-$totalRows_barcode = mysql_num_rows($barcode);
+$barcode = mysqli_query($koneksi, $query_barcode) or die(mysqli_error($koneksi));
+$row_barcode = mysqli_fetch_assoc($barcode);
+$totalRows_barcode = mysqli_num_rows($barcode);
 
 //MENGUBAH NILAI QTY PADA BARCODE
 for ($i = 1; $i <= $totalRows_barcode; $i++) {
@@ -69,17 +64,15 @@ for ($i = 1; $i <= $totalRows_barcode; $i++) {
       GetSQLValueString($_POST['kode' . $i], "text")
     );
 
-    mysql_select_db($database_koneksi, $koneksi);
-    $hasilstok = mysql_query($stok, $koneksi) or die(mysql_error());
+    $hasilstok = mysqli_query($koneksi, $stok) or die(mysqli_error($koneksi));
   }
 }
 
 //untuk reload update barang	
-mysql_select_db($database_koneksi, $koneksi);
 $query_barcode = "SELECT barcode.*, namaproduk, stok FROM barcode LEFT JOIN produk ON kodeproduk = barcode ORDER BY id_barcode DESC";
-$barcode = mysql_query($query_barcode, $koneksi) or die(mysql_error());
-$row_barcode = mysql_fetch_assoc($barcode);
-$totalRows_barcode = mysql_num_rows($barcode);
+$barcode = mysqli_query($koneksi, $query_barcode) or die(mysqli_error($koneksi));
+$row_barcode = mysqli_fetch_assoc($barcode);
+$totalRows_barcode = mysqli_num_rows($barcode);
 
 ?>
 <div class="row">
@@ -197,7 +190,7 @@ $totalRows_barcode = mysql_num_rows($barcode);
               </tr>
             <?php
               $no++;
-            } while ($row_barcode = mysql_fetch_assoc($barcode)); ?>
+            } while ($row_barcode = mysqli_fetch_assoc($barcode)); ?>
           </tbody>
         </table>
         <button class="btn btn-primary btn-block" onclick="window.open('print/barcode-all.php');">Cetak Semua List</button>

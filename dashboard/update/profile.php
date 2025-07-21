@@ -20,8 +20,7 @@ if ((isset($_POST["MM_update"])) && ($_POST["MM_update"] == "form1")) {
       GetSQLValueString($_POST['id_admin'], "int")
     );
 
-    //mysql_select_db($database_koneksi, $koneksi);
-    $Result1 = mysql_query($updateSQL, $koneksi) or die(errorQuery(mysql_error()));
+    $Result1 = mysqli_query($koneksi, $updateSQL) or die(errorQuery(mysqli_error($koneksi)));
 
     //26 Desember open
     $activitySQL = sprintf(
@@ -29,8 +28,7 @@ if ((isset($_POST["MM_update"])) && ($_POST["MM_update"] == "form1")) {
       GetSQLValueString($actual_link, "text"),
       GetSQLValueString($ID, "int")
     );
-    mysql_select_db($database_koneksi, $koneksi);
-    $ResultSQL = mysql_query($activitySQL, $koneksi) or die(errorQuery(mysql_error()));
+    $ResultSQL = mysqli_query($koneksi, $activitySQL) or die(errorQuery(mysqli_error($koneksi)));
     //26 desember close
 
     sukses('Sukses! Data berhasil diupdate tanpa ganti password');
@@ -53,22 +51,19 @@ if ((isset($_POST["MM_update"])) && ($_POST["MM_update"] == "form1")) {
       GetSQLValueString($actual_link, "text"),
       GetSQLValueString($ID, "int")
     );
-    mysql_select_db($database_koneksi, $koneksi);
-    $ResultSQL = mysql_query($activitySQL, $koneksi) or die(errorQuery(mysql_error()));
+    $ResultSQL = mysqli_query($koneksi, $activitySQL) or die(errorQuery(mysqli_error($koneksi)));
     //26 desember close
 
-    //mysql_select_db($database_koneksi, $koneksi);
-    $Result1 = mysql_query($updateSQL, $koneksi) or die(errorQuery(mysql_error()));
+    $Result1 = mysqli_query($koneksi, $updateSQL) or die(errorQuery(mysqli_error($koneksi)));
 
     sukses('Sukses! Data berhasil diupdate beserta password');
   }
 }
 
-//mysql_select_db($database_koneksi, $koneksi);
 $query_rs_profile = "SELECT * FROM tb_admin WHERE id_admin = '" . $ID . "'";
-$rs_profile = mysql_query($query_rs_profile, $koneksi) or die(errorQuery(mysql_error()));
-$row_rs_profile = mysql_fetch_assoc($rs_profile);
-$totalRows_rs_profile = mysql_num_rows($rs_profile);
+$rs_profile = mysqli_query($koneksi, $query_rs_profile) or die(errorQuery(mysqli_error($koneksi)));
+$row_rs_profile = mysqli_fetch_assoc($rs_profile);
+$totalRows_rs_profile = mysqli_num_rows($rs_profile);
 ?>
 <?php
 titleUpdate('CHANGE PROFILE', 'Profile');

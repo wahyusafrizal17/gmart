@@ -46,14 +46,14 @@ if (isset($_GET['cari'])) {
 	);
 }
 $query_limit_Penjualan = sprintf("%s LIMIT %d, %d", $query_Penjualan, $startRow_Penjualan, $maxRows_Penjualan);
-$rs_Penjualan = mysql_query($query_limit_Penjualan, $koneksi) or die(mysql_error());
-$row_Penjualan = mysql_fetch_assoc($rs_Penjualan);
+$rs_Penjualan = mysqli_query($koneksi, $query_limit_Penjualan) or die(mysqli_error($koneksi));
+$row_Penjualan = mysqli_fetch_assoc($rs_Penjualan);
 
 if (isset($_GET['totalRows_Penjualan'])) {
 	$totalRows_Penjualan = $_GET['totalRows_Penjualan'];
 } else {
-	$all_Penjualan = mysql_query($query_Penjualan, $koneksi);
-	$totalRows_Penjualan = mysql_num_rows($all_Penjualan);
+	$all_Penjualan = mysqli_query($koneksi, $query_Penjualan);
+	$totalRows_Penjualan = mysqli_num_rows($all_Penjualan);
 }
 $totalPages_Penjualan = ceil($totalRows_Penjualan / $maxRows_Penjualan) - 1;
 

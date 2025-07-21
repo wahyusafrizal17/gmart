@@ -9,7 +9,7 @@ if ((isset($_POST["MM_insert"])) && ($_POST["MM_insert"] == "form1")) {
   $gambar = uploadPhoto($ID,'images_photo'); 	
   if(empty($gambar)) {
   	return false;
-  }	
+  } 	
   //MEMASUKKAN GAMBAR
   $insertSQL = sprintf("INSERT INTO tb_photo (pemilik_photo, images_photo, cb_photo, tanggal_photo) VALUES (%s, %s,%s, %s)",
                        GetSQLValueString($ID, "int"),
@@ -17,46 +17,40 @@ if ((isset($_POST["MM_insert"])) && ($_POST["MM_insert"] == "form1")) {
 					   GetSQLValueString($ID, "int"),
                        GetSQLValueString($tglsekarang, "date"));
 
-					   
-  //mysql_select_db($database_koneksi, $koneksi);
-  $Result1 = mysql_query($insertSQL, $koneksi) or die(errorQuery(mysql_error()));	
+  $Result1 = mysqli_query($koneksi, $insertSQL) or die(errorQuery(mysqli_error($koneksi)));  
   
   //MENGUBAH PHOTO PROFILE
   $updateSQL = sprintf("UPDATE tb_admin SET photo_admin=%s WHERE id_admin=%s",
                        GetSQLValueString($gambar, "text"),
-                       GetSQLValueString($ID, "int"));			   
+                       GetSQLValueString($ID, "int"));           
 
-  //mysql_select_db($database_koneksi, $koneksi);
-  $Result1 = mysql_query($updateSQL, $koneksi) or die(errorQuery(mysql_error()));
+  $Result1 = mysqli_query($koneksi, $updateSQL) or die(errorQuery(mysqli_error($koneksi)));
   
   sukses('Photo berhasil ditambahkan!');
 }
 
 //MENAMPILKAN JUMLAH GAMBAR PER ID 
-//mysql_select_db($database_koneksi, $koneksi);
 $query_rs_jumlah = "SELECT * FROM tb_photo WHERE pemilik_photo = ".$ID."";
-$rs_jumlah = mysql_query($query_rs_jumlah, $koneksi) or die(errorQuery(mysql_error()));
-$totalRows_rs_jumlah = mysql_num_rows($rs_jumlah);
+$rs_jumlah = mysqli_query($koneksi, $query_rs_jumlah) or die(errorQuery(mysqli_error($koneksi)));
+$totalRows_rs_jumlah = mysqli_num_rows($rs_jumlah);
 
 for ($a = 1; $a <= $totalRows_rs_jumlah; $a++) {
 	if ((isset($_POST["MM_update".$a])) && ($_POST["MM_update".$a] == "form".$a)) {
 	  $updateSQL = sprintf("UPDATE tb_admin SET photo_admin=%s WHERE id_admin=%s",
-						   GetSQLValueString($_POST['photo'.$a], "text"),
-						   GetSQLValueString($_POST['id_admin'.$a], "int"));
+					   GetSQLValueString($_POST['photo'.$a], "text"),
+					   GetSQLValueString($_POST['id_admin'.$a], "int"));
 	
-	  //mysql_select_db($database_koneksi, $koneksi);
-	  $Result1 = mysql_query($updateSQL, $koneksi) or die(errorQuery(mysql_error()));
+	  $Result1 = mysqli_query($koneksi, $updateSQL) or die(errorQuery(mysqli_error($koneksi)));
 	  
 	  pesanlink('Photo berhasil diubah','?page=insert/photo');
 	} 
 }
 
 //MENAMPILKAN JUMLAH GAMBAR PER ID 
-//mysql_select_db($database_koneksi, $koneksi);
 $query_rs_photos = "SELECT * FROM tb_photo WHERE pemilik_photo = ".$ID."";
-$rs_photos = mysql_query($query_rs_photos, $koneksi) or die(errorQuery(mysql_error()));
-$row_rs_photos = mysql_fetch_assoc($rs_photos);
-$totalRows_rs_photos = mysql_num_rows($rs_photos);
+$rs_photos = mysqli_query($koneksi, $query_rs_photos) or die(errorQuery(mysqli_error($koneksi)));
+$row_rs_photos = mysqli_fetch_assoc($rs_photos);
+$totalRows_rs_photos = mysqli_num_rows($rs_photos);
 ?> 
 
 
@@ -86,7 +80,7 @@ $totalRows_rs_photos = mysql_num_rows($rs_photos);
 	  <div class="box-body">  
            <?php if (empty($row_rs_photos['images_photo']) || !file_exists("photos/".$row_rs_photos['images_photo'])) { ?>
                            <img src="photos/default.png" width="200" height="180" class="margin">
-		   <?php }else{ ?>
+	   <?php }else{ ?>
                       	   <img src="photos/<?php echo $row_rs_photos['images_photo']; ?>" width="200" height="180" class="margin">
            <?php } ?>
            <input type="hidden" name="photo<?= $no; ?>" value="<?php echo $row_rs_photos['images_photo']; ?>" />
@@ -102,9 +96,9 @@ $totalRows_rs_photos = mysql_num_rows($rs_photos);
     
  <?php 
   $no++;
-  } while($row_rs_photos = mysql_fetch_assoc($rs_photos)); 
+  } while($row_rs_photos = mysqli_fetch_assoc($rs_photos)); 
  ?>  
-  	 
+ 	 
   
   
   </div>

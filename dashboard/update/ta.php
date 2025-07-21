@@ -12,15 +12,13 @@ if ((isset($_POST["MM_update"])) && ($_POST["MM_update"] == "form1")) {
                        GetSQLValueString($_POST['ket_ta'], "text"),
                        GetSQLValueString($_POST['id_ta'], "int"));
 
-  //mysql_select_db($database_koneksi, $koneksi);
-  $Result1 = mysql_query($updateSQL, $koneksi) or die(errorQuery(mysql_errno($koneksi), mysql_error()));
+  $Result1 = mysqli_query($koneksi, $updateSQL) or die(errorQuery(mysqli_error($koneksi)));
 }
 
-//mysql_select_db($database_koneksi, $koneksi);
 $query_rs_ta = "SELECT * FROM tb_ta WHERE id_ta = 1";
-$rs_ta = mysql_query($query_rs_ta, $koneksi) or die(errorQuery(mysql_errno($koneksi), mysql_error()));
-$row_rs_ta = mysql_fetch_assoc($rs_ta);
-$totalRows_rs_ta = mysql_num_rows($rs_ta);
+$rs_ta = mysqli_query($koneksi, $query_rs_ta) or die(errorQuery(mysqli_error($koneksi)));
+$row_rs_ta = mysqli_fetch_assoc($rs_ta);
+$totalRows_rs_ta = mysqli_num_rows($rs_ta);
 ?>
 
 <?php

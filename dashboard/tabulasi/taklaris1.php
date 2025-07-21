@@ -22,14 +22,14 @@ $currentPage = $_SERVER["PHP_SELF"];
 		$query_TakTerlaris = "SELECT idproduk, kodeproduk, namaproduk, stok, produk.hargadasar, hargajual, qty, transaksidetail.periode FROM `transaksidetail` RIGHT JOIN produk ON kode = kodeproduk WHERE qty is NULL";
 	}	
 	$query_limit_TakTerlaris = sprintf("%s LIMIT %d, %d", $query_TakTerlaris, $startRow_TakTerlaris, $maxRows_TakTerlaris);
-	$TakTerlaris = mysql_query($query_limit_TakTerlaris, $koneksi) or die(mysql_error());
-	$row_TakTerlaris = mysql_fetch_assoc($TakTerlaris);
+	$TakTerlaris = mysqli_query($koneksi, $query_limit_TakTerlaris) or die(mysqli_error($koneksi));
+	$row_TakTerlaris = mysqli_fetch_assoc($TakTerlaris);
 	
 	if (isset($_GET['totalRows_TakTerlaris'])) {
 	  $totalRows_TakTerlaris = $_GET['totalRows_TakTerlaris'];
 	} else {
-	  $all_TakTerlaris = mysql_query($query_TakTerlaris, $koneksi);
-	  $totalRows_TakTerlaris = mysql_num_rows($all_TakTerlaris);
+	  $all_TakTerlaris = mysqli_query($koneksi, $query_TakTerlaris);
+	  $totalRows_TakTerlaris = mysqli_num_rows($all_TakTerlaris);
 	}
 	$totalPages_TakTerlaris = ceil($totalRows_TakTerlaris/$maxRows_TakTerlaris)-1;
 	

@@ -3,24 +3,18 @@ $colname_DetailFaktur = "-1";
 if (isset($_GET['faktur'])) {
   $colname_DetailFaktur = $_GET['faktur'];
 }
-mysql_select_db($database_koneksi, $koneksi);
-$query_DetailFaktur = sprintf("SELECT faktur, tanggal, kode, transaksidetail.nama, harga, qty, diskon, addby, stt, periode, vw_login.Nama as kassa FROM transaksidetail 
-LEFT JOIN vw_login ON addby = vw_login.ID WHERE faktur = %s", GetSQLValueString($colname_DetailFaktur, "text"));
-$DetailFaktur = mysql_query($query_DetailFaktur, $koneksi) or die(mysql_error());
-$row_DetailFaktur = mysql_fetch_assoc($DetailFaktur);
-$totalRows_DetailFaktur = mysql_num_rows($DetailFaktur);
+$query_DetailFaktur = sprintf("SELECT faktur, tanggal, kode, transaksidetail.nama, harga, qty, diskon, addby, stt, periode, vw_login.Nama as kassa FROM transaksidetail LEFT JOIN vw_login ON addby = vw_login.ID WHERE faktur = %s", GetSQLValueString($colname_DetailFaktur, "text"));
+$DetailFaktur = mysqli_query($koneksi, $query_DetailFaktur) or die(mysqli_error($koneksi));
+$row_DetailFaktur = mysqli_fetch_assoc($DetailFaktur);
+$totalRows_DetailFaktur = mysqli_num_rows($DetailFaktur);
 
-mysql_select_db($database_koneksi, $koneksi);
 $query_faktur = sprintf(
-  "SELECT faktur.*, vw_login.Nama FROM faktur 
-	LEFT JOIN vw_login ON addbyfaktur = ID
-	LEFT JOIN faktur c ON faktur.printby = ID
-	WHERE faktur.kodefaktur = %s",
+  "SELECT faktur.*, vw_login.Nama FROM faktur LEFT JOIN vw_login ON addbyfaktur = ID LEFT JOIN faktur c ON faktur.printby = ID WHERE faktur.kodefaktur = %s",
   GetSQLValueString($colname_DetailFaktur, "text")
 );
-$faktur = mysql_query($query_faktur, $koneksi) or die(mysql_error());
-$row_faktur = mysql_fetch_assoc($faktur);
-$totalRows_faktur = mysql_num_rows($faktur);
+$faktur = mysqli_query($koneksi, $query_faktur) or die(mysqli_error($koneksi));
+$row_faktur = mysqli_fetch_assoc($faktur);
+$totalRows_faktur = mysqli_num_rows($faktur);
 ?>
 
 
@@ -65,25 +59,28 @@ $totalRows_faktur = mysql_num_rows($faktur);
         $total = 0;
         $no = 1;
         $disk = 0;
-        do {
-          $sub = $row_DetailFaktur['harga'] * $row_DetailFaktur['qty'];
-          $total += $sub;
-          $disk += $row_DetailFaktur['diskon'];
+        if ($row_DetailFaktur) {
+          do {
+            $sub = $row_DetailFaktur['harga'] * $row_DetailFaktur['qty'];
+            $total += $sub;
+            $disk += $row_DetailFaktur['diskon'];
         ?>
-          <tr>
-            <td><?= $no; ?></td>
-            <td class="text-uppercase"><?php echo $row_DetailFaktur['kode']; ?>- <?php echo $row_DetailFaktur['nama']; ?></td>
-            <td><?php echo $row_DetailFaktur['qty']; ?> @ Rp. <?php echo number_format($row_DetailFaktur['harga']); ?></td>
-            <td>
-              <div align="right">Rp. <?php echo number_format($sub); ?></div>
-            </td>
-            <td>
-              <div align="right">Rp. <?php echo number_format($row_DetailFaktur['diskon']); ?></div>
-            </td>
-          </tr>
+            <tr>
+              <td><?= $no; ?></td>
+              <td class="text-uppercase"><?php echo $row_DetailFaktur['kode']; ?>- <?php echo $row_DetailFaktur['nama']; ?></td>
+              <td><?php echo $row_DetailFaktur['qty']; ?> @ Rp. <?php echo number_format($row_DetailFaktur['harga']); ?></td>
+              <td>
+                <div align="right">Rp. <?php echo number_format($sub); ?></div>
+              </td>
+              <td>
+                <div align="right">Rp. <?php echo number_format($row_DetailFaktur['diskon']); ?></div>
+              </td>
+            </tr>
         <?php
-          $no++;
-        } while ($row_DetailFaktur = mysql_fetch_assoc($DetailFaktur)); ?>
+            $no++;
+          } while ($row_DetailFaktur = mysqli_fetch_assoc($DetailFaktur));
+        } // end if row_DetailFaktur 
+        ?>
         <tr>
           <td>&nbsp;</td>
           <td>&nbsp;</td>

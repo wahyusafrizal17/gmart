@@ -9,8 +9,7 @@ $hostname_koneksi = "localhost";
 $database_koneksi = "gmart";
 $username_koneksi = "root";
 $password_koneksi = "WahyuJR17_";
-$koneksi = mysql_connect($hostname_koneksi, $username_koneksi, $password_koneksi);
-mysql_select_db($database_koneksi, $koneksi);
+$koneksi = mysqli_connect($hostname_koneksi, $username_koneksi, $password_koneksi, $database_koneksi);
 
 
 //TANGGAL
@@ -248,9 +247,7 @@ $actual_link = (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? "https"
 if (!function_exists("GetSQLValueString")) {
 	function GetSQLValueString($theValue, $theType, $theDefinedValue = "", $theNotDefinedValue = "")
 	{
-		$theValue = get_magic_quotes_gpc() ? stripslashes($theValue) : $theValue;
-
-		$theValue = function_exists("mysql_real_escape_string") ? mysql_real_escape_string($theValue) : mysql_escape_string($theValue);
+		$theValue = function_exists("mysqli_real_escape_string") && isset($koneksi) ? mysqli_real_escape_string($koneksi, $theValue) : addslashes($theValue);
 
 		switch ($theType) {
 			case "text":
@@ -277,9 +274,9 @@ if (!function_exists("GetSQLValueString")) {
 //MENAMPILKAN DEFAULT WEB
 //mysql_select_db($database_koneksi, $koneksi);
 $query_rs_config = "SELECT * FROM tb_config";
-$rs_config = mysql_query($query_rs_config, $koneksi) or die(errorQuery(mysql_error()));
-$row_rs_config = mysql_fetch_assoc($rs_config);
-$totalRows_rs_config = mysql_num_rows($rs_config);
+$rs_config = mysqli_query($koneksi, $query_rs_config) or die(errorQuery(mysqli_error($koneksi)));
+$row_rs_config = mysqli_fetch_assoc($rs_config);
+$totalRows_rs_config = mysqli_num_rows($rs_config);
 
 $title = $row_rs_config['title'];
 $deskripsi = $row_rs_config['deskripsi'];
@@ -292,9 +289,9 @@ $text3 = $row_rs_config['text3'];
 //TAHUN PERIODE AKADEMIK
 //mysql_select_db($database_koneksi, $koneksi);
 $query_rs_tap = "SELECT * FROM tb_ta WHERE id_ta = 1";
-$rs_tap = mysql_query($query_rs_tap, $koneksi) or die(errorQuery(mysql_error()));
-$row_rs_tap = mysql_fetch_assoc($rs_tap);
-$totalRows_rs_tap = mysql_num_rows($rs_tap);
+$rs_tap = mysqli_query($koneksi, $query_rs_tap) or die(errorQuery(mysqli_error($koneksi)));
+$row_rs_tap = mysqli_fetch_assoc($rs_tap);
+$totalRows_rs_tap = mysqli_num_rows($rs_tap);
 $ta = $row_rs_tap['kode_ta'];
 
 //FUNCTION UPLOAD PHOTO

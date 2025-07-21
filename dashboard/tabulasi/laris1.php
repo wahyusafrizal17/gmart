@@ -23,14 +23,14 @@ $currentPage = $_SERVER["PHP_SELF"];
         GetSQLValueString($ta, "text"));
 	}	
 	$query_limit_Terlaris = sprintf("%s LIMIT %d, %d", $query_Terlaris, $startRow_Terlaris, $maxRows_Terlaris);
-	$Terlaris = mysql_query($query_limit_Terlaris, $koneksi) or die(mysql_error());
-	$row_Terlaris = mysql_fetch_assoc($Terlaris);
+	$Terlaris = mysqli_query($koneksi, $query_limit_Terlaris) or die(mysqli_error($koneksi));
+	$row_Terlaris = mysqli_fetch_assoc($Terlaris);
 	
 	if (isset($_GET['totalRows_Terlaris'])) {
 	  $totalRows_Terlaris = $_GET['totalRows_Terlaris'];
 	} else {
-	  $all_Terlaris = mysql_query($query_Terlaris, $koneksi);
-	  $totalRows_Terlaris = mysql_num_rows($all_Terlaris);
+	  $all_Terlaris = mysqli_query($koneksi, $query_Terlaris);
+	  $totalRows_Terlaris = mysqli_num_rows($all_Terlaris);
 	}
 	$totalPages_Terlaris = ceil($totalRows_Terlaris/$maxRows_Terlaris)-1;
 	

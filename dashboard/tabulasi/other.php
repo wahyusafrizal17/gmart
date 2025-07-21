@@ -7,7 +7,6 @@ if (isset($_GET['kasir']) && isset($_GET['tgl1']) && isset($_GET['tgl2'])) {
   $tgl1 = $_GET['tgl1'];
   $tgl2 = $_GET['tgl2'];
   if ($colname != "0") {
-    mysql_select_db($database_koneksi, $koneksi);
     $query_Terlaris = sprintf(
       "SELECT kode, nama, COUNT(kode) as Transaksi, SUM(harga * qty) as Harga, SUM(qty) as Jumlah, transaksidetail.admintd AS kasir FROM `transaksidetail` WHERE periode = %s AND transaksidetail.admintd = %s AND tanggal BETWEEN %s AND %s GROUP BY nama, tanggal ORDER BY Jumlah DESC",
       GetSQLValueString($ta, "text"),
@@ -16,7 +15,6 @@ if (isset($_GET['kasir']) && isset($_GET['tgl1']) && isset($_GET['tgl2'])) {
       GetSQLValueString($tgl2, "date")
     );
   } else {
-    mysql_select_db($database_koneksi, $koneksi);
     $query_Terlaris = sprintf(
       "SELECT kode, nama, COUNT(kode) as Transaksi, SUM(harga * qty) as Harga, SUM(qty) as Jumlah, transaksidetail.admintd AS kasir FROM `transaksidetail` WHERE periode = %s AND tanggal BETWEEN %s AND %s GROUP BY nama, tanggal ORDER BY Jumlah DESC",
       GetSQLValueString($ta, "text"),
@@ -25,23 +23,22 @@ if (isset($_GET['kasir']) && isset($_GET['tgl1']) && isset($_GET['tgl2'])) {
     );
   }
 } else {
-  mysql_select_db($database_koneksi, $koneksi);
   $query_Terlaris = sprintf(
     "SELECT kode, nama, COUNT(kode) as Transaksi, SUM(harga * qty) as Harga, SUM(qty) as Jumlah, transaksidetail.admintd AS kasir FROM `transaksidetail` WHERE periode = %s GROUP BY nama ORDER BY Jumlah DESC",
     GetSQLValueString($ta, "text")
   );
 }
-$Terlaris = mysql_query($query_Terlaris, $koneksi) or die(mysql_error());
-$row_Terlaris = mysql_fetch_assoc($Terlaris);
-$totalRows_Terlaris = mysql_num_rows($Terlaris);
+$Terlaris = mysqli_query($koneksi, $query_Terlaris) or die(mysqli_error($koneksi));
+$row_Terlaris = mysqli_fetch_assoc($Terlaris);
+$totalRows_Terlaris = mysqli_num_rows($Terlaris);
 
 //DATA KASIR
 $query_Kassa = sprintf(
   "SELECT DISTINCT(transaksidetail.admintd) AS kasir FROM `transaksidetail` WHERE periode = %s ORDER BY kasir ASC",
   GetSQLValueString($ta, "text")
 );
-$Kassa = mysql_query($query_Kassa, $koneksi) or die(mysql_error());
-$row_Kassa = mysql_fetch_assoc($Kassa);
+$Kassa = mysqli_query($koneksi, $query_Kassa) or die(mysqli_error($koneksi));
+$row_Kassa = mysqli_fetch_assoc($Kassa);
 ?>
 <style type="text/css">
   <!--
@@ -86,8 +83,8 @@ $row_Kassa = mysql_fetch_assoc($Kassa);
             <select name="kasir" id="" class="form-control">
               <option value="0">-- Pilih Kasir --</option>
               <?php do {  ?>
-                <option value="<?php echo $row_Kassa['kasir'] ?>"><?php echo $row_Kassa['kasir'] ?></option>
-              <?php } while ($row_Kassa = mysql_fetch_assoc($Kassa)); ?>
+                <option value="<?php echo isset($row_Kassa['kasir']) ? $row_Kassa['kasir'] : ''; ?>"><?php echo isset($row_Kassa['kasir']) ? $row_Kassa['kasir'] : ''; ?></option>
+              <?php } while ($row_Kassa = mysqli_fetch_assoc($Kassa)); ?>
             </select>
           </div>
         </div>
@@ -134,13 +131,13 @@ $row_Kassa = mysql_fetch_assoc($Kassa);
           <td>
             <div align="center"><?= $no++; ?></div>
           </td>
-          <td class="text-uppercase"><?php echo $row_Terlaris['nama']; ?> ( <?php echo $row_Terlaris['kode']; ?> )</td>
-          <td><?php echo $row_Terlaris['Transaksi']; ?> Transaksi</td>
-          <td><?php echo $row_Terlaris['Jumlah']; ?> Item</td>
-          <td>Rp. <?php echo $row_Terlaris['Harga']; ?></td>
-          <td><?php echo $row_Terlaris['kasir']; ?></td>
+          <td class="text-uppercase"><?php echo isset($row_Terlaris['nama']) ? $row_Terlaris['nama'] : ''; ?> ( <?php echo isset($row_Terlaris['kode']) ? $row_Terlaris['kode'] : ''; ?> )</td>
+          <td><?php echo isset($row_Terlaris['Transaksi']) ? $row_Terlaris['Transaksi'] : 0; ?> Transaksi</td>
+          <td><?php echo isset($row_Terlaris['Jumlah']) ? $row_Terlaris['Jumlah'] : 0; ?> Item</td>
+          <td>Rp. <?php echo isset($row_Terlaris['Harga']) ? $row_Terlaris['Harga'] : 0; ?></td>
+          <td><?php echo isset($row_Terlaris['kasir']) ? $row_Terlaris['kasir'] : ''; ?></td>
         </tr>
-      <?php } while ($row_Terlaris = mysql_fetch_assoc($Terlaris)); ?>
+      <?php } while ($row_Terlaris = mysqli_fetch_assoc($Terlaris)); ?>
     </tbody>
   </table>
   <hr>

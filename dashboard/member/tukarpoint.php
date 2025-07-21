@@ -21,37 +21,34 @@ if (isset($_POST['MM_insert']) && $_POST['MM_insert'] == 'form1') {
             GetSQLValueString($tanggal, 'text')
         );
 
-        mysql_select_db($database_koneksi, $koneksi);
-        $Result1 = mysql_query($riwayatpenukaran, $koneksi);
+        $Result1 = mysqli_query($koneksi, $riwayatpenukaran);
 
         if($Result1){
           $getMember = sprintf("SELECT * FROM member WHERE id_member='$idmember'");
-          $Member = mysql_query($getMember, $koneksi) or die(errorQuery(mysql_error()));
-          $row_member = mysql_fetch_assoc($Member);
+          $Member = mysqli_query($koneksi, $getMember) or die(errorQuery(mysqli_error($koneksi)));
+          $row_member = mysqli_fetch_assoc($Member);
           $point_akhir = $row_member['point'] - $point;
 
           $updateMember = sprintf("UPDATE member SET `point`=%s WHERE `id_member`=%s",
 					   GetSQLValueString($point_akhir, "int"),
 					   GetSQLValueString($_POST['idmember'], "int"));
 
-            mysql_select_db($database_koneksi, $koneksi);
-            $Result1 = mysql_query($updateMember, $koneksi) or die(errorQuery(mysql_error()));
+            $Result1 = mysqli_query($koneksi, $updateMember) or die(errorQuery(mysqli_error($koneksi)));
 
             $getProduk = sprintf("SELECT * FROM produk WHERE idproduk='$idproduk'");
-            $Produk = mysql_query($getProduk, $koneksi) or die(errorQuery(mysql_error()));
-            $row_produk = mysql_fetch_assoc($Produk);
+            $Produk = mysqli_query($koneksi, $getProduk) or die(errorQuery(mysqli_error($koneksi)));
+            $row_produk = mysqli_fetch_assoc($Produk);
 
             $stok_akhir = $row_produk['stok'] - $qty;
             $updateProduk = sprintf("UPDATE produk SET `stok`=%s WHERE `idproduk`=%s",
 					   GetSQLValueString($stok_akhir, "int"),
 					   GetSQLValueString($_POST['idproduk'], "int"));
 
-            mysql_select_db($database_koneksi, $koneksi);
-            $Result1 = mysql_query($updateProduk, $koneksi) or die(errorQuery(mysql_error()));
+            $Result1 = mysqli_query($koneksi, $updateProduk) or die(errorQuery(mysqli_error($koneksi)));
         }
         
         if (!$Result1) {
-            die('Error: ' . mysql_error());
+            die('Error: ' . mysqli_error($koneksi));
         } else {
             refresh('?page=member/view&sukses');
         }
@@ -69,19 +66,18 @@ if (isset($_POST['MM_insert']) && $_POST['MM_insert'] == 'form1') {
 //require_once('izin.php');
 //mysql_select_db($database_koneksi, $koneksi);
 $query_tukarproduk = "SELECT * FROM tukarproduk a,produk b WHERE a.produk=b.idproduk";
-$tukarproduk = mysql_query($query_tukarproduk, $koneksi) or die(errorQuery(mysql_error()));
-$row_tukarproduk = mysql_fetch_assoc($tukarproduk);
-$totalRows_tukarproduk = mysql_num_rows($tukarproduk);
+$tukarproduk = mysqli_query($koneksi, $query_tukarproduk) or die(errorQuery(mysqli_error($koneksi)));
+$row_tukarproduk = mysqli_fetch_assoc($tukarproduk);
+$totalRows_tukarproduk = mysqli_num_rows($tukarproduk);
 
 $colname_Mem  = "-1";
 if (isset($_GET['id_member'])) {
   $colname_Mem  = $_GET['id_member'];
 }
-mysql_select_db($database_koneksi, $koneksi);
 $query_Member = sprintf("SELECT * FROM member WHERE id_member = %s", GetSQLValueString($colname_Mem, "int"));
-$Member = mysql_query($query_Member, $koneksi) or die(errorQuery(mysql_error()));
-$row_Member = mysql_fetch_assoc($Member);
-$totalRows_Member = mysql_num_rows($Member);
+$Member = mysqli_query($koneksi, $query_Member) or die(errorQuery(mysqli_error($koneksi)));
+$row_Member = mysqli_fetch_assoc($Member);
+$totalRows_Member = mysqli_num_rows($Member);
 ?>
 
 
@@ -132,7 +128,7 @@ $totalRows_Member = mysql_num_rows($Member);
         </div>
    
 <?php $no++;
-	} while ($row_tukarproduk = mysql_fetch_assoc($tukarproduk)); 
+	} while ($row_tukarproduk = mysqli_fetch_assoc($tukarproduk)); 
 ?>
 <?php }else{
 	danger('Oops!', 'Data belum ada');

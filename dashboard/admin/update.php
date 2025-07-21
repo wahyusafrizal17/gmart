@@ -9,9 +9,11 @@ if (isset($_SERVER['QUERY_STRING'])) {
 if ((isset($_POST["MM_update"])) && ($_POST["MM_update"] == "form1")) {
     
   if (!empty($_POST['pass'])) {
-   $updateSQL = sprintf("UPDATE tb_admin SET Login=%s, Password=PASSWORD(%s), nama_admin=%s, gender_admin=%s, address_admin=%s, email_admin=%s, hp_admin=%s, key_admin=%s, active_admin=%s WHERE id_admin=%s",
+   // Use password_hash for PHP 8 compatibility
+   $hashedPassword = password_hash($_POST['pass'], PASSWORD_DEFAULT);
+   $updateSQL = sprintf("UPDATE tb_admin SET Login=%s, Password=%s, nama_admin=%s, gender_admin=%s, address_admin=%s, email_admin=%s, hp_admin=%s, key_admin=%s, active_admin=%s WHERE id_admin=%s",
                        GetSQLValueString($_POST['Login'], "text"),
-                       GetSQLValueString($_POST['pass'], "text"),
+                       GetSQLValueString($hashedPassword, "text"),
                        GetSQLValueString($_POST['nama_admin'], "text"),
                        GetSQLValueString($_POST['gender_admin'], "text"),
                        GetSQLValueString($_POST['address_admin'], "text"),
@@ -33,19 +35,17 @@ if ((isset($_POST["MM_update"])) && ($_POST["MM_update"] == "form1")) {
                        GetSQLValueString($_POST['active_admin'], "text"),
                        GetSQLValueString($_POST['id_admin'], "int"));
   }
-  mysql_select_db($database_koneksi, $koneksi);
-  $Result1 = mysql_query($updateSQL, $koneksi) or die(errorQuery(mysql_error()));
+  $Result1 = mysqli_query($koneksi, $updateSQL) or die(errorQuery(mysqli_error($koneksi)));
   
   //26 Desember open
   $activitySQL = sprintf("INSERT INTO activity_update (`url`, `oleh`) VALUES (%s, %s)",
   GetSQLValueString($actual_link, "text"),
   GetSQLValueString($ID, "int"));
-  mysql_select_db($database_koneksi, $koneksi);
-  $ResultSQL = mysql_query($activitySQL, $koneksi) or die(errorQuery(mysql_error()));	
+  $ResultSQL = mysqli_query($koneksi, $activitySQL) or die(errorQuery(mysqli_error($koneksi)));  
   //26 desember close
   
   if ($Result1) {
-  	refresh('?page=admin/view&sukses');
+   refresh('?page=admin/view&sukses');
   }
 }
 
@@ -53,11 +53,10 @@ $colname_UpdateAdmin = "-1";
 if (isset($_GET['id_admin'])) {
   $colname_UpdateAdmin = $_GET['id_admin'];
 }
-mysql_select_db($database_koneksi, $koneksi);
 $query_UpdateAdmin = sprintf("SELECT * FROM tb_admin WHERE id_admin = %s", GetSQLValueString($colname_UpdateAdmin, "int"));
-$UpdateAdmin = mysql_query($query_UpdateAdmin, $koneksi) or die(errorQuery(mysql_error()));
-$row_UpdateAdmin = mysql_fetch_assoc($UpdateAdmin);
-$totalRows_UpdateAdmin = mysql_num_rows($UpdateAdmin);
+$UpdateAdmin = mysqli_query($koneksi, $query_UpdateAdmin) or die(errorQuery(mysqli_error($koneksi)));
+$row_UpdateAdmin = mysqli_fetch_assoc($UpdateAdmin);
+$totalRows_UpdateAdmin = mysqli_num_rows($UpdateAdmin);
 ?>
 
 <?php

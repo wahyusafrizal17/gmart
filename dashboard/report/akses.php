@@ -8,11 +8,10 @@ $colname_rs_login = "-1";
 if (isset($_SESSION['MM_Username'])) {
   $colname_rs_login = $_SESSION['MM_Username'];
 }
-//mysql_select_db($database_koneksi, $koneksi);
 $query_rs_login = sprintf("SELECT * FROM vw_login WHERE Login = %s", GetSQLValueString($colname_rs_login, "text"));
-$rs_login = mysql_query($query_rs_login, $koneksi) or die(errorQuery(mysql_error()));
-$row_rs_login = mysql_fetch_assoc($rs_login);
-$totalRows_rs_login = mysql_num_rows($rs_login);
+$rs_login = mysqli_query($koneksi, $query_rs_login) or die(errorQuery(mysqli_error($koneksi)));
+$row_rs_login = mysqli_fetch_assoc($rs_login);
+$totalRows_rs_login = mysqli_num_rows($rs_login);
 
 $ID = $row_rs_login['ID'];
 $login = $row_rs_login['Login'];
@@ -22,21 +21,19 @@ $level = $row_rs_login['Level'];
 /*
 //----------- 26 desember - cabang ---
 $cabang = $row_rs_login['Cabank'];
-//mysql_select_db($database_koneksi, $koneksi);
-$query_rs_cab = "SELECT * FROM tb_cabang WHERE id_cabang = '".$cabang."' LIMIT 1";
-$rs_cab = mysql_query($query_rs_cab, $koneksi) or die(errorQuery(mysql_error()));
-$row_rs_cab = mysql_fetch_assoc($rs_cab);
-$totalRows_rs_cab = mysql_num_rows($rs_cab);
+//$query_rs_cab = "SELECT * FROM tb_cabang WHERE id_cabang = '".$cabang."' LIMIT 1";
+//$rs_cab = mysqli_query($koneksi, $query_rs_cab) or die(errorQuery(mysqli_error($koneksi)));
+//$row_rs_cab = mysqli_fetch_assoc($rs_cab);
+//$totalRows_rs_cab = mysqli_num_rows($rs_cab);
 
-$judulcab = $row_rs_cab['judul_cabang'];
-$alamatcab = $row_rs_cab['alamat_cabang'];
-$notelpcab = $row_rs_cab['notelp_cabang'];
+//$judulcab = $row_rs_cab['judul_cabang'];
+//$alamatcab = $row_rs_cab['alamat_cabang'];
+//$notelpcab = $row_rs_cab['notelp_cabang'];
 */
 
-//mysql_select_db($database_koneksi, $koneksi);
 $query_rs_profile = "SELECT * FROM tb_admin WHERE id_admin = '".$ID."'";
-$rs_profile = mysql_query($query_rs_profile, $koneksi) or die(errorQuery(mysql_error()));
-$row_rs_profile = mysql_fetch_assoc($rs_profile);
-$totalRows_rs_profile = mysql_num_rows($rs_profile); 
+$rs_profile = mysqli_query($koneksi, $query_rs_profile) or die(errorQuery(mysqli_error($koneksi)));
+$row_rs_profile = mysqli_fetch_assoc($rs_profile);
+$totalRows_rs_profile = mysqli_num_rows($rs_profile); 
 
 ?>

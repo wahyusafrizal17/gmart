@@ -40,7 +40,7 @@
       <td><?php echo $row_Terlaris['JumlahProduk']; ?> Transaksi</td>
       <td><?php echo $row_Terlaris['Jumlah']; ?> Item</td>
     </tr>
-    <?php } while ($row_Terlaris = mysql_fetch_assoc($Terlaris)); ?>
+    <?php } while ($row_Terlaris = mysqli_fetch_assoc($Terlaris)); ?>
     </tbody>
 </table>
 <?php }else{
@@ -89,7 +89,7 @@
       <td>Rp. <?php echo $row_TakTerlaris['hargadasar']; ?></td>
       <td>Rp. <?php echo $row_TakTerlaris['hargajual']; ?></td>
     </tr>
-    <?php } while ($row_TakTerlaris = mysql_fetch_assoc($TakTerlaris)); ?>
+    <?php } while ($row_TakTerlaris = mysqli_fetch_assoc($TakTerlaris)); ?>
     </tbody>
 </table> 
 <?php }else{

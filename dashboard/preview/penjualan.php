@@ -42,10 +42,10 @@ require_once('preview/page1.php'); ?>
                   <select name="kasir" id="" class="form-control">
                     <option value="0">-- Pilih Kasir --</option>
                     <?php do {  ?>
-                      <option value="<?php echo $row_Kassa['id'] ?>" <?php if (!(strcmp($row_Kassa['id'], htmlentities($colname, ENT_COMPAT, 'utf-8')))) {
-                                                                        echo "SELECTED";
-                                                                      } ?>><?php echo $row_Kassa['Nama'] ?></option>
-                    <?php } while ($row_Kassa = mysql_fetch_assoc($Kassa)); ?>
+                      <option value="<?php echo isset($row_Kassa['id']) ? $row_Kassa['id'] : ''; ?>" <?php if (isset($row_Kassa['id']) && !(strcmp($row_Kassa['id'], htmlentities($colname, ENT_COMPAT, 'utf-8')))) {
+                                                                                                        echo "SELECTED";
+                                                                                                      } ?>><?php echo isset($row_Kassa['Nama']) ? $row_Kassa['Nama'] : ''; ?></option>
+                    <?php } while ($row_Kassa = mysqli_fetch_assoc($Kassa)); ?>
                   </select>
                 </div>
               </div>
@@ -55,10 +55,10 @@ require_once('preview/page1.php'); ?>
                   <select name="jenisbayar" id="" class="form-control">
                     <option value="0">-- Keseluruhan --</option>
                     <?php do {  ?>
-                      <option value="<?php echo $row_Faktur['jenisbayar'] ?>" <?php if (!(strcmp($row_Faktur['jenisbayar'], htmlentities($jenisbayar, ENT_COMPAT, 'utf-8')))) {
-                                                                                echo "SELECTED";
-                                                                              } ?>><?php echo $row_Faktur['jenisbayar'] ?></option>
-                    <?php } while ($row_Faktur = mysql_fetch_assoc($Faktur)); ?>
+                      <option value="<?php echo isset($row_Faktur['jenisbayar']) ? $row_Faktur['jenisbayar'] : ''; ?>" <?php if (isset($row_Faktur['jenisbayar']) && !(strcmp($row_Faktur['jenisbayar'], htmlentities($jenisbayar, ENT_COMPAT, 'utf-8')))) {
+                                                                                                                          echo "SELECTED";
+                                                                                                                        } ?>><?php echo isset($row_Faktur['jenisbayar']) ? $row_Faktur['jenisbayar'] : ''; ?></option>
+                    <?php } while ($row_Faktur = mysqli_fetch_assoc($Faktur)); ?>
                   </select>
                 </div>
               </div>
@@ -68,20 +68,20 @@ require_once('preview/page1.php'); ?>
                   <select name="kategori" id="" class="js-example-basic-single">
                     <option value="0">-- Keseluruhan --</option>
                     <?php do {  ?>
-                      <option value="<?php echo $row_kategori['idkategori'] ?>" <?php if (!(strcmp($row_kategori['idkategori'], htmlentities($kat, ENT_COMPAT, 'utf-8')))) {
-                                                                        echo "SELECTED";
-                                                                      } ?>><?php echo $row_kategori['namakategori'] ?></option>
-                    <?php } while ($row_kategori = mysql_fetch_assoc($kategori)); ?>
+                      <option value="<?php echo isset($row_kategori['idkategori']) ? $row_kategori['idkategori'] : ''; ?>" <?php if (isset($row_kategori['idkategori']) && !(strcmp($row_kategori['idkategori'], htmlentities($kat, ENT_COMPAT, 'utf-8')))) {
+                                                                                                                              echo "SELECTED";
+                                                                                                                            } ?>><?php echo isset($row_kategori['namakategori']) ? $row_kategori['namakategori'] : ''; ?></option>
+                    <?php } while ($row_kategori = mysqli_fetch_assoc($kategori)); ?>
                   </select>
                   <script>
                     $(document).ready(function() {
                       $('.js-example-basic-single').select2({
-                theme: "bootstrap4",
-                width: '100%',
-                placeholder: "Pilih atau cari pelanggan",
-                allowClear: true
-            });
-});
+                        theme: "bootstrap4",
+                        width: '100%',
+                        placeholder: "Pilih atau cari pelanggan",
+                        allowClear: true
+                      });
+                    });
                   </script>
                 </div>
               </div>
@@ -102,7 +102,7 @@ require_once('preview/page1.php'); ?>
     <br />
     <br />
     <?php if ($totalRows_Penjualan > 0) { ?>
-    
+
       <div class="row">
 
         <div class="col-md-12">
@@ -130,10 +130,14 @@ require_once('preview/page1.php'); ?>
               </thead>
 
               <tr>
-                <td>Rp. <?= number_format($row_Pendapatan['pendapatan']); ?></td>
-                <td>Rp. <?= number_format($row_Total['jumlah']); ?></td>
-                <td>Rp. <?= number_format($row_Pendapatan['pendapatan'] - $row_Total['jumlah'] - $row_Laba['laba']); ?></td>
-                <td>Rp. <?= number_format($row_Laba['laba']); ?></td>
+                <td>Rp. <?= number_format(($row_Pendapatan && isset($row_Pendapatan['pendapatan'])) ? $row_Pendapatan['pendapatan'] : 0); ?></td>
+                <td>Rp. <?= number_format(($row_Total && isset($row_Total['jumlah'])) ? $row_Total['jumlah'] : 0); ?></td>
+                <td>Rp. <?= number_format(
+                          (($row_Pendapatan && isset($row_Pendapatan['pendapatan'])) ? $row_Pendapatan['pendapatan'] : 0)
+                            - (($row_Total && isset($row_Total['jumlah'])) ? $row_Total['jumlah'] : 0)
+                            - (($row_Laba && isset($row_Laba['laba'])) ? $row_Laba['laba'] : 0)
+                        ); ?></td>
+                <td>Rp. <?= number_format(($row_Laba && isset($row_Laba['laba'])) ? $row_Laba['laba'] : 0); ?></td>
               </tr>
 
             </table>
@@ -172,13 +176,13 @@ require_once('preview/page1.php'); ?>
             do {
 
               //hitung laba
-              if($kat != 0){
-              $query_laba = sprintf("SELECT a.faktur, a.tanggal, a.hargadasar, a.harga, a.diskon, a.qty, (a.hargadasar * a.qty) as hd, (a.harga * a.qty) as hj, sum((((a.harga * a.qty) - (a.hargadasar * a.qty)))-a.diskon) as laba, ((a.harga * a.qty) - a.diskon) as sisadiskon  FROM transaksidetail a,produk b WHERE a.faktur = %s AND a.nama=b.namaproduk AND b.kategori= %s  GROUP BY a.faktur",  GetSQLValueString($row_Penjualan['kodefaktur'], "text"), GetSQLValueString($kat, "text") );
-               }else{
-                $query_laba = sprintf("SELECT faktur, tanggal, hargadasar, harga, diskon, qty, (hargadasar * qty) as hd, (harga * qty) as hj, sum((((harga * qty) - (hargadasar * qty)))-diskon) as laba, ((harga * qty) - diskon) as sisadiskon  FROM transaksidetail WHERE faktur = %s GROUP BY faktur",  GetSQLValueString($row_Penjualan['kodefaktur'], "text") );
-               }
-              $laba = mysql_query($query_laba, $koneksi) or die(mysql_error());
-              $row_laba = mysql_fetch_assoc($laba);
+              if ($kat != 0) {
+                $query_laba = sprintf("SELECT a.faktur, a.tanggal, a.hargadasar, a.harga, a.diskon, a.qty, (a.hargadasar * a.qty) as hd, (a.harga * a.qty) as hj, sum((((a.harga * a.qty) - (a.hargadasar * a.qty)))-a.diskon) as laba, ((a.harga * a.qty) - a.diskon) as sisadiskon  FROM transaksidetail a,produk b WHERE a.faktur = %s AND a.nama=b.namaproduk AND b.kategori= %s  GROUP BY a.faktur",  GetSQLValueString($row_Penjualan['kodefaktur'], "text"), GetSQLValueString($kat, "text"));
+              } else {
+                $query_laba = sprintf("SELECT faktur, tanggal, hargadasar, harga, diskon, qty, (hargadasar * qty) as hd, (harga * qty) as hj, sum((((harga * qty) - (hargadasar * qty)))-diskon) as laba, ((harga * qty) - diskon) as sisadiskon  FROM transaksidetail WHERE faktur = %s GROUP BY faktur",  GetSQLValueString($row_Penjualan['kodefaktur'], "text"));
+              }
+              $laba = mysqli_query($koneksi, $query_laba) or die(mysqli_error($koneksi));
+              $row_laba = mysqli_fetch_assoc($laba);
               //---------
             ?>
               <tr>
@@ -200,7 +204,7 @@ require_once('preview/page1.php'); ?>
                   <div align="right">Rp. <?php echo number_format($row_Penjualan['potongan']); ?></div>
                 </td>
                 <td>
-                  Rp. <span class="pull-right"><?= number_format($row_laba['laba']); ?></span>
+                  Rp. <span class="pull-right"><?= number_format($row_laba['laba'] ?? 0); ?></span>
                 </td>
                 <td>
                   <div align="center"><?php echo $row_Penjualan['adminfaktur']; ?></div>
@@ -221,7 +225,7 @@ require_once('preview/page1.php'); ?>
               </tr>
             <?php
               $no++;
-            } while ($row_Penjualan = mysql_fetch_assoc($rs_Penjualan)); ?>
+            } while ($row_Penjualan = mysqli_fetch_assoc($rs_Penjualan)); ?>
           </table>
         </div>
       </div>

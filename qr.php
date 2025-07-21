@@ -6,9 +6,9 @@ if (isset($_GET['id'])) {
 }
 //mysql_select_db($database_koneksi, $koneksi);
 $query_rs_print = sprintf("SELECT * FROM tb_paket INNER JOIN tb_pengirim ON pengirim_paket = id_pengirim WHERE kode_paket = %s", GetSQLValueString($colname_rs_print, "text"));
-$rs_print = mysql_query($query_rs_print, $koneksi) or die(errorQuery(mysql_error()));
-$row_rs_print = mysql_fetch_assoc($rs_print);
-$totalRows_rs_print = mysql_num_rows($rs_print);
+$rs_print = mysqli_query($koneksi, $query_rs_print) or die('Query failed: ' . mysqli_error($koneksi));
+$row_rs_print = mysqli_fetch_assoc($rs_print);
+$totalRows_rs_print = mysqli_num_rows($rs_print);
 ?>
 
 
@@ -102,7 +102,7 @@ $totalRows_rs_print = mysql_num_rows($rs_print);
   </tr>
 </table>
 <?php }else{
-	pesangagal('Oops!','data tidak ditemukan');
+	die('data tidak ditemukan');
 }
 ?>
 

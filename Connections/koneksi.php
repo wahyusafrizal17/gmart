@@ -6,7 +6,7 @@ error_reporting(E_ALL ^ E_DEPRECATED);
 # HTTP="true"
 
 $hostname_koneksi = "localhost";
-$database_koneksi = "gmart";
+$database_koneksi = "newgmart";
 $username_koneksi = "root";
 $password_koneksi = "WahyuJR17_";
 // Update to mysqli for PHP 8 compatibility

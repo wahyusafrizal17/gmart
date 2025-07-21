@@ -219,17 +219,21 @@ if (isset($_GET['jenisbayar']) && ($_GET['jenisbayar'] != "") && isset($_GET['ka
 	);
 }
 $query_limit_Penjualan = sprintf("%s LIMIT %d, %d", $query_Penjualan, $startRow_Penjualan, $maxRows_Penjualan);
-$rs_Penjualan = mysql_query($query_limit_Penjualan, $koneksi) or die(mysql_error());
-$row_Penjualan = mysql_fetch_assoc($rs_Penjualan);
+$rs_Penjualan = mysqli_query($koneksi, $query_limit_Penjualan) or die(mysqli_error($koneksi));
+$row_Penjualan = mysqli_fetch_assoc($rs_Penjualan);
 
-$rs_total = mysql_query($query_total, $koneksi) or die(mysql_error());
-$row_Total = mysql_fetch_assoc($rs_total);
+$rs_total = mysqli_query($koneksi, $query_total) or die(mysqli_error($koneksi));
+$row_Total = mysqli_fetch_assoc($rs_total);
 
-$rs_pendapatan = mysql_query($query_Pendapatan, $koneksi) or die(mysql_error());
-$row_Pendapatan = mysql_fetch_assoc($rs_pendapatan);
+$rs_pendapatan = mysqli_query($koneksi, $query_Pendapatan) or die(mysqli_error($koneksi));
+$row_Pendapatan = mysqli_fetch_assoc($rs_pendapatan);
 
-$rs_laba = mysql_query($query_Laba, $koneksi) or die(mysql_error());
-$row_Laba = mysql_fetch_assoc($rs_laba);
+if (!isset($query_Laba) || empty($query_Laba)) {
+    // Prevent fatal error if $query_Laba is not set
+    $query_Laba = "SELECT 0 AS laba";
+}
+$rs_laba = mysqli_query($koneksi, $query_Laba) or die(mysqli_error($koneksi));
+$row_Laba = mysqli_fetch_assoc($rs_laba);
 
 //kasir
 $query_Kasir = sprintf(
@@ -238,9 +242,9 @@ $query_Kasir = sprintf(
 		WHERE periode = %s ORDER BY idfaktur DESC",
 	GetSQLValueString($ta, "text")
 );
-$Kassa = mysql_query($query_Kasir, $koneksi) or die(errorQuery(mysql_error()));
-$row_Kassa = mysql_fetch_assoc($Kassa);
-$totalRows_Kassa = mysql_num_rows($Kassa);
+$Kassa = mysqli_query($koneksi, $query_Kasir) or die(errorQuery(mysqli_error($koneksi)));
+$row_Kassa = mysqli_fetch_assoc($Kassa);
+$totalRows_Kassa = mysqli_num_rows($Kassa);
 //
 
 //kasir
@@ -249,23 +253,23 @@ $query_Faktur = sprintf(
 		WHERE periode = %s ORDER BY idfaktur DESC",
 	GetSQLValueString($ta, "text")
 );
-$Faktur = mysql_query($query_Faktur, $koneksi) or die(errorQuery(mysql_error()));
-$row_Faktur = mysql_fetch_assoc($Faktur);
-$totalRows_Faktur = mysql_num_rows($Faktur);
+$Faktur = mysqli_query($koneksi, $query_Faktur) or die(errorQuery(mysqli_error($koneksi)));
+$row_Faktur = mysqli_fetch_assoc($Faktur);
+$totalRows_Faktur = mysqli_num_rows($Faktur);
 //--------
 
 //Kategori
 $query_kategori = sprintf(
 	"SELECT * FROM kategori ORDER BY namakategori ASC"
 );
-$kategori = mysql_query($query_kategori,$koneksi) or die(errorQuery(mysql_error()));
-$row_kategori = mysql_fetch_assoc($kategori);
+$kategori = mysqli_query($koneksi, $query_kategori) or die(errorQuery(mysqli_error($koneksi)));
+$row_kategori = mysqli_fetch_assoc($kategori);
 
 if (isset($_GET['totalRows_Penjualan'])) {
 	$totalRows_Penjualan = $_GET['totalRows_Penjualan'];
 } else {
-	$all_Penjualan = mysql_query($query_Penjualan, $koneksi);
-	$totalRows_Penjualan = mysql_num_rows($all_Penjualan);
+	$all_Penjualan = mysqli_query($koneksi, $query_Penjualan);
+	$totalRows_Penjualan = mysqli_num_rows($all_Penjualan);
 }
 $totalPages_Penjualan = ceil($totalRows_Penjualan / $maxRows_Penjualan) - 1;
 

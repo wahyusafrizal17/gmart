@@ -158,21 +158,21 @@ if (isset($_GET['jenisbayar']) && ($_GET['jenisbayar'] != "") && isset($_GET['ka
 }
 
 
-$rs_Penjualan = mysql_query($query_Penjualan, $koneksi) or die(errorQuery(mysql_error()));
-$row_Penjualan = mysql_fetch_assoc($rs_Penjualan);
-$totalRows_Penjualan  = mysql_num_rows($rs_Penjualan);
+$rs_Penjualan = mysqli_query($koneksi, $query_Penjualan) or die(errorQuery(mysqli_error($koneksi)));
+$row_Penjualan = mysqli_fetch_assoc($rs_Penjualan);
+$totalRows_Penjualan  = mysqli_num_rows($rs_Penjualan);
 
-$rs_total = mysql_query($query_total, $koneksi) or die(mysql_error());
-$row_Total = mysql_fetch_assoc($rs_total);
+$rs_total = mysqli_query($koneksi, $query_total) or die(mysqli_error($koneksi));
+$row_Total = mysqli_fetch_assoc($rs_total);
 
-$rs_pendapatan = mysql_query($query_Pendapatan, $koneksi) or die(mysql_error());
-$row_Pendapatan = mysql_fetch_assoc($rs_pendapatan);
+$rs_pendapatan = mysqli_query($koneksi, $query_Pendapatan) or die(mysqli_error($koneksi));
+$row_Pendapatan = mysqli_fetch_assoc($rs_pendapatan);
 
 //menampilkan data kasir
 $query_Kasir = sprintf("SELECT Nama FROM vw_login WHERE ID=%s", GetSQLValueString($colname, "text"));
-$rs_Kasir = mysql_query($query_Kasir, $koneksi) or die(errorQuery(mysql_error()));
-$row_Kasir = mysql_fetch_assoc($rs_Kasir);
-$totalRows_Kasir  = mysql_num_rows($rs_Kasir);
+$rs_Kasir = mysqli_query($koneksi, $query_Kasir) or die(errorQuery(mysqli_error($koneksi)));
+$row_Kasir = mysqli_fetch_assoc($rs_Kasir);
+$totalRows_Kasir  = mysqli_num_rows($rs_Kasir);
 
 if ($totalRows_Kasir > 0) {
   $kasir = " dan kasir An. " . $row_Kasir['Nama'] . " ";
@@ -206,7 +206,7 @@ if ($totalRows_Kasir > 0) {
 
 
   </table>
-  
+
   <table width="100%" class="tableku" border="2">
     <tr>
       <th width="3%" bgcolor="#006699">
@@ -241,8 +241,8 @@ if ($totalRows_Kasir > 0) {
       //query hitung laba
       $query_laba = sprintf("SELECT faktur, tanggal, hargadasar, harga, diskon, qty, (hargadasar * qty) as hd, (harga * qty) as hj, SUM((((harga * qty) - (hargadasar * qty)))-diskon) as laba, ((harga * qty) - diskon) as sisadiskon FROM `transaksidetail` WHERE faktur = %s",  GetSQLValueString($row_Penjualan['kodefaktur'], "text"));
 
-      $laba = mysql_query($query_laba, $koneksi) or die(mysql_error());
-      $row_laba = mysql_fetch_assoc($laba);
+      $laba = mysqli_query($koneksi, $query_laba) or die(mysqli_error($koneksi));
+      $row_laba = mysqli_fetch_assoc($laba);
       //----------------------
     ?>
       <tr>
@@ -272,7 +272,7 @@ if ($totalRows_Kasir > 0) {
     <?php
       $totallaba += $tlaba;
       $no++;
-    } while ($row_Penjualan = mysql_fetch_assoc($rs_Penjualan)); ?>
+    } while ($row_Penjualan = mysqli_fetch_assoc($rs_Penjualan)); ?>
     <tr>
       <td colspan="3" align="right"><strong>TOTAL KESELURUHAN</strong></td>
       <td>

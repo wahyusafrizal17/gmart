@@ -11,23 +11,23 @@ if ((isset($_POST["MM_update"])) && ($_POST["MM_update"] == "form1")) {
   } elseif (empty($_POST['new']) || empty($_POST['konfirmasi'])) {
     danger('Oops!', 'Oops! Field tidak boleh kosong!');
   } else {
+    // Hash the password using PHP's password_hash
+    $hashedPassword = password_hash($_POST['konfirmasi'], PASSWORD_DEFAULT);
     $updateSQL = sprintf(
-      "UPDATE tb_admin SET Password=PASSWORD(%s)  WHERE id_admin=%s",
-      GetSQLValueString($_POST['konfirmasi'], "text"),
+      "UPDATE tb_admin SET Password=%s  WHERE id_admin=%s",
+      GetSQLValueString($hashedPassword, "text"),
       GetSQLValueString($_POST['id_admin'], "int")
     );
 
-    //mysql_select_db($database_koneksi, $koneksi);
-    $Result1 = mysql_query($updateSQL, $koneksi) or die(errorQuery(mysql_error()));
+    $Result1 = mysqli_query($koneksi, $updateSQL) or die(errorQuery(mysqli_error($koneksi)));
     sukses('Sukses!  Data Berhasil disimpan!');
   }
 }
 
-//mysql_select_db($database_koneksi, $koneksi);
 $query_rs_profile = "SELECT * FROM tb_admin WHERE id_admin = '" . $ID . "'";
-$rs_profile = mysql_query($query_rs_profile, $koneksi) or die(errorQuery(mysql_error()));
-$row_rs_profile = mysql_fetch_assoc($rs_profile);
-$totalRows_rs_profile = mysql_num_rows($rs_profile);
+$rs_profile = mysqli_query($koneksi, $query_rs_profile) or die(errorQuery(mysqli_error($koneksi)));
+$row_rs_profile = mysqli_fetch_assoc($rs_profile);
+$totalRows_rs_profile = mysqli_num_rows($rs_profile);
 ?>
 
 <?php

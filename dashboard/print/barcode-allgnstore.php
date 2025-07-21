@@ -3,9 +3,9 @@
 $query_barcode = "SELECT barcode.*, namaproduk, hargajual, hargadasar, kategori, qtybarcode 
                   FROM barcode 
                   LEFT JOIN produk ON kodeproduk = barcode.barcode";
-$barcode = mysql_query($query_barcode, $koneksi) or die(mysql_error());
-$row_barcode = mysql_fetch_assoc($barcode);
-$totalRows_barcode = mysql_num_rows($barcode);
+$barcode = mysqli_query($koneksi, $query_barcode) or die(mysqli_error($koneksi));
+$row_barcode = mysqli_fetch_assoc($barcode);
+$totalRows_barcode = mysqli_num_rows($barcode);
 ?>
 
 <!DOCTYPE html>
@@ -69,7 +69,7 @@ $totalRows_barcode = mysql_num_rows($barcode);
 
 <body onload="window.print()">
   <div class="label-container">
-    <?php do { ?>
+    <?php if ($row_barcode) { do { ?>
       <?php for ($i = 1; $i <= $row_barcode['qtybarcode']; $i++) { ?>
         <div class="label">
           <div class="name"><?= $row_barcode['namaproduk']; ?></div>
@@ -79,7 +79,7 @@ $totalRows_barcode = mysql_num_rows($barcode);
           <div class="price">Rp.<?= number_format($row_barcode['hargajual']); ?></div>
         </div>
       <?php } ?>
-    <?php } while ($row_barcode = mysql_fetch_assoc($barcode)); ?>
+    <?php } while ($row_barcode = mysqli_fetch_assoc($barcode)); } ?>
   </div>
 </body>
 </html>

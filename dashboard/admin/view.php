@@ -1,18 +1,17 @@
 <?php  
 require_once('izin.php');
-//mysql_select_db($database_koneksi, $koneksi);
 //$query_Admin = "SELECT id_admin, Login, nama_admin, gender_admin, address_admin, email_admin, hp_admin FROM tb_admin WHERE cabang_id = '".$cabang."' ORDER BY nama_admin ASC";
 $query_Admin = "SELECT id_admin, Login, nama_admin, gender_admin, address_admin, email_admin, hp_admin FROM tb_admin ORDER BY nama_admin ASC";
-$Admin = mysql_query($query_Admin, $koneksi) or die(errorQuery(mysql_error()));
-$row_Admin = mysql_fetch_assoc($Admin);
-$totalRows_Admin = mysql_num_rows($Admin);
+$Admin = mysqli_query($koneksi, $query_Admin) or die(errorQuery(mysqli_error($koneksi)));
+$row_Admin = mysqli_fetch_assoc($Admin);
+$totalRows_Admin = mysqli_num_rows($Admin);
 ?>
 <?php if (isset($_GET['sukses'])) { 
    		sukses('Data jenis paket berhasil tersimpan');
 } ?>
 
 <?php
-	titleTampil('DAFTAR ADMINISTRATOR','Administrator');
+titleTampil('DAFTAR ADMINISTRATOR','Administrator');
 ?> 
 <?php if ($totalRows_Admin > 0) { ?>
 <div class="table-responsive">
@@ -39,7 +38,7 @@ $totalRows_Admin = mysql_num_rows($Admin);
     </tr>
     <?php 
 	$no++;
-	} while ($row_Admin = mysql_fetch_assoc($Admin)); ?>
+	} while ($row_Admin = mysqli_fetch_assoc($Admin)); ?>
 </tbody>
 </table>
 </div>  

@@ -8,53 +8,48 @@ $colname_DetailFaktur = "-1";
 if (isset($_GET['faktur'])) {
   $colname_DetailFaktur = $_GET['faktur'];
 }
-mysql_select_db($database_koneksi, $koneksi);
 $query_DetailFaktur = sprintf("SELECT transaksidetail.id as idtemp, faktur, tanggal, kode, transaksidetail.nama as np, harga, hargadasar, qty, addby, stt, transaksidetail.periode, vw_login.Nama as kassa FROM transaksidetail 
 INNER JOIN faktur ON transaksidetail.faktur = faktur.kodefaktur
 LEFT JOIN vw_login ON addby = vw_login.ID WHERE faktur = %s", GetSQLValueString($colname_DetailFaktur, "text"));
-$DetailFaktur = mysql_query($query_DetailFaktur, $koneksi) or die(mysql_error());
-$row_DetailFaktur = mysql_fetch_assoc($DetailFaktur);
-$totalRows_DetailFaktur = mysql_num_rows($DetailFaktur);
+$DetailFaktur = mysqli_query($koneksi, $query_DetailFaktur) or die(mysqli_error($koneksi));
+$row_DetailFaktur = mysqli_fetch_assoc($DetailFaktur);
+$totalRows_DetailFaktur = mysqli_num_rows($DetailFaktur);
 
 if ((isset($_POST["MM_insert"])) && ($_POST["MM_insert"] == "form1")) {
 	//JIKA PILIHANNYA X MAKA SIMPAN DENGAN NILAI QTY AWAL
   	if ($_POST['qtyreturn'] == 'x') {
 		  $insertSQL = sprintf("INSERT INTO returnproduk (asalfaktur, produkreturn, qtyreturn, ketreturn, namareturn, hargadasar, hargajual, addedreturn, addbyreturn, periode, tglreturn) VALUES (%s, %s, %s, %s, %s, %s,%s, %s, %s, %s, %s)",
-						   GetSQLValueString($_POST['asalfaktur'], "text"),
-						   GetSQLValueString($_POST['produkreturn'], "text"),
-						   GetSQLValueString($_POST['awal'], "int"),
-						   GetSQLValueString($_POST['ketreturn'], "text"),
-						   GetSQLValueString($_POST['namareturn'], "text"),
-						   GetSQLValueString($_POST['hargadasar'], "double"),
-						   GetSQLValueString($_POST['hargajual'], "double"),
-						   GetSQLValueString(time(), "int"),
-						   GetSQLValueString($ID, "int"),
-						   GetSQLValueString($ta, "text"),
-						   GetSQLValueString($tglsekarang, "date"));
+					   GetSQLValueString($_POST['asalfaktur'], "text"),
+					   GetSQLValueString($_POST['produkreturn'], "text"),
+					   GetSQLValueString($_POST['awal'], "int"),
+					   GetSQLValueString($_POST['ketreturn'], "text"),
+					   GetSQLValueString($_POST['namareturn'], "text"),
+					   GetSQLValueString($_POST['hargadasar'], "double"),
+					   GetSQLValueString($_POST['hargajual'], "double"),
+					   GetSQLValueString(time(), "int"),
+					   GetSQLValueString($ID, "int"),
+					   GetSQLValueString($ta, "text"),
+					   GetSQLValueString($tglsekarang, "date"));
 	
-	  mysql_select_db($database_koneksi, $koneksi);
-	  $Result1 = mysql_query($insertSQL, $koneksi) or die(mysql_error());
+	  $Result1 = mysqli_query($koneksi, $insertSQL) or die(mysqli_error($koneksi));
 
 		$stok = sprintf("UPDATE produk SET stok = stok + %s WHERE kodeproduk = %s",
-							GetSQLValueString($_POST['awal'], "int"),
-							GetSQLValueString($_POST['produkreturn'], "text"));  
-												 
-		mysql_select_db($database_koneksi, $koneksi);
-		$hasilstok = mysql_query($stok, $koneksi) or die(mysql_error());
+						GetSQLValueString($_POST['awal'], "int"),
+						GetSQLValueString($_POST['produkreturn'], "text"));  
+									 
+		$hasilstok = mysqli_query($koneksi, $stok) or die(mysqli_error($koneksi));
 		
 		$kurangistok = sprintf("DELETE FROM transaksidetail WHERE id=%s",
 								GetSQLValueString($_POST['idtemp'], "int"));  
-													 
-		mysql_select_db($database_koneksi, $koneksi);
-		$hasilstok2 = mysql_query($kurangistok, $koneksi) or die(mysql_error());
+									 
+		$hasilstok2 = mysqli_query($koneksi, $kurangistok) or die(mysqli_error($koneksi));
 		
 			//UNTUK MENAMBAHKAN JUMLAH KEMBALIAN BERDASARKAN HARGA PRODUK YANG DIKEMBALI
 		$kembalian = sprintf("UPDATE faktur SET kembalian = kembalian + %s WHERE kodefaktur = %s",
-								GetSQLValueString($_POST['awal'] * $_POST['hargajual'], "double"),
-								GetSQLValueString($_POST['asalfaktur'], "text"));  
-													 
-		mysql_select_db($database_koneksi, $koneksi);
-		$hasilkembalian = mysql_query($kembalian, $koneksi) or die(mysql_error());
+							GetSQLValueString($_POST['awal'] * $_POST['hargajual'], "double"),
+							GetSQLValueString($_POST['asalfaktur'], "text"));  
+									 
+		$hasilkembalian = mysqli_query($koneksi, $kembalian) or die(mysqli_error($koneksi));
 		
 		refresh($actual_link);
 	}else{
@@ -71,31 +66,27 @@ if ((isset($_POST["MM_insert"])) && ($_POST["MM_insert"] == "form1")) {
                        GetSQLValueString($ID, "int"),
 					   GetSQLValueString($ta, "text"),
 					   GetSQLValueString($tglsekarang, "date"));
-  mysql_select_db($database_koneksi, $koneksi);
-  $Result1 = mysql_query($insertSQL, $koneksi) or die(mysql_error());
+  $Result1 = mysqli_query($koneksi, $insertSQL) or die(mysqli_error($koneksi));
     //UNTUK MENGEMBALIKAN STOK PRODUK
   	$stok = sprintf("UPDATE produk SET stok = stok + %s WHERE kodeproduk = %s",
-							GetSQLValueString($_POST['qtyreturn'], "int"),
-							GetSQLValueString($_POST['produkreturn'], "text"));  
-												 
-	mysql_select_db($database_koneksi, $koneksi);
-	$hasilstok = mysql_query($stok, $koneksi) or die(mysql_error());
+						GetSQLValueString($_POST['qtyreturn'], "int"),
+						GetSQLValueString($_POST['produkreturn'], "text"));  
+									 
+	$hasilstok = mysqli_query($koneksi, $stok) or die(mysqli_error($koneksi));
 	
 	//UNTUK MENGURANGI STOK DI TRANSAKSI DETAIL
 	$kurangistok = sprintf("UPDATE transaksidetail SET qty = qty - %s WHERE id = %s",
 							GetSQLValueString($_POST['qtyreturn'], "int"),
 							GetSQLValueString($_POST['idtemp'], "text"));  
-												 
-	mysql_select_db($database_koneksi, $koneksi);
-	$hasilstok2 = mysql_query($kurangistok, $koneksi) or die(mysql_error());
+									 
+	$hasilstok2 = mysqli_query($koneksi, $kurangistok) or die(mysqli_error($koneksi));
 	
 	//UNTUK MENAMBAHKAN JUMLAH KEMBALIAN BERDASARKAN HARGA PRODUK YANG DIKEMBALI
 	$kembalian = sprintf("UPDATE faktur SET kembalian = kembalian + %s WHERE kodefaktur = %s",
-							GetSQLValueString($_POST['qtyreturn'] * $_POST['hargajual'], "double"),
-							GetSQLValueString($_POST['asalfaktur'], "text"));  
-												 
-	mysql_select_db($database_koneksi, $koneksi);
-	$hasilkembalian = mysql_query($kembalian, $koneksi) or die(mysql_error());
+						GetSQLValueString($_POST['qtyreturn'] * $_POST['hargajual'], "double"),
+						GetSQLValueString($_POST['asalfaktur'], "text"));  
+									 
+	$hasilkembalian = mysqli_query($koneksi, $kembalian) or die(mysqli_error($koneksi));
 	 
   	refresh($actual_link);
   	 
@@ -110,15 +101,13 @@ if ((isset($_POST["MM_update"])) && ($_POST["MM_update"] == "form1")) {
                        GetSQLValueString($_POST['statusfaktur'], "text"),
                        GetSQLValueString($_POST['idfaktur'], "text"));
 
-  mysql_select_db($database_koneksi, $koneksi);
-  $Result1 = mysql_query($updateSQL, $koneksi) or die(mysql_error());
+  $Result1 = mysqli_query($koneksi, $updateSQL) or die(mysqli_error($koneksi));
 }
 
-mysql_select_db($database_koneksi, $koneksi);
 $query_Batalfaktur = sprintf("SELECT * FROM faktur WHERE kodefaktur = %s", GetSQLValueString($colname_DetailFaktur, "text"));
-$Batalfaktur = mysql_query($query_Batalfaktur, $koneksi) or die(mysql_error());
-$row_Batalfaktur = mysql_fetch_assoc($Batalfaktur);
-$totalRows_Batalfaktur = mysql_num_rows($Batalfaktur);
+$Batalfaktur = mysqli_query($koneksi, $query_Batalfaktur) or die(mysqli_error($koneksi));
+$row_Batalfaktur = mysqli_fetch_assoc($Batalfaktur);
+$totalRows_Batalfaktur = mysqli_num_rows($Batalfaktur);
 ?>
 <style type="text/css">
 <!--
@@ -210,7 +199,7 @@ $totalRows_Batalfaktur = mysql_num_rows($Batalfaktur);
     </tr>
     <?php 
 	$no++;
-	} while ($row_DetailFaktur = mysql_fetch_assoc($DetailFaktur)); ?>
+	} while ($row_DetailFaktur = mysqli_fetch_assoc($DetailFaktur)); ?>
     <tr>
       <td>&nbsp;</td>
       <td>&nbsp;</td>

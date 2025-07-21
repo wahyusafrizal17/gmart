@@ -7,19 +7,18 @@ if (isset($_GET['pageNum_Harga'])) {
 }
 $startRow_Harga = $pageNum_Harga * $maxRows_Harga;
 
-mysql_select_db($database_koneksi, $koneksi);
 $query_Harga = "SELECT `kodeproduk`, `hargajual`, `hargabaru`, `hargadasar`, if(hargabaru > hargajual, 'Naik','Turun') as Status, if(hargabaru > hargajual, hargabaru - hargajual,hargajual - hargabaru) as Selisih, `namaprodukOld`, `namaprodukBaru`, addby, tercatat, vw_login.Nama FROM harga 
 LEFT JOIN vw_login ON addby = ID 
 ORDER BY idharga DESC";
 $query_limit_Harga = sprintf("%s LIMIT %d, %d", $query_Harga, $startRow_Harga, $maxRows_Harga);
-$Harga = mysql_query($query_limit_Harga, $koneksi) or die(mysql_error());
-$row_Harga = mysql_fetch_assoc($Harga);
+$Harga = mysqli_query($koneksi, $query_limit_Harga) or die(mysqli_error($koneksi));
+$row_Harga = mysqli_fetch_assoc($Harga);
 
 if (isset($_GET['totalRows_Harga'])) {
   $totalRows_Harga = $_GET['totalRows_Harga'];
 } else {
-  $all_Harga = mysql_query($query_Harga);
-  $totalRows_Harga = mysql_num_rows($all_Harga);
+  $all_Harga = mysqli_query($koneksi, $query_Harga);
+  $totalRows_Harga = mysqli_num_rows($all_Harga);
 }
 $totalPages_Harga = ceil($totalRows_Harga/$maxRows_Harga)-1;
 ?> 
@@ -57,14 +56,14 @@ $totalPages_Harga = ceil($totalRows_Harga/$maxRows_Harga)-1;
       <td><div align="center" style="font-size:24px;"><?php echo number_format($row_Harga['hargabaru']); ?></div></td>
       <td>
       <?php if ($row_Harga['Status'] == 'Turun') { ?>
-	  	<div class="btn btn-danger btn-block" style="font-size:24px;"><span class="fa fa-arrow-down"></span> <?php echo $row_Harga['Selisih']; ?></div>
+  		<div class="btn btn-danger btn-block" style="font-size:24px;"><span class="fa fa-arrow-down"></span> <?php echo $row_Harga['Selisih']; ?></div>
       <?php }else{ ?>
         <div class="btn btn-success  btn-block" style="font-size:24px;"><span class="fa fa-arrow-up"></span> <?php echo $row_Harga['Selisih']; ?></div>
       <?php } ?>      </td>
       <td><?php echo $row_Harga['Nama']; ?><br />
       <?php echo $row_Harga['tercatat']; ?></td>
     </tr>
-    <?php } while ($row_Harga = mysql_fetch_assoc($Harga)); ?>
+    <?php } while ($row_Harga = mysqli_fetch_assoc($Harga)); ?>
     </tbody>
 </table> 
 <?php }else{

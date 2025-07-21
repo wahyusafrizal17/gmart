@@ -2,7 +2,7 @@
 session_start();
 require_once('../Connections/koneksi.php');
 if($_GET['faktur']==''){
-    $userId = mysql_fetch_array(mysql_query($koneksi,"select ID,Nama from vw_login where Login='".$_SESSION['MM_Username']."'"));
+    $userId = mysqli_fetch_array(mysqli_query($koneksi, "select ID,Nama from vw_login where Login='".$_SESSION['MM_Username']."'"));
 
     $insertSQL = sprintf("INSERT INTO faktur (tglfaktur, statusfaktur, kodefaktur, addedfaktur, addbyfaktur, adminfaktur, periode) VALUES (%s, %s, %s, %s, %s, %s, %s)",
     GetSQLValueString($koneksi, $today, "date"),
@@ -14,7 +14,7 @@ if($_GET['faktur']==''){
     GetSQLValueString($koneksi, $ta, "text"));
 
 //mysql_select_db($database_koneksi);
-$Result1 = mysql_query($koneksi, $insertSQL) or die(mysql_error());
+$Result1 = mysqli_query($koneksi, $insertSQL) or die(mysqli_error($koneksi));
 
 
 //mysql_select_db($database_koneksi);
@@ -23,9 +23,9 @@ $query_Faktur = sprintf("SELECT * FROM faktur WHERE tglfaktur = %s AND addbyfakt
     GetSQLValueString($koneksi, $userId['ID'], "int"),
     GetSQLValueString($koneksi, $ta, "text"),					   
     GetSQLValueString($koneksi, 'N', "text"));
-$Faktur = mysql_query($koneksi, $query_Faktur) or die(mysql_error());
-$row_Faktur = mysql_fetch_assoc($Faktur);
-$totalRows_Faktur = mysql_num_rows($Faktur);
+$Faktur = mysqli_query($koneksi, $query_Faktur) or die(mysqli_error($koneksi));
+$row_Faktur = mysqli_fetch_assoc($Faktur);
+$totalRows_Faktur = mysqli_num_rows($Faktur);
 //MEMBUAT NILAI FAKTUR
 $faktur = $row_Faktur['kodefaktur'];
 header("location:/dashboard/camera2.php?faktur=".$faktur);

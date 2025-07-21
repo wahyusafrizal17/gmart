@@ -16,15 +16,13 @@ if ((isset($_POST["MM_update"])) && ($_POST["MM_update"] == "form1")) {
                        GetSQLValueString($_POST['text3'], "text"),
                        GetSQLValueString($_POST['id_config'], "int"));
 
-  //mysql_select_db($database_koneksi, $koneksi);
-  $Result1 = mysql_query($updateSQL, $koneksi) or die(errorQuery(mysql_error()));
+  $Result1 = mysqli_query($koneksi, $updateSQL) or die(errorQuery(mysqli_error($koneksi)));
 }
 
-//mysql_select_db($database_koneksi, $koneksi);
 $query_rs_config = "SELECT * FROM tb_config WHERE id_config = 1";
-$rs_config = mysql_query($query_rs_config, $koneksi) or die(errorQuery(mysql_error()));
-$row_rs_config = mysql_fetch_assoc($rs_config);
-$totalRows_rs_config = mysql_num_rows($rs_config);
+$rs_config = mysqli_query($koneksi, $query_rs_config) or die(errorQuery(mysqli_error($koneksi)));
+$row_rs_config = mysqli_fetch_assoc($rs_config);
+$totalRows_rs_config = mysqli_num_rows($rs_config);
 ?>
 <div class="table-responsive">
 <form action="<?php echo $editFormAction; ?>" method="post" name="form1" id="form1">
