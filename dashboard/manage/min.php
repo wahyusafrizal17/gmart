@@ -11,14 +11,14 @@ if ((isset($_POST["MM_update"])) && ($_POST["MM_update"] == "form2")) {
 					   GetSQLValueString($_POST['ket'], "text"),
 					   GetSQLValueString($_POST['produkID'], "int"));
 
-  // mysql_select_db($database_koneksi, $koneksi); // Not needed in mysqli
+  // mysqli_select_db($database_koneksi, $koneksi); // Not needed in mysqli
   $Result1 = mysqli_query($koneksi, $updateSQL) or die(errorQuery(mysqli_error($koneksi)));
   
   //26 Desember open
   $activitySQL = sprintf("INSERT INTO activity_update (`url`, `oleh`) VALUES (%s, %s)",
   GetSQLValueString($actual_link, "text"),
   GetSQLValueString($ID, "int"));
-  // mysql_select_db($database_koneksi, $koneksi); // Not needed in mysqli
+  // mysqli_select_db($database_koneksi, $koneksi); // Not needed in mysqli
   $ResultSQL = mysqli_query($koneksi, $activitySQL) or die(errorQuery(mysqli_error($koneksi)));	
   //26 desember close
   
@@ -30,7 +30,7 @@ $colname_search = "-1";
 if (isset($_POST['search'])) {
   $colname_search = $_POST['search'];
 }
-// mysql_select_db($database_koneksi, $koneksi); // Not needed in mysqli
+// mysqli_select_db($database_koneksi, $koneksi); // Not needed in mysqli
 $query_search = sprintf("SELECT * FROM produk WHERE kodeproduk = %s OR namaproduk LIKE %s", GetSQLValueString($colname_search, "text"), GetSQLValueString("%" . $colname_search . "%", "text"));
 $search = mysqli_query($koneksi, $query_search) or die(mysqli_error($koneksi));
 $row_search = mysqli_fetch_assoc($search);

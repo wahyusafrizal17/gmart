@@ -85,11 +85,11 @@ if ($totalRows_Cat > 0) {
             <div class="col-md-3">
               <div align="left"><strong>Code Produk*</strong></div>
                <input type="text" name="kodeproduk" <?php
-              //                                       mysql_select_db($database_koneksi, $koneksi);
+              //                                       mysqli_select_db($database_koneksi, $koneksi);
               //                                       $cari = "SELECT MAX(kodeproduk) AS kode FROM produk";
-              //                                       $rs_cari = mysql_query($cari, $koneksi) or die(mysql_error());
-              //                                       $row_rs_cari = mysql_fetch_assoc($rs_cari);
-              //                                       $totalRows_rs_cari = mysql_num_rows($rs_cari);
+              //                                       $rs_cari = mysqli_query($cari, $koneksi) or die(mysqli_error());
+              //                                       $row_rs_cari = mysqli_fetch_assoc($rs_cari);
+              //                                       $totalRows_rs_cari = mysqli_num_rows($rs_cari);
 
               //                                       if ($row_rs_cari['kode'] == 0) {
               //                                         echo $tampilkan = 100001;

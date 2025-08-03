@@ -1,10 +1,10 @@
 <?php  
-mysql_select_db($database_koneksi, $koneksi);
+mysqli_select_db($database_koneksi, $koneksi);
 $query_Terlaris = sprintf("SELECT kode, nama, COUNT(kode) as Transaksi, SUM(harga * qty) as Harga, SUM(qty) as Jumlah FROM `transaksidetail` WHERE periode = %s GROUP BY nama ORDER BY Jumlah DESC",
  GetSQLValueString($ta, "text"));
-$Terlaris = mysql_query($query_Terlaris, $koneksi) or die(mysql_error());
-$row_Terlaris = mysql_fetch_assoc($Terlaris);
-$totalRows_Terlaris = mysql_num_rows($Terlaris);
+$Terlaris = mysqli_query($query_Terlaris, $koneksi) or die(mysqli_error());
+$row_Terlaris = mysqli_fetch_assoc($Terlaris);
+$totalRows_Terlaris = mysqli_num_rows($Terlaris);
 ?>
 <style type="text/css">
 <!--
@@ -35,7 +35,7 @@ $totalRows_Terlaris = mysql_num_rows($Terlaris);
       <td><?php echo $row_Terlaris['Jumlah']; ?> Item</td>
       <td>Rp. <?php echo $row_Terlaris['Harga']; ?></td>
     </tr>
-    <?php } while ($row_Terlaris = mysql_fetch_assoc($Terlaris)); ?>
+    <?php } while ($row_Terlaris = mysqli_fetch_assoc($Terlaris)); ?>
     </tbody>
 </table> 
 <hr>

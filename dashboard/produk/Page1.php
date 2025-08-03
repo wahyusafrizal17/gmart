@@ -13,7 +13,7 @@ $currentPage = $_SERVER["PHP_SELF"];
 	$colname = "-1";
 	if (isset($_GET['cari'])) {
 		 $colname = $_GET['cari'];
-		 //mysql_select_db($database_koneksi, $koneksi);
+		 //mysqli_select_db($database_koneksi, $koneksi);
 		$query_Produk = sprintf("SELECT `idproduk`, `namaproduk`, `kategori`, `deskproduk`, `hargadasar`, `hargajual`, `kodeproduk`, `minProduk`, `satuan`, `stok`, `statusproduk`, `addedproduk`, `updatedproduk`, `addbyproduk`, `alertproduk`, `namakategori`, vw_login.Nama FROM produk  LEFT JOIN kategori ON produk.kategori = kategori.idkategori 
 		LEFT JOIN vw_login ON addbyproduk = ID 
 		WHERE namaproduk LIKE %s OR namakategori = %s OR kodeproduk = %s
@@ -22,7 +22,7 @@ $currentPage = $_SERVER["PHP_SELF"];
 		GetSQLValueString($colname, "text"),
 		GetSQLValueString($colname, "text"));
 	}else{
-	//mysql_select_db($database_koneksi, $koneksi);
+	//mysqli_select_db($database_koneksi, $koneksi);
 		$query_Produk = "SELECT `idproduk`, `namaproduk`, `kategori`, `deskproduk`, `hargadasar`, `hargajual`, `kodeproduk`, `minProduk`, `satuan`, `stok`, `statusproduk`, `addedproduk`, `updatedproduk`, `addbyproduk`, `alertproduk`, `namakategori`, vw_login.Nama FROM produk  LEFT JOIN kategori ON produk.kategori = kategori.idkategori 
 		LEFT JOIN vw_login ON addbyproduk = ID ORDER BY  produk.addedproduk DESC";
 	}	

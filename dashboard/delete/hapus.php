@@ -17,11 +17,11 @@ if (!empty($_GET['img']) || file_exists("photos/".$_GET['img'])) {
   $activitySQL = sprintf("INSERT INTO activity_delete (`url`, `oleh`) VALUES (%s, %s)",
                        GetSQLValueString($actual_link, "text"),
                        GetSQLValueString($ID, "int"));
-	mysql_select_db($database_koneksi, $koneksi);
-  $Result1 = mysql_query($activitySQL, $koneksi) or die(errorQuery(mysql_error()));	
+	mysqli_select_db($database_koneksi, $koneksi);
+  $Result1 = mysqli_query($activitySQL, $koneksi) or die(errorQuery(mysqli_error()));	
   //26 desember close
-  //mysql_select_db($database_koneksi, $koneksi);
-  $Result1 = mysql_query($deleteSQL, $koneksi) or die(errorQuery(mysql_error()));
+  //mysqli_select_db($database_koneksi, $koneksi);
+  $Result1 = mysqli_query($deleteSQL, $koneksi) or die(errorQuery(mysqli_error()));
   
   pesanlink('Photo berhasil dihapus!','?page=insert/photo');
   }
@@ -34,8 +34,8 @@ if ((isset($_GET['id_admin'])) && ($_GET['id_admin'] != "")) {
   $deleteSQL = sprintf("DELETE FROM tb_admin WHERE id_admin=%s",
                        GetSQLValueString($_GET['id_admin'], "int"));
 
-  //mysql_select_db($database_koneksi, $koneksi);
-  $Result1 = mysql_query($deleteSQL, $koneksi) or die(errorQuery(mysql_error()));
+  //mysqli_select_db($database_koneksi, $koneksi);
+  $Result1 = mysqli_query($deleteSQL, $koneksi) or die(errorQuery(mysqli_error()));
   
   pesanlink('Admin berhasil dihapus!','?page=insert/admin');
  

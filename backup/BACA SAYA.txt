@@ -1,5 +1,0 @@
-PENTING!!
-Ubah Nama Pimpinan -> koneksi.php
-Nama POS -> tb_config
-Catatan Alamat : Text1
-Catatan Kaki Kwitansi : Text2

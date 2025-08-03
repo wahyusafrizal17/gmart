@@ -131,7 +131,7 @@
                                 </tr>
                             <?php
                                 $no++;
-                            } while ($row_Penjualan = mysql_fetch_assoc($rs_Penjualan)); ?>
+                            } while ($row_Penjualan = mysqli_fetch_assoc($rs_Penjualan)); ?>
                         </table>
                     </div>
                 </div>

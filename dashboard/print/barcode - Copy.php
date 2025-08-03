@@ -3,9 +3,9 @@
 if (!function_exists("GetSQLValueString")) {
   function GetSQLValueString($theValue, $theType, $theDefinedValue = "", $theNotDefinedValue = "")
   {
-    $theValue = get_magic_quotes_gpc() ? stripslashes($theValue) : $theValue;
+    $theValue = false ? stripslashes($theValue) : $theValue;
 
-    $theValue = function_exists("mysql_real_escape_string") ? mysql_real_escape_string($theValue) : mysql_escape_string($theValue);
+    $theValue = function_exists("mysqli_real_escape_string") ? mysqli_real_escape_string($theValue) : addslashes($theValue);
 
     switch ($theType) {
       case "text":
@@ -33,11 +33,11 @@ $colname_barcode = "-1";
 if (isset($_GET['barcode'])) {
   $colname_barcode = $_GET['barcode'];
 }
-mysql_select_db($database_koneksi, $koneksi);
+mysqli_select_db($database_koneksi, $koneksi);
 $query_barcode = sprintf("SELECT barcode.*, namaproduk, hargajual, kategori FROM barcode LEFT JOIN produk ON kodeproduk = barcode WHERE barcode = %s", GetSQLValueString($colname_barcode, "text"));
-$barcode = mysql_query($query_barcode, $koneksi) or die(mysql_error());
-$row_barcode = mysql_fetch_assoc($barcode);
-$totalRows_barcode = mysql_num_rows($barcode);
+$barcode = mysqli_query($query_barcode, $koneksi) or die(mysqli_error());
+$row_barcode = mysqli_fetch_assoc($barcode);
+$totalRows_barcode = mysqli_num_rows($barcode);
 
 $qty = $row_barcode['qtybarcode'];
 
@@ -103,7 +103,7 @@ $qty = $row_barcode['qtybarcode'];
         </div>
       </div>
     <?php } ?>
-  <?php } while ($row_barcode = mysql_fetch_assoc($barcode)); ?>
+  <?php } while ($row_barcode = mysqli_fetch_assoc($barcode)); ?>
 
 
 </body>

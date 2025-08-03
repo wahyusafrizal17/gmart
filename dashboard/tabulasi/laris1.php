@@ -11,14 +11,14 @@ $currentPage = $_SERVER["PHP_SELF"];
 	$colname = "-1";
 	if (isset($_GET['carilaris'])) {
 		 $colname = $_GET['carilaris'];
-		 //mysql_select_db($database_koneksi, $koneksi);
+		 //mysqli_select_db($database_koneksi, $koneksi);
 		$query_Terlaris = sprintf("SELECT nama, kode, count(nama) as JumlahProduk, sum(qty) as Jumlah FROM `transaksidetail` 
         WHERE nama LIKE %s OR kode = %s AND periode = %s GROUP BY nama ORDER BY JumlahProduk DESC",
         GetSQLValueString("%". $colname ."%", "text"),
         GetSQLValueString($colname, "text"),
         GetSQLValueString($ta, "text"));
 	}else{
-	//mysql_select_db($database_koneksi, $koneksi);
+	//mysqli_select_db($database_koneksi, $koneksi);
 		$query_Terlaris = sprintf("SELECT nama, kode, count(nama) as JumlahProduk, sum(qty) as Jumlah FROM `transaksidetail` WHERE periode = %s GROUP BY nama ORDER BY JumlahProduk DESC",
         GetSQLValueString($ta, "text"));
 	}	

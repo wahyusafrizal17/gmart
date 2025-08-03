@@ -1,6 +1,6 @@
 <?php  
 require_once('izin.php');
-//mysql_select_db($database_koneksi, $koneksi);
+//mysqli_select_db($database_koneksi, $koneksi);
 //$query_Admin = "SELECT id_admin, Login, nama_admin, gender_admin, address_admin, email_admin, hp_admin FROM tb_admin WHERE cabang_id = '".$cabang."' ORDER BY nama_admin ASC";
 $query_Member = "SELECT * FROM member ORDER BY point DESC";
 $Member = mysqli_query($koneksi, $query_Member) or die(errorQuery(mysqli_error($koneksi)));

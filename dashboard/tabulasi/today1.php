@@ -13,7 +13,7 @@ $tgl1 = "-1";
 $tgl2 = "-1";
 if (isset($_GET['cari'])) {
 	$colname = $_GET['cari'];
-	//mysql_select_db($database_koneksi, $koneksi);
+	//mysqli_select_db($database_koneksi, $koneksi);
 	$query_Penjualan = sprintf(
 		"SELECT kodefaktur, SUM(qty) as JumlahItem, SUM(harga * qty) as totalbelanja, tglfaktur, addby, statusfaktur, vw_login.Nama FROM `faktur` 
 		LEFT JOIN transaksitemp ON faktur = kodefaktur
@@ -25,7 +25,7 @@ if (isset($_GET['cari'])) {
 } elseif (isset($_GET['tgl1']) && isset($_GET['tgl2'])) {
 	$tgl1 = $_GET['tgl1'];
 	$tgl2 = $_GET['tgl2'];
-	//mysql_select_db($database_koneksi, $koneksi);
+	//mysqli_select_db($database_koneksi, $koneksi);
 	$query_Penjualan = sprintf(
 		"SELECT kodefaktur, SUM(qty) as JumlahItem, SUM(harga * qty) as totalbelanja, tglfaktur, addby, statusfaktur, vw_login.Nama FROM `faktur` 
 		LEFT JOIN transaksitemp ON faktur = kodefaktur
@@ -36,7 +36,7 @@ if (isset($_GET['cari'])) {
 		GetSQLValueString($tgl2, "date")
 	);
 } else {
-	//mysql_select_db($database_koneksi, $koneksi);
+	//mysqli_select_db($database_koneksi, $koneksi);
 	$query_Penjualan = sprintf(
 		"SELECT kodefaktur, SUM(qty) as JumlahItem, SUM(harga * qty) as totalbelanja, tglfaktur, addby, statusfaktur, vw_login.Nama FROM `faktur` 
 		LEFT JOIN transaksitemp ON faktur = kodefaktur 

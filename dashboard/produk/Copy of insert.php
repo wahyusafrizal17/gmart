@@ -8,22 +8,22 @@ $colname_Cat  = "-1";
 if (isset($_GET['cat'])) {
   $colname_Cat  = $_GET['cat'];
 }
-mysql_select_db($database_koneksi, $koneksi);
+mysqli_select_db($database_koneksi, $koneksi);
 $query_Cat = sprintf("SELECT * FROM kategori WHERE idkategori = %s", GetSQLValueString($colname_Cat, "int"));
-$Cat = mysql_query($query_Cat, $koneksi) or die(errorQuery(mysql_error()));
-$row_Cat = mysql_fetch_assoc($Cat);
-$totalRows_Cat = mysql_num_rows($Cat);
+$Cat = mysqli_query($query_Cat, $koneksi) or die(errorQuery(mysqli_error()));
+$row_Cat = mysqli_fetch_assoc($Cat);
+$totalRows_Cat = mysqli_num_rows($Cat);
 
 if ($totalRows_Cat > 0) {
 	 
 	if ((isset($_POST["MM_insert"])) && ($_POST["MM_insert"] == "form1")) {
 	
 	//CEK KODE BARANG 
-		  mysql_select_db($database_koneksi, $koneksi);
+		  mysqli_select_db($database_koneksi, $koneksi);
  		  $sql = sprintf("SELECT kodeproduk FROM produk WHERE kodeproduk = %s", 
 		  				GetSQLValueString($_POST['kodeproduk'], "text"));
-		  $cek = mysql_query($sql, $koneksi) or die(mysql_error());
-		  $totalRows_cek = mysql_num_rows($cek);
+		  $cek = mysqli_query($sql, $koneksi) or die(mysqli_error());
+		  $totalRows_cek = mysqli_num_rows($cek);
 		  
 		  if ($totalRows_cek == 0) {
 				  $insertSQL = sprintf("INSERT INTO `produk`(`kodeproduk`,`namaproduk`, `kategori`, `deskproduk`, `hargadasar`, `hargajual`, `satuan`, `stok`,`addedproduk`, `addbyproduk`) 
@@ -39,8 +39,8 @@ if ($totalRows_Cat > 0) {
 									   GetSQLValueString(time() , "int"),
 									   GetSQLValueString($ID, "int"));
 				
-				  mysql_select_db($database_koneksi, $koneksi);
-				  $Result1 = mysql_query($insertSQL, $koneksi) or die(errorQuery(mysql_error()));
+				  mysqli_select_db($database_koneksi, $koneksi);
+				  $Result1 = mysqli_query($insertSQL, $koneksi) or die(errorQuery(mysqli_error()));
 				  
 				  if ($Result1) {
 					refresh('?page=produk/view&sukses');
@@ -77,11 +77,11 @@ if ($totalRows_Cat > 0) {
           <div class="col-md-3">
           <div align="left"><strong>Code Produk*</strong></div>
           <input type="text" name="kodeproduk"  <?php
-			mysql_select_db($database_koneksi, $koneksi);
+			mysqli_select_db($database_koneksi, $koneksi);
 			$cari = "SELECT MAX(kodeproduk) AS kode FROM produk";
-			$rs_cari = mysql_query($cari, $koneksi) or die(mysql_error());
-			$row_rs_cari = mysql_fetch_assoc($rs_cari);
-			$totalRows_rs_cari = mysql_num_rows($rs_cari);
+			$rs_cari = mysqli_query($cari, $koneksi) or die(mysqli_error());
+			$row_rs_cari = mysqli_fetch_assoc($rs_cari);
+			$totalRows_rs_cari = mysqli_num_rows($rs_cari);
 			
 			if ($row_rs_cari['kode'] == 0) {
 				echo $tampilkan = 100001;

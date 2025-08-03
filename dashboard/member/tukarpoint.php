@@ -64,7 +64,7 @@ if (isset($_POST['MM_insert']) && $_POST['MM_insert'] == 'form1') {
 
 <?php
 //require_once('izin.php');
-//mysql_select_db($database_koneksi, $koneksi);
+//mysqli_select_db($database_koneksi, $koneksi);
 $query_tukarproduk = "SELECT * FROM tukarproduk a,produk b WHERE a.produk=b.idproduk";
 $tukarproduk = mysqli_query($koneksi, $query_tukarproduk) or die(errorQuery(mysqli_error($koneksi)));
 $row_tukarproduk = mysqli_fetch_assoc($tukarproduk);

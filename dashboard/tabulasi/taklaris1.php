@@ -11,14 +11,14 @@ $currentPage = $_SERVER["PHP_SELF"];
 	$colname = "-1";
 	if (isset($_GET['cari'])) {
 		 $colname = $_GET['cari'];
-		 //mysql_select_db($database_koneksi, $koneksi);
+		 //mysqli_select_db($database_koneksi, $koneksi);
 		$query_TakTerlaris = sprintf("SELECT idproduk, kodeproduk, namaproduk, stok, produk.hargadasar, hargajual, qty, transaksidetail.periode FROM `transaksidetail` RIGHT JOIN produk ON kode = kodeproduk 
         WHERE namaproduk LIKE %s OR kodeproduk = %s AND qty is NULL 
          GROUP BY namaproduk ORDER BY stok DESC",
         GetSQLValueString("%". $colname ."%", "text"),
         GetSQLValueString($colname, "text"));
 	}else{
-	//mysql_select_db($database_koneksi, $koneksi);
+	//mysqli_select_db($database_koneksi, $koneksi);
 		$query_TakTerlaris = "SELECT idproduk, kodeproduk, namaproduk, stok, produk.hargadasar, hargajual, qty, transaksidetail.periode FROM `transaksidetail` RIGHT JOIN produk ON kode = kodeproduk WHERE qty is NULL";
 	}	
 	$query_limit_TakTerlaris = sprintf("%s LIMIT %d, %d", $query_TakTerlaris, $startRow_TakTerlaris, $maxRows_TakTerlaris);

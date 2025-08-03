@@ -13,7 +13,7 @@ $currentPage = $_SERVER["PHP_SELF"];
 	$colname = "-1";
 	if (isset($_GET['cari'])) {
 		 $colname = $_GET['cari'];
-		 //mysql_select_db($database_koneksi, $koneksi);
+		 //mysqli_select_db($database_koneksi, $koneksi);
 		$query_Produk = sprintf("SELECT * FROM tukarproduk a, produk b, kategori c WHERE a.produk = b.idproduk AND b.kategori = c.idkategori
 		AND b.namaproduk LIKE %s OR namakategori = %s OR kodeproduk = %s
 		ORDER BY a.produk DESC", 
@@ -21,18 +21,18 @@ $currentPage = $_SERVER["PHP_SELF"];
 		GetSQLValueString($colname, "text"),
 		GetSQLValueString($colname, "text"));
 	}else{
-	//mysql_select_db($database_koneksi, $koneksi);
+	//mysqli_select_db($database_koneksi, $koneksi);
 		$query_Produk = "SELECT * FROM tukarproduk a, produk b, kategori c WHERE a.produk = b.idproduk AND b.kategori = c.idkategori ORDER BY a.produk DESC";
 	}	
 	$query_limit_Produk = sprintf("%s LIMIT %d, %d", $query_Produk, $startRow_Produk, $maxRows_Produk);
-	$rs_Produk = mysql_query($query_limit_Produk, $koneksi) or die(mysql_error());
-	$row_Produk = mysql_fetch_assoc($rs_Produk);
+	$rs_Produk = mysqli_query($query_limit_Produk, $koneksi) or die(mysqli_error());
+	$row_Produk = mysqli_fetch_assoc($rs_Produk);
 	
 	if (isset($_GET['totalRows_Produk'])) {
 	  $totalRows_Produk = $_GET['totalRows_Produk'];
 	} else {
-	  $all_Produk = mysql_query($query_Produk, $koneksi);
-	  $totalRows_Produk = mysql_num_rows($all_Produk);
+	  $all_Produk = mysqli_query($query_Produk, $koneksi);
+	  $totalRows_Produk = mysqli_num_rows($all_Produk);
 	}
 	$totalPages_Produk = ceil($totalRows_Produk/$maxRows_Produk)-1;
 	

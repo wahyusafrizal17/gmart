@@ -4,11 +4,11 @@ $colname_rs_login = "-1";
 if (isset($_SESSION['MM_Username'])) {
   $colname_rs_login = $_SESSION['MM_Username'];
 }
-//mysql_select_db($database_koneksi, $koneksi);
+//mysqli_select_db($database_koneksi, $koneksi);
 $query_rs_login = sprintf("SELECT * FROM vw_login WHERE Login = %s", GetSQLValueString($colname_rs_login, "text"));
-$rs_login = mysql_query($query_rs_login, $koneksi) or die(errorQuery(mysql_error()));
-$row_rs_login = mysql_fetch_assoc($rs_login);
-$totalRows_rs_login = mysql_num_rows($rs_login);
+$rs_login = mysqli_query($query_rs_login, $koneksi) or die(errorQuery(mysqli_error()));
+$row_rs_login = mysqli_fetch_assoc($rs_login);
+$totalRows_rs_login = mysqli_num_rows($rs_login);
 
 $ID = $row_rs_login['ID'];
 $login = $row_rs_login['Login'];
@@ -17,22 +17,22 @@ $level = $row_rs_login['Level'];
 /*
 //----------- 26 desember - cabang ---
 $cabang = $row_rs_login['Cabank'];
-//mysql_select_db($database_koneksi, $koneksi);
+//mysqli_select_db($database_koneksi, $koneksi);
 $query_rs_cab = "SELECT * FROM tb_cabang WHERE id_cabang = '".$cabang."' LIMIT 1";
-$rs_cab = mysql_query($query_rs_cab, $koneksi) or die(errorQuery(mysql_error()));
-$row_rs_cab = mysql_fetch_assoc($rs_cab);
-$totalRows_rs_cab = mysql_num_rows($rs_cab);
+$rs_cab = mysqli_query($query_rs_cab, $koneksi) or die(errorQuery(mysqli_error()));
+$row_rs_cab = mysqli_fetch_assoc($rs_cab);
+$totalRows_rs_cab = mysqli_num_rows($rs_cab);
 
 $judulcab = $row_rs_cab['judul_cabang'];
 $alamatcab = $row_rs_cab['alamat_cabang'];
 $notelpcab = $row_rs_cab['notelp_cabang'];
 */ 
 //MENAMPILKAN MENU
-//mysql_select_db($database_koneksi, $koneksi);
+//mysqli_select_db($database_koneksi, $koneksi);
 $query_rs_menu = "SELECT * FROM tb_menu WHERE level_menu LIKE '%".$level."%' ORDER BY nourut_menu ASC";
-$rs_menu = mysql_query($query_rs_menu, $koneksi) or die(errorQuery(mysql_error()));
-$row_rs_menu = mysql_fetch_assoc($rs_menu);
-$totalRows_rs_menu = mysql_num_rows($rs_menu);
+$rs_menu = mysqli_query($query_rs_menu, $koneksi) or die(errorQuery(mysqli_error()));
+$row_rs_menu = mysqli_fetch_assoc($rs_menu);
+$totalRows_rs_menu = mysqli_num_rows($rs_menu);
 ?>
 <!DOCTYPE html>
 <head>

@@ -6,7 +6,7 @@ if (isset($_GET['kode'])) {
   $kodeproduk = $_GET['kode'];
 }
 
-//mysql_select_db($database_koneksi, $koneksi);
+//mysqli_select_db($database_koneksi, $koneksi);
 $query_Harga = sprintf(
   "SELECT `kodeproduk`, `hargajual`, `hargabaru`, `hargadasar`, if(hargabaru > hargajual, 'Naik','Turun') as Status, if(hargabaru > hargajual, hargabaru - hargajual,hargajual - hargabaru) as Selisih, `namaprodukOld`, `namaprodukBaru`, addby, tercatat FROM harga WHERE kodeproduk = %s ORDER BY idharga DESC",
   GetSQLValueString($kodeproduk, "text")

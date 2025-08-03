@@ -37,9 +37,9 @@ if (isset($_GET["tgl1"]) || isset($_GET["tgl2"]) || isset($_GET["status"])) {
 		GetSQLValueString($status, "text"));
 	}
 	
-	$Paket = mysql_query($query_Paket, $koneksi) or die(errorQuery(mysql_error()));
-	$row_Paket = mysql_fetch_assoc($Paket);
-	$totalRows_Paket = mysql_num_rows($Paket);	
+	$Paket = mysqli_query($query_Paket, $koneksi) or die(errorQuery(mysqli_error()));
+	$row_Paket = mysqli_fetch_assoc($Paket);
+	$totalRows_Paket = mysqli_num_rows($Paket);	
 }	
 
 ?>
@@ -134,7 +134,7 @@ if (isset($_GET["tgl1"]) || isset($_GET["tgl2"]) || isset($_GET["status"])) {
       </tr>
     <?php 
 	$no++;
-	} while ($row_Paket = mysql_fetch_assoc($Paket)); ?>
+	} while ($row_Paket = mysqli_fetch_assoc($Paket)); ?>
     </tbody>
 </table> 
 </div> 

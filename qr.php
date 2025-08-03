@@ -4,7 +4,7 @@ $colname_rs_print = "-1";
 if (isset($_GET['id'])) {
   $colname_rs_print = $_GET['id'];
 }
-//mysql_select_db($database_koneksi, $koneksi);
+//mysqli_select_db($database_koneksi, $koneksi);
 $query_rs_print = sprintf("SELECT * FROM tb_paket INNER JOIN tb_pengirim ON pengirim_paket = id_pengirim WHERE kode_paket = %s", GetSQLValueString($colname_rs_print, "text"));
 $rs_print = mysqli_query($koneksi, $query_rs_print) or die('Query failed: ' . mysqli_error($koneksi));
 $row_rs_print = mysqli_fetch_assoc($rs_print);

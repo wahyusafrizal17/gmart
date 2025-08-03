@@ -13,7 +13,7 @@ $tgl1 = "-1";
 $tgl2 = "-1";
 if (isset($_GET['cari'])) {
     $colname = $_GET['cari'];
-    //mysql_select_db($database_koneksi, $koneksi);
+    //mysqli_select_db($database_koneksi, $koneksi);
     $query_Penjualan = sprintf(
         "SELECT * FROM pengeluaran
 		WHERE judul LIKE %s ORDER BY id DESC",
@@ -28,7 +28,7 @@ if (isset($_GET['cari'])) {
 } elseif (isset($_GET['tgl1']) && isset($_GET['tgl2'])) {
     $tgl1 = $_GET['tgl1'];
     $tgl2 = $_GET['tgl2'];
-    //mysql_select_db($database_koneksi, $koneksi);
+    //mysqli_select_db($database_koneksi, $koneksi);
     $query_Penjualan = sprintf(
         "SELECT * FROM pengeluaran
 		WHERE tgl BETWEEN %s AND %s  ORDER BY id DESC",
@@ -43,7 +43,7 @@ if (isset($_GET['cari'])) {
         GetSQLValueString($tgl2, "date")
     );
 } else {
-    //mysql_select_db($database_koneksi, $koneksi);
+    //mysqli_select_db($database_koneksi, $koneksi);
     $query_Penjualan = sprintf(
         "SELECT * FROM pengeluaran WHERE tgl BETWEEN %s AND %s  ORDER BY id DESC",
         GetSQLValueString($tglsekarang, "date"),
@@ -57,17 +57,17 @@ if (isset($_GET['cari'])) {
     );
 }
 $query_limit_Penjualan = sprintf("%s LIMIT %d, %d", $query_Penjualan, $startRow_Penjualan, $maxRows_Penjualan);
-$rs_Penjualan = mysql_query($query_limit_Penjualan, $koneksi) or die(mysql_error());
+$rs_Penjualan = mysqli_query($query_limit_Penjualan, $koneksi) or die(mysqli_error());
 
-$row_Penjualan = mysql_fetch_assoc($rs_Penjualan);
-$rs_total = mysql_query($query_total, $koneksi) or die(mysql_error());
-$row_Total = mysql_fetch_assoc($rs_total);
+$row_Penjualan = mysqli_fetch_assoc($rs_Penjualan);
+$rs_total = mysqli_query($query_total, $koneksi) or die(mysqli_error());
+$row_Total = mysqli_fetch_assoc($rs_total);
 
 if (isset($_GET['totalRows_Penjualan'])) {
     $totalRows_Penjualan = $_GET['totalRows_Penjualan'];
 } else {
-    $all_Penjualan = mysql_query($query_Penjualan, $koneksi);
-    $totalRows_Penjualan = mysql_num_rows($all_Penjualan);
+    $all_Penjualan = mysqli_query($query_Penjualan, $koneksi);
+    $totalRows_Penjualan = mysqli_num_rows($all_Penjualan);
 }
 $totalPages_Penjualan = ceil($totalRows_Penjualan / $maxRows_Penjualan) - 1;
 

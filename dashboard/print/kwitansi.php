@@ -5,12 +5,12 @@ $colname_Penjualan = "-1";
 if (isset($_GET['faktur'])) {
   $colname_Penjualan = $_GET['faktur'];
 }
-mysql_select_db($database_koneksi, $koneksi);
+mysqli_select_db($database_koneksi, $koneksi);
 	$query_Penjualan = sprintf("SELECT kode, nama, harga, qty FROM transaksitemp WHERE faktur = %s", 
 	GetSQLValueString($colname_Penjualan, "text"));
-$Penjualan = mysql_query($query_Penjualan, $koneksi) or die(mysql_error());
-$row_PenjualanDetail = mysql_fetch_assoc($Penjualan);
-$totalRows_Penjualan = mysql_num_rows($Penjualan);
+$Penjualan = mysqli_query($query_Penjualan, $koneksi) or die(mysqli_error());
+$row_PenjualanDetail = mysqli_fetch_assoc($Penjualan);
+$totalRows_Penjualan = mysqli_num_rows($Penjualan);
 
 
 ?> 
@@ -122,7 +122,7 @@ $totalRows_Penjualan = mysql_num_rows($Penjualan);
 	<?php
 	$total += $subtotal;
 	$no++;
-	} while ($row_Penjualan = mysql_fetch_assoc($Penjualan)); 
+	} while ($row_Penjualan = mysqli_fetch_assoc($Penjualan)); 
 	?>      
       <tr>
         <td><div align="right" class="style13">TOTAL BAYAR </div></td>

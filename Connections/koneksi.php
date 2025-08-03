@@ -280,7 +280,7 @@ if (!function_exists("GetSQLValueString")) {
 }
 
 //MENAMPILKAN DEFAULT WEB
-//mysql_select_db($database_koneksi, $koneksi);
+//mysqli_select_db($database_koneksi, $koneksi);
 $query_rs_config = "SELECT * FROM tb_config";
 $rs_config = mysqli_query($koneksi, $query_rs_config) or die(errorQuery(mysqli_error($koneksi)));
 $row_rs_config = mysqli_fetch_assoc($rs_config);
@@ -295,7 +295,7 @@ $text2 = $row_rs_config['text2'];
 $text3 = $row_rs_config['text3'];
 
 //TAHUN PERIODE AKADEMIK
-//mysql_select_db($database_koneksi, $koneksi);
+//mysqli_select_db($database_koneksi, $koneksi);
 $query_rs_tap = "SELECT * FROM tb_ta WHERE id_ta = 1";
 $rs_tap = mysqli_query($koneksi, $query_rs_tap) or die(errorQuery(mysqli_error($koneksi)));
 $row_rs_tap = mysqli_fetch_assoc($rs_tap);

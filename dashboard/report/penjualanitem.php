@@ -14,7 +14,7 @@ if (isset($_GET['jenisbayar']) && ($_GET['jenisbayar'] != "") && isset($_GET['ka
     $tgl1 = $_GET['tgl1'];
     $tgl2 = $_GET['tgl2'];
     $kat = $_GET['kategori'];
-    //mysql_select_db($database_koneksi, $koneksi);
+    //mysqli_select_db($database_koneksi, $koneksi);
     $query_Penjualan = sprintf(
       "SELECT a.idfaktur, a.tglfaktur, a.kodefaktur, a.addedfaktur, a.addbyfaktur, a.periode, a.datetimefaktur, a.kembalian, a.potongan, a.totalbayar, SUM(b.harga*b.qty) AS totalbelanja, a.statusfaktur, a.qtyprint, a.printby, a.adminfaktur, a.namapelanggan, a.nohp FROM faktur a,transaksidetail b,produk c
 		WHERE (a.tglfaktur BETWEEN %s AND %s) AND a.statusfaktur = 'Y' AND  a.addbyfaktur = %s AND  a.periode = %s AND a.kodefaktur=b.faktur AND b.nama=c.namaproduk AND c.kategori= %s GROUP BY a.kodefaktur ORDER BY a.idfaktur DESC",
@@ -47,7 +47,7 @@ if (isset($_GET['jenisbayar']) && ($_GET['jenisbayar'] != "") && isset($_GET['ka
     $tgl1 = $_GET['tgl1'];
     $tgl2 = $_GET['tgl2'];
     $kat = $_GET['kategori'];
-    //mysql_select_db($database_koneksi, $koneksi);
+    //mysqli_select_db($database_koneksi, $koneksi);
     $query_Penjualan = sprintf(
       "SELECT a.idfaktur, a.tglfaktur, a.kodefaktur, a.addedfaktur, a.addbyfaktur, a.periode, a.datetimefaktur, a.kembalian, a.potongan, a.totalbayar, SUM(b.harga*b.qty) AS totalbelanja, a.statusfaktur, a.qtyprint, a.printby, a.adminfaktur, a.namapelanggan,a.nohp FROM faktur a,transaksidetail b,produk c
 		WHERE a.jenisbayar= %s  AND  a.addbyfaktur = %s AND (a.tglfaktur BETWEEN %s AND %s) AND a.statusfaktur = 'Y' AND  a.periode = %s AND a.kodefaktur=b.faktur AND b.nama=c.namaproduk AND c.kategori= %s GROUP BY a.kodefaktur ORDER BY a.idfaktur DESC",
@@ -85,7 +85,7 @@ if (isset($_GET['jenisbayar']) && ($_GET['jenisbayar'] != "") && isset($_GET['ka
   $colname = $_GET['kasir'];
   $tgl1 = $_GET['tgl1'];
   $tgl2 = $_GET['tgl2'];
-  //mysql_select_db($database_koneksi, $koneksi);
+  //mysqli_select_db($database_koneksi, $koneksi);
   $query_Penjualan = sprintf(
     "SELECT `idfaktur`, `tglfaktur`, `kodefaktur`, `addedfaktur`, `addbyfaktur`, `periode`, `datetimefaktur`, `kembalian`, `potongan`, `totalbayar`, (totalbayar - kembalian) AS `totalbelanja`, `statusfaktur`, `qtyprint`, `printby`, `adminfaktur`, `namapelanggan`, `nohp` FROM faktur
 		WHERE statusfaktur = 'Y' AND addbyfaktur = %s AND (tglfaktur BETWEEN %s AND %s) AND faktur.periode = %s GROUP BY kodefaktur ORDER BY idfaktur DESC",
@@ -116,7 +116,7 @@ if (isset($_GET['jenisbayar']) && ($_GET['jenisbayar'] != "") && isset($_GET['ka
   $kat = $_GET['kategori'];
   $tgl1 = $_GET['tgl1'];
   $tgl2 = $_GET['tgl2'];
-  //mysql_select_db($database_koneksi, $koneksi);
+  //mysqli_select_db($database_koneksi, $koneksi);
 
   $query_Penjualan = sprintf(
     "SELECT a.idfaktur, a.tglfaktur, a.kodefaktur, a.addedfaktur, a.addbyfaktur, a.periode, a.datetimefaktur, a.kembalian, a.potongan, a.totalbayar, SUM(b.harga*b.qty) AS totalbelanja, a.statusfaktur, a.qtyprint, a.printby, a.adminfaktur, a.namapelanggan, a.nohp FROM faktur a,transaksidetail b,produk c
@@ -147,7 +147,7 @@ if (isset($_GET['jenisbayar']) && ($_GET['jenisbayar'] != "") && isset($_GET['ka
   $kat = $_GET['kategori'];
   $tgl1 = $_GET['tgl1'];
   $tgl2 = $_GET['tgl2'];
-  //mysql_select_db($database_koneksi, $koneksi);
+  //mysqli_select_db($database_koneksi, $koneksi);
 
   $query_Penjualan = sprintf(
     "SELECT a.idfaktur, a.tglfaktur, a.kodefaktur, a.addedfaktur, a.addbyfaktur, a.periode, a.datetimefaktur, a.kembalian, a.potongan, a.totalbayar, SUM(b.harga*b.qty) AS totalbelanja, a.statusfaktur, a.qtyprint, a.printby, a.adminfaktur, a.namapelanggan FROM faktur a,transaksidetail b,produk c
@@ -177,7 +177,7 @@ if (isset($_GET['jenisbayar']) && ($_GET['jenisbayar'] != "") && isset($_GET['ka
 } elseif (isset($_GET['tgl1']) && isset($_GET['tgl2'])) {
   $tgl1 = $_GET['tgl1'];
   $tgl2 = $_GET['tgl2'];
-  //mysql_select_db($database_koneksi, $koneksi);
+  //mysqli_select_db($database_koneksi, $koneksi);
   $query_Penjualan = sprintf(
     "SELECT `idfaktur`, `tglfaktur`, `kodefaktur`, `addedfaktur`, `addbyfaktur`, `periode`, `datetimefaktur`, `kembalian`, `potongan`, `totalbayar`, (totalbayar - kembalian) AS `totalbelanja`, `statusfaktur`, `qtyprint`, `printby`, `adminfaktur`, `namapelanggan`, `nohp` FROM faktur
 		WHERE periode = %s AND tglfaktur BETWEEN %s AND %s  ORDER BY idfaktur DESC",
@@ -203,7 +203,7 @@ if (isset($_GET['jenisbayar']) && ($_GET['jenisbayar'] != "") && isset($_GET['ka
     GetSQLValueString($tgl2, "date")
   );
 } else {
-  //mysql_select_db($database_koneksi, $koneksi);
+  //mysqli_select_db($database_koneksi, $koneksi);
   $query_Penjualan = sprintf(
     "SELECT `idfaktur`, `tglfaktur`, `kodefaktur`, `addedfaktur`, `addbyfaktur`, `periode`, `datetimefaktur`, `kembalian`, `potongan`, `totalbayar`, (totalbayar - kembalian) AS `totalbelanja`, `statusfaktur`, `qtyprint`, `printby`, `adminfaktur`, `namapelanggan`, `nohp` FROM faktur
 		WHERE periode = %s ORDER BY idfaktur DESC",

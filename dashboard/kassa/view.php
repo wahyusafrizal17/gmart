@@ -1,6 +1,6 @@
 <?php
 require_once('izin.php');
-//mysql_select_db($database_koneksi, $koneksi);
+//mysqli_select_db($database_koneksi, $koneksi);
 $query_Kassa = "SELECT kassa.*, vw_login.Nama FROM kassa LEFT JOIN vw_login ON addby_kassa = ID ORDER BY id_kassa ASC";
 $Kassa = mysqli_query($koneksi, $query_Kassa) or die(errorQuery(mysqli_error($koneksi)));
 $row_Kassa = mysqli_fetch_assoc($Kassa);

@@ -69,7 +69,7 @@ $totalRows_UpdateProduk = mysqli_num_rows($UpdateProduk);
 
 if ($totalRows_UpdateProduk > 0) {
 
-  //mysql_select_db($database_koneksi, $koneksi);
+  //mysqli_select_db($database_koneksi, $koneksi);
   $query_Kategori = "SELECT kategori.*, vw_login.Nama FROM kategori LEFT JOIN vw_login ON addbykategori = ID ORDER BY idkategori ASC";
   $Kategori = mysqli_query($koneksi, $query_Kategori) or die(errorQuery(mysqli_error($koneksi)));
   $row_Kategori = mysqli_fetch_assoc($Kategori);

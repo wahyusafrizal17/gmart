@@ -13,7 +13,7 @@ $currentPage = $_SERVER["PHP_SELF"];
 	$colname = "-1";
 	if (isset($_GET['cari'])) {
 		 $colname = $_GET['cari'];
-		 //mysql_select_db($database_koneksi, $koneksi);
+		 //mysqli_select_db($database_koneksi, $koneksi);
 		$query_Produk = sprintf("SELECT * FROM returnproduk a, produk b, kategori c WHERE a.produkreturn = b.kodeproduk AND b.kategori = c.idkategori
 		AND b.namaproduk LIKE %s OR namakategori = %s OR kodeproduk = %s
 		ORDER BY a.produkreturn DESC", 
@@ -21,7 +21,7 @@ $currentPage = $_SERVER["PHP_SELF"];
 		GetSQLValueString($colname, "text"),
 		GetSQLValueString($colname, "text"));
 	}else{
-	//mysql_select_db($database_koneksi, $koneksi);
+	//mysqli_select_db($database_koneksi, $koneksi);
 		$query_Produk = "SELECT * FROM returnproduk a, produk b, kategori c WHERE a.produkreturn = b.kodeproduk AND b.kategori = c.idkategori ORDER BY a.produkreturn DESC";
 	}	
 	$query_limit_Produk = sprintf("%s LIMIT %d, %d", $query_Produk, $startRow_Produk, $maxRows_Produk);

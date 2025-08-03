@@ -4,16 +4,16 @@ $colname_Penjualan = "-1";
 if (isset($_GET['id'])) {
   $colname_Penjualan = $_GET['id'];
 }
-mysql_select_db($database_koneksi, $koneksi);
+mysqli_select_db($database_koneksi, $koneksi);
 $query_Penjualan = sprintf(
   "SELECT faktur, kode, nama, harga, qty, kembalian, potongan, totalbayar, diskon FROM transaksidetail INNER JOIN faktur ON faktur = kodefaktur WHERE faktur = %s",
   GetSQLValueString($colname_Penjualan, "text")
 );
-$Penjualan = mysql_query($query_Penjualan, $koneksi) or die(mysql_error());
-$row_Penjualan = mysql_fetch_assoc($Penjualan);
-$totalRows_Penjualan = mysql_num_rows($Penjualan);
+$Penjualan = mysqli_query($query_Penjualan, $koneksi) or die(mysqli_error());
+$row_Penjualan = mysqli_fetch_assoc($Penjualan);
+$totalRows_Penjualan = mysqli_num_rows($Penjualan);
 
-mysql_select_db($database_koneksi, $koneksi);
+mysqli_select_db($database_koneksi, $koneksi);
 $query_faktur = sprintf(
   "SELECT faktur.idfaktur, faktur.kodefaktur, faktur.kembalian, faktur.potongan, faktur.totalbayar, faktur.nohp, faktur.namapelanggan, vw_login.Nama, faktur.qtyprint FROM faktur 
 	LEFT JOIN vw_login ON addbyfaktur = ID
@@ -21,25 +21,25 @@ $query_faktur = sprintf(
 	WHERE faktur.kodefaktur = %s",
   GetSQLValueString($colname_Penjualan, "text")
 );
-$faktur = mysql_query($query_faktur, $koneksi) or die(mysql_error());
-$row_faktur = mysql_fetch_assoc($faktur);
-$totalRows_faktur = mysql_num_rows($faktur);
+$faktur = mysqli_query($query_faktur, $koneksi) or die(mysqli_error());
+$row_faktur = mysqli_fetch_assoc($faktur);
+$totalRows_faktur = mysqli_num_rows($faktur);
 
 //penambahan tanggal 29 September 2020
-mysql_select_db($database_koneksi, $koneksi);
+mysqli_select_db($database_koneksi, $koneksi);
 $query_JmlhPrint = sprintf(
   "UPDATE faktur SET qtyprint = qtyprint + 1, printby = %s WHERE kodefaktur = %s",
   GetSQLValueString($ID, "int"),
   GetSQLValueString($colname_Penjualan, "text")
 );
-$JPrint = mysql_query($query_JmlhPrint, $koneksi) or die(errorQuery(mysql_error()));
+$JPrint = mysqli_query($query_JmlhPrint, $koneksi) or die(errorQuery(mysqli_error()));
 //----------
 
-mysql_select_db($database_koneksi, $koneksi);
+mysqli_select_db($database_koneksi, $koneksi);
 $query_antrian =  "SELECT (count(idfaktur) + 1) as antrian FROM faktur WHERE faktur.tglfaktur = CURRENT_DATE ";
-$antrian = mysql_query($query_antrian, $koneksi) or die(mysql_error());
-$row_antrian = mysql_fetch_assoc($antrian);
-$totalRows_antrian = mysql_num_rows($antrian);
+$antrian = mysqli_query($query_antrian, $koneksi) or die(mysqli_error());
+$row_antrian = mysqli_fetch_assoc($antrian);
+$totalRows_antrian = mysqli_num_rows($antrian);
 ?>
 
 <!DOCTYPE html>
@@ -125,7 +125,7 @@ $totalRows_antrian = mysql_num_rows($antrian);
       <?php
         $total += $subtotal;
         $no++;
-      } while ($row_Penjualan = mysql_fetch_assoc($Penjualan));
+      } while ($row_Penjualan = mysqli_fetch_assoc($Penjualan));
       ?>
     </tbody>
   </table>

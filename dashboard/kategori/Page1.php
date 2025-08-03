@@ -15,7 +15,7 @@ $currentPage = $_SERVER["PHP_SELF"];
 	$colname = "-1";
 	if (isset($_GET['cari'])) {
 		 $colname = $_GET['cari'];
-		 //mysql_select_db($database_koneksi, $koneksi);
+		 //mysqli_select_db($database_koneksi, $koneksi);
 		$query_Kategori = sprintf("SELECT `idproduk`, `namaproduk`, `kategori`, `deskproduk`, `hargadasar`, `hargajual`, `kodeproduk`, `minProduk`, `satuan`, `stok`, `statusproduk`, `addedproduk`, `updatedproduk`, `addbyproduk`, `alertproduk`, `namakategori`, vw_login.Nama FROM produk  LEFT JOIN kategori ON produk.kategori = kategori.idkategori 
 		LEFT JOIN vw_login ON addbyproduk = ID 
 		WHERE namaproduk LIKE %s OR namakategori = %s OR kodeproduk = %s AND  kategori = %s
@@ -25,21 +25,21 @@ $currentPage = $_SERVER["PHP_SELF"];
 		GetSQLValueString($colname, "text"),
 		GetSQLValueString($colname_kategori, "int"));
 	}else{
-	//mysql_select_db($database_koneksi, $koneksi);
+	//mysqli_select_db($database_koneksi, $koneksi);
 		$query_Kategori =  sprintf("SELECT `idproduk`, `namaproduk`, `kategori`, `deskproduk`, `hargadasar`, `hargajual`, `kodeproduk`, `minProduk`, `satuan`, `stok`, `statusproduk`, `addedproduk`, `updatedproduk`, `addbyproduk`, `alertproduk`, `namakategori`, vw_login.Nama FROM produk  LEFT JOIN kategori ON produk.kategori = kategori.idkategori 
 		LEFT JOIN vw_login ON addbyproduk = ID 
 		WHERE kategori = %s ORDER BY idproduk DESC", 
 		GetSQLValueString($colname_kategori, "int"));
 	}	
 	$query_limit_Kategori = sprintf("%s LIMIT %d, %d", $query_Kategori, $startRow_Kategori, $maxRows_Kategori);
-	$rs_Kategori = mysql_query($query_limit_Kategori, $koneksi) or die(mysql_error());
-	$row_Kategori = mysql_fetch_assoc($rs_Kategori);
+	$rs_Kategori = mysqli_query($query_limit_Kategori, $koneksi) or die(mysqli_error());
+	$row_Kategori = mysqli_fetch_assoc($rs_Kategori);
 	
 	if (isset($_GET['totalRows_Kategori'])) {
 	  $totalRows_Kategori = $_GET['totalRows_Kategori'];
 	} else {
-	  $all_Kategori = mysql_query($query_Kategori, $koneksi);
-	  $totalRows_Kategori = mysql_num_rows($all_Kategori);
+	  $all_Kategori = mysqli_query($query_Kategori, $koneksi);
+	  $totalRows_Kategori = mysqli_num_rows($all_Kategori);
 	}
 	$totalPages_Kategori = ceil($totalRows_Kategori/$maxRows_Kategori)-1;
 	

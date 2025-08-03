@@ -1,4 +1,0 @@
-﻿<?xml version="1.0" encoding="utf-8" ?>
-<info>
-	<infoitem key="UD_Harga" value="name:idharga;datatype:int,name:kodeproduk;datatype:string,name:hargajual;datatype:real,name:hargabaru;datatype:real,name:hargadasar;datatype:real,name:namaprodukOld;datatype:string,name:namaprodukBaru;datatype:string,name:added;datatype:int,name:addby;datatype:int,name:tercatat;datatype:timestamp" />
-</info>

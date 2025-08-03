@@ -12,15 +12,15 @@ if ((isset($_POST["MM_update"])) && ($_POST["MM_update"] == "form1")) {
 					   GetSQLValueString($_POST['nomor'], "text"),
 					   GetSQLValueString($_POST['idmember'], "int"));
 
-  mysql_select_db($database_koneksi, $koneksi);
-  $Result1 = mysql_query($updateSQL, $koneksi) or die(errorQuery(mysql_error()));
+  mysqli_select_db($database_koneksi, $koneksi);
+  $Result1 = mysqli_query($updateSQL, $koneksi) or die(errorQuery(mysqli_error()));
   
   //26 Desember open
   $activitySQL = sprintf("INSERT INTO activity_update (`url`, `oleh`) VALUES (%s, %s)",
   GetSQLValueString($actual_link, "text"),
   GetSQLValueString($ID, "int"));
-  mysql_select_db($database_koneksi, $koneksi);
-  $ResultSQL = mysql_query($activitySQL, $koneksi) or die(errorQuery(mysql_error()));	
+  mysqli_select_db($database_koneksi, $koneksi);
+  $ResultSQL = mysqli_query($activitySQL, $koneksi) or die(errorQuery(mysqli_error()));	
   //26 desember close
   
   if ($Result1) {
@@ -32,11 +32,11 @@ $colname_Updatemember  = "-1";
 if (isset($_GET['id_member'])) {
   $colname_Updatemember  = $_GET['id_member'];
 }
-mysql_select_db($database_koneksi, $koneksi);
+mysqli_select_db($database_koneksi, $koneksi);
 $query_Updatemember = sprintf("SELECT * FROM member WHERE id_member = %s", GetSQLValueString($colname_Updatemember, "int"));
-$Updatemember = mysql_query($query_Updatemember, $koneksi) or die(errorQuery(mysql_error()));
-$row_Updatemember = mysql_fetch_assoc($Updatemember);
-$totalRows_Updatemember = mysql_num_rows($Updatemember);
+$Updatemember = mysqli_query($query_Updatemember, $koneksi) or die(errorQuery(mysqli_error()));
+$row_Updatemember = mysqli_fetch_assoc($Updatemember);
+$totalRows_Updatemember = mysqli_num_rows($Updatemember);
 	
 ?> 
 

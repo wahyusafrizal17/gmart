@@ -8,7 +8,7 @@ if (isset($_GET['jenisbayar']) && ($_GET['jenisbayar'] != "") && isset($_GET['ka
   $colname = $_GET['kasir'];
   $tgl1 = $_GET['tgl1'];
   $tgl2 = $_GET['tgl2'];
-  //mysql_select_db($database_koneksi, $koneksi);
+  //mysqli_select_db($database_koneksi, $koneksi);
   $query_Penjualan = sprintf(
     "SELECT `idfaktur`, `tglfaktur`, `kodefaktur`, `addedfaktur`, `addbyfaktur`, `periode`, `datetimefaktur`, `kembalian`, `potongan`, `totalbayar`, (totalbayar - kembalian) AS `totalbelanja`, `statusfaktur`, `qtyprint`, `printby`, `adminfaktur`,`namapelanggan` FROM faktur
 		WHERE statusfaktur = 'Y' AND jenisbayar = %s AND addbyfaktur = %s AND (tglfaktur BETWEEN %s AND %s) AND faktur.periode = %s GROUP BY kodefaktur ORDER BY idfaktur DESC",
@@ -19,15 +19,15 @@ if (isset($_GET['jenisbayar']) && ($_GET['jenisbayar'] != "") && isset($_GET['ka
     GetSQLValueString($ta, "text")
   );
 
-  $rs_Penjualan = mysql_query($query_Penjualan, $koneksi) or die(errorQuery(mysql_error()));
-  $row_Penjualan = mysql_fetch_assoc($rs_Penjualan);
-  $totalRows_Penjualan  = mysql_num_rows($rs_Penjualan);
+  $rs_Penjualan = mysqli_query($query_Penjualan, $koneksi) or die(errorQuery(mysqli_error()));
+  $row_Penjualan = mysqli_fetch_assoc($rs_Penjualan);
+  $totalRows_Penjualan  = mysqli_num_rows($rs_Penjualan);
 } elseif (isset($_GET['kasir']) && ($_GET['kasir'] != 0) && isset($_GET['tgl1']) && isset($_GET['tgl2'])) {
 
   $colname = $_GET['kasir'];
   $tgl1 = $_GET['tgl1'];
   $tgl2 = $_GET['tgl2'];
-  //mysql_select_db($database_koneksi, $koneksi);
+  //mysqli_select_db($database_koneksi, $koneksi);
   $query_Penjualan = sprintf(
     "SELECT `idfaktur`, `tglfaktur`, `kodefaktur`, `addedfaktur`, `addbyfaktur`, `periode`, `datetimefaktur`, `kembalian`, `potongan`, `totalbayar`, (totalbayar - kembalian) AS `totalbelanja`, `statusfaktur`, `qtyprint`, `printby`, `adminfaktur`,`namapelanggan` FROM faktur
 		WHERE statusfaktur = 'Y' AND addbyfaktur = %s AND (tglfaktur BETWEEN %s AND %s) AND faktur.periode = %s GROUP BY kodefaktur ORDER BY idfaktur DESC",
@@ -37,9 +37,9 @@ if (isset($_GET['jenisbayar']) && ($_GET['jenisbayar'] != "") && isset($_GET['ka
     GetSQLValueString($ta, "text")
   );
 
-  $rs_Penjualan = mysql_query($query_Penjualan, $koneksi) or die(errorQuery(mysql_error()));
-  $row_Penjualan = mysql_fetch_assoc($rs_Penjualan);
-  $totalRows_Penjualan  = mysql_num_rows($rs_Penjualan);
+  $rs_Penjualan = mysqli_query($query_Penjualan, $koneksi) or die(errorQuery(mysqli_error()));
+  $row_Penjualan = mysqli_fetch_assoc($rs_Penjualan);
+  $totalRows_Penjualan  = mysqli_num_rows($rs_Penjualan);
 }
 ?>
 <style type="text/css">
@@ -97,8 +97,8 @@ if (isset($_GET['jenisbayar']) && ($_GET['jenisbayar'] != "") && isset($_GET['ka
       //query hitung laba
       $query_laba = sprintf("SELECT faktur, tanggal, hargadasar, harga, diskon, qty, (hargadasar * qty) as hd, (harga * qty) as hj, ((harga * qty) - (hargadasar * qty)) as laba, ((harga * qty) - diskon) as sisadiskon FROM `transaksidetail` WHERE faktur = %s GROUP BY faktur",  GetSQLValueString($row_Penjualan['kodefaktur'], "text"));
 
-      $laba = mysql_query($query_laba, $koneksi) or die(mysql_error());
-      $row_laba = mysql_fetch_assoc($laba);
+      $laba = mysqli_query($query_laba, $koneksi) or die(mysqli_error());
+      $row_laba = mysqli_fetch_assoc($laba);
       //----------------------
     ?>
       <tr>
@@ -128,7 +128,7 @@ if (isset($_GET['jenisbayar']) && ($_GET['jenisbayar'] != "") && isset($_GET['ka
     <?php
       $totallaba += $tlaba;
       $no++;
-    } while ($row_Penjualan = mysql_fetch_assoc($rs_Penjualan)); ?>
+    } while ($row_Penjualan = mysqli_fetch_assoc($rs_Penjualan)); ?>
     <tr>
       <td colspan="3" align="right">TOTAL KESELURUHAN</td>
       <td>

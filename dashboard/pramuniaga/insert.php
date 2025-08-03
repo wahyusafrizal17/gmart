@@ -18,8 +18,8 @@ if ((isset($_POST["MM_insert"])) && ($_POST["MM_insert"] == "form1")) {
 					   GetSQLValueString(time() , "int"),
 					   GetSQLValueString($ID, "int"));
 
-  mysql_select_db($database_koneksi, $koneksi);
-  $Result1 = mysql_query($insertSQL, $koneksi) or die(errorQuery(mysql_error()));
+  mysqli_select_db($database_koneksi, $koneksi);
+  $Result1 = mysqli_query($insertSQL, $koneksi) or die(errorQuery(mysqli_error()));
   
   if ($Result1) {
   	refresh('?page=pramuniaga/view&sukses');

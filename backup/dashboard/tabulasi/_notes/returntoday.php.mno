@@ -1,4 +1,0 @@
-﻿<?xml version="1.0" encoding="utf-8" ?>
-<info>
-	<infoitem key="UD_Return" value="name:id_return;datatype:int,name:asalfaktur;datatype:string,name:produkreturn;datatype:string,name:qtyreturn;datatype:int,name:ketreturn;datatype:string,name:addedreturn;datatype:int,name:addbyreturn;datatype:int,name:tercatatreturn;datatype:timestamp,name:namareturn;datatype:string,name:hargadasar;datatype:real,name:hargajual;datatype:real,name:periode;datatype:string,name:tglreturn;datatype:date" />
-</info>

@@ -13,11 +13,11 @@ if($_GET['faktur']==''){
     GetSQLValueString($koneksi, $userId['Nama'], "text"),
     GetSQLValueString($koneksi, $ta, "text"));
 
-//mysql_select_db($database_koneksi);
+//mysqli_select_db($database_koneksi);
 $Result1 = mysqli_query($koneksi, $insertSQL) or die(mysqli_error($koneksi));
 
 
-//mysql_select_db($database_koneksi);
+//mysqli_select_db($database_koneksi);
 $query_Faktur = sprintf("SELECT * FROM faktur WHERE tglfaktur = %s AND addbyfaktur = %s AND periode = %s AND statusfaktur = %s ORDER BY idfaktur DESC", 
     GetSQLValueString($koneksi, $tglsekarang, "date"),
     GetSQLValueString($koneksi, $userId['ID'], "int"),

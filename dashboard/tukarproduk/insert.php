@@ -8,8 +8,8 @@ if (isset($_SERVER['QUERY_STRING'])) {
 if (isset($_POST['MM_insert']) && $_POST['MM_insert'] == 'form1') {
     $insertSQL = sprintf('INSERT INTO tukarproduk (`produk`, `point`) VALUES (%s, %s)', GetSQLValueString($_POST['produk'], 'text'), GetSQLValueString($_POST['point'], 'text'));
 
-    mysql_select_db($database_koneksi, $koneksi);
-    ($Result1 = mysql_query($insertSQL, $koneksi)) or die(errorQuery(mysql_error()));
+    mysqli_select_db($database_koneksi, $koneksi);
+    ($Result1 = mysqli_query($insertSQL, $koneksi)) or die(errorQuery(mysqli_error()));
 
     if ($Result1) {
         refresh('?page=tukarproduk/view&sukses');
@@ -29,14 +29,14 @@ titleSimpan('ENTRY DATA TUKAR PRODUK', 'produk untuk ditukar');
             <td>
                 <div align="left"><strong>Produk</strong></div>
                 <?php
-                mysql_select_db($database_koneksi, $koneksi);
+                mysqli_select_db($database_koneksi, $koneksi);
                 $cek = sprintf('SELECT * FROM produk');
-                ($rs_cek = mysql_query($cek, $koneksi)) or die(mysql_error());
+                ($rs_cek = mysqli_query($cek, $koneksi)) or die(mysqli_error());
                 ?>
 
                 <select name="produk" class="form-control" id="produk">
                     <option value="">Pilih Produk</option>
-                    <?php while ($data = mysql_fetch_assoc($rs_cek)) { ?>
+                    <?php while ($data = mysqli_fetch_assoc($rs_cek)) { ?>
                     <option class="text-uppercase" value="<?php echo $data['idproduk']; ?>"><?php echo $data['namaproduk']; ?></option>
                     <?php } ?>
                 </select>

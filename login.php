@@ -18,7 +18,7 @@ if (isset($_POST['ngapainpake'])) {
     $MM_fldUserAuthorization = "";
     $MM_redirectLoginFailed = "login.php";
     $MM_redirecttoReferrer = false;
-    //mysql_select_db($database_koneksi, $koneksi);
+    //mysqli_select_db($database_koneksi, $koneksi);
 
     $LoginRS__query = sprintf(
         "SELECT Login, Password, Level FROM vw_login WHERE Login=%s",

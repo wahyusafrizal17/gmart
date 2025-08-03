@@ -1,6 +1,6 @@
 <?php
 //require_once('izin.php');
-//mysql_select_db($database_koneksi, $koneksi);
+//mysqli_select_db($database_koneksi, $koneksi);
 $query_Kategori = "SELECT namakategori, COUNT(kategori) AS QTY, kategori.*, MIN(vw_login.Nama) as Nama
 FROM kategori 
 LEFT JOIN produk ON kategori = idkategori

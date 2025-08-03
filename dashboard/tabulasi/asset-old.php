@@ -1,17 +1,17 @@
 <?php
 //penambahan tanggal 28 November 2021 11:40 WIB
 
-mysql_select_db($database_koneksi, $koneksi);
+mysqli_select_db($database_koneksi, $koneksi);
 $query_total = "SELECT SUM(total_produk) as total_produk, SUM(modal) as modal, SUM(laba) as laba FROM `view_asset`";
-$total = mysql_query($query_total, $koneksi) or die(mysql_error());
-$row_total = mysql_fetch_assoc($total);
-$totalRows_total = mysql_num_rows($total);
+$total = mysqli_query($query_total, $koneksi) or die(mysqli_error());
+$row_total = mysqli_fetch_assoc($total);
+$totalRows_total = mysqli_num_rows($total);
 
-mysql_select_db($database_koneksi, $koneksi);
+mysqli_select_db($database_koneksi, $koneksi);
 $query_potongan = "SELECT SUM(potongan) as potongan FROM `view_potongan`";
-$potongan = mysql_query($query_potongan, $koneksi) or die(mysql_error());
-$row_potongan = mysql_fetch_assoc($potongan);
-$totalRows_potongan = mysql_num_rows($potongan);
+$potongan = mysqli_query($query_potongan, $koneksi) or die(mysqli_error());
+$row_potongan = mysqli_fetch_assoc($potongan);
+$totalRows_potongan = mysqli_num_rows($potongan);
 ?>
 
 <?php

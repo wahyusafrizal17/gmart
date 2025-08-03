@@ -4,7 +4,7 @@ require_once('../restrict.php');
 require_once('../Connections/koneksi.php'); 
 require_once('require/header.php');
 
-////mysql_select_db($database_koneksi, $koneksi);
+////mysqli_select_db($database_koneksi, $koneksi);
 $query_rs_profile = "SELECT * FROM kassa WHERE id_kassa = '".$ID."'";
 $rs_profile = mysqli_query($koneksi, $query_rs_profile) or die(errorQuery(mysqli_error($koneksi)));
 $row_rs_profile = mysqli_fetch_assoc($rs_profile);

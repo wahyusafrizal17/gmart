@@ -6,8 +6,8 @@ if ((isset($_GET['id'])) && ($_GET['id'] != "")) {
         GetSQLValueString($_GET['id'], "int")
     );
 
-    //mysql_select_db($database_koneksi, $koneksi);
-    $Result1 = mysql_query($deleteSQL, $koneksi) or die(errorQuery(mysql_error()));
+    //mysqli_select_db($database_koneksi, $koneksi);
+    $Result1 = mysqli_query($deleteSQL, $koneksi) or die(errorQuery(mysqli_error()));
 
     //26 Desember open
     $activitySQL = sprintf(
@@ -15,8 +15,8 @@ if ((isset($_GET['id'])) && ($_GET['id'] != "")) {
         GetSQLValueString($actual_link, "text"),
         GetSQLValueString($ID, "int")
     );
-    mysql_select_db($database_koneksi, $koneksi);
-    $Result2 = mysql_query($activitySQL, $koneksi) or die(errorQuery(mysql_error()));
+    mysqli_select_db($database_koneksi, $koneksi);
+    $Result2 = mysqli_query($activitySQL, $koneksi) or die(errorQuery(mysqli_error()));
 
     pesanlink('Data berhasil dihapus!', '?page=pengeluaran/view');
 }

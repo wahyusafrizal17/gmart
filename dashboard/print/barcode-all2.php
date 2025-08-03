@@ -2,9 +2,9 @@
 <?php
 
 $query_barcode = "SELECT barcode.*, namaproduk, hargajual, kategori, qtybarcode FROM barcode LEFT JOIN produk ON kodeproduk = barcode";
-$barcode = mysql_query($query_barcode, $koneksi) or die(mysql_error());
-$row_barcode = mysql_fetch_assoc($barcode);
-$totalRows_barcode = mysql_num_rows($barcode);
+$barcode = mysqli_query($query_barcode, $koneksi) or die(mysqli_error());
+$row_barcode = mysqli_fetch_assoc($barcode);
+$totalRows_barcode = mysqli_num_rows($barcode);
 
 $qty = $row_barcode['qtybarcode'];
 
@@ -78,7 +78,7 @@ $qty = $row_barcode['qtybarcode'];
       </div>
     <?php } ?><br>
 
-  <?php } while ($row_barcode = mysql_fetch_assoc($barcode)); ?>
+  <?php } while ($row_barcode = mysqli_fetch_assoc($barcode)); ?>
 
 
 </body>

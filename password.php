@@ -8,7 +8,7 @@ if (isset($_SERVER['QUERY_STRING'])) {
 
 if ((isset($_POST["MM_update"])) && ($_POST["MM_update"] == "form2")) {
   //cek table master
-  //mysql_select_db($database_koneksi, $koneksi);
+  //mysqli_select_db($database_koneksi, $koneksi);
   $rs_sql = sprintf(
     "SELECT id_master FROM tb_master WHERE id_master = %s",
     GetSQLValueString($_POST['key'], "int")
@@ -26,7 +26,7 @@ if ((isset($_POST["MM_update"])) && ($_POST["MM_update"] == "form2")) {
       GetSQLValueString($_POST['key'], "int")
     );
 
-    //mysql_select_db($database_koneksi, $koneksi);
+    //mysqli_select_db($database_koneksi, $koneksi);
     $Result1 = mysqli_query($koneksi, $updateSQL) or die(errorQuery(mysqli_error($koneksi)));
 
     if ($Result1) {
@@ -35,7 +35,7 @@ if ((isset($_POST["MM_update"])) && ($_POST["MM_update"] == "form2")) {
     //jika tidak ada maka cek tabel admin	  
   }
 
-  //mysql_select_db($database_koneksi, $koneksi);
+  //mysqli_select_db($database_koneksi, $koneksi);
   $rs_sql = sprintf(
     "SELECT id_admin FROM tb_admin WHERE id_admin = %s",
     GetSQLValueString($_POST['key'], "int")
@@ -52,7 +52,7 @@ if ((isset($_POST["MM_update"])) && ($_POST["MM_update"] == "form2")) {
       GetSQLValueString($_POST['key'], "int")
     );
 
-    //mysql_select_db($database_koneksi, $koneksi);
+    //mysqli_select_db($database_koneksi, $koneksi);
     $Result1 = mysqli_query($koneksi, $updateSQL) or die(errorQuery(mysqli_error($koneksi)));
 
     if ($Result1) {
@@ -61,7 +61,7 @@ if ((isset($_POST["MM_update"])) && ($_POST["MM_update"] == "form2")) {
   }
 
   //jika tidak ada maka cek tabel peserta	  
-  //mysql_select_db($database_koneksi, $koneksi);
+  //mysqli_select_db($database_koneksi, $koneksi);
   $rs_sql = sprintf(
     "SELECT id_kassa FROM kassa WHERE id_kassa = %s",
     GetSQLValueString($_POST['key'], "int")
@@ -78,7 +78,7 @@ if ((isset($_POST["MM_update"])) && ($_POST["MM_update"] == "form2")) {
       GetSQLValueString($_POST['key'], "int")
     );
 
-    //mysql_select_db($database_koneksi, $koneksi);
+    //mysqli_select_db($database_koneksi, $koneksi);
     $Result1 = mysqli_query($koneksi, $updateSQL) or die(errorQuery(mysqli_error($koneksi)));
 
     if ($Result1) {
@@ -95,7 +95,7 @@ if (isset($_POST['search'])) {
   $colname_search = $_POST['search'];
   $colname_Login = $_POST['Login'];
 }
-//mysql_select_db($database_koneksi, $koneksi);
+//mysqli_select_db($database_koneksi, $koneksi);
 $query_search = sprintf(
   "SELECT `ID`, `Key`, `Login`, `Nama` FROM vw_login WHERE Login = %s AND `Key` = %s ",
   GetSQLValueString($colname_search, "text"),

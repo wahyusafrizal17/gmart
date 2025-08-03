@@ -4,11 +4,11 @@ $colname_rs_search = "-1";
 if (isset($_GET['faktur'])) {
   $colname_rs_search = $_GET['faktur'];
 }
-//mysql_select_db($database_koneksi, $koneksi);
+//mysqli_select_db($database_koneksi, $koneksi);
 $query_rs_search = sprintf("SELECT faktur FROM transaksitemp WHERE faktur = %s", GetSQLValueString($colname_rs_search, "text"));
-$rs_search = mysql_query($query_rs_search, $koneksi) or die(errorQuery(mysql_error()));
-$row_rs_search = mysql_fetch_assoc($rs_search);
-$totalRows_rs_search = mysql_num_rows($rs_search);
+$rs_search = mysqli_query($query_rs_search, $koneksi) or die(errorQuery(mysqli_error()));
+$row_rs_search = mysqli_fetch_assoc($rs_search);
+$totalRows_rs_search = mysqli_num_rows($rs_search);
 
 ?>
 <!-- Left side column. contains the sidebar -->

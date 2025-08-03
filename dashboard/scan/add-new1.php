@@ -17,15 +17,15 @@ if ((isset($_POST["MM_faktur"])) && ($_POST["MM_faktur"] == "form2")) {
 		GetSQLValueString($ta, "text")
 	);
 
-	mysql_select_db($database_koneksi, $koneksi);
-	$Result1 = mysql_query($insertSQL, $koneksi) or die(mysql_error());
+	mysqli_select_db($database_koneksi, $koneksi);
+	$Result1 = mysqli_query($insertSQL, $koneksi) or die(mysqli_error());
 
 	if ($Result1) {
 		refresh('?page=scan/add');
 	}
 }
 
-mysql_select_db($database_koneksi, $koneksi);
+mysqli_select_db($database_koneksi, $koneksi);
 $query_Faktur = sprintf(
 	"SELECT * FROM faktur WHERE tglfaktur = %s AND addbyfaktur = %s AND periode = %s AND statusfaktur = %s ORDER BY idfaktur DESC",
 	GetSQLValueString($tglsekarang, "date"),
@@ -33,9 +33,9 @@ $query_Faktur = sprintf(
 	GetSQLValueString($ta, "text"),
 	GetSQLValueString('N', "text")
 );
-$Faktur = mysql_query($query_Faktur, $koneksi) or die(mysql_error());
-$row_Faktur = mysql_fetch_assoc($Faktur);
-$totalRows_Faktur = mysql_num_rows($Faktur);
+$Faktur = mysqli_query($query_Faktur, $koneksi) or die(mysqli_error());
+$row_Faktur = mysqli_fetch_assoc($Faktur);
+$totalRows_Faktur = mysqli_num_rows($Faktur);
 //MEMBUAT NILAI FAKTUR
 
 $faktur = $row_Faktur['kodefaktur'];
@@ -49,30 +49,30 @@ if (isset($_POST['search'])) {
 	$colname_search = $_POST['search'];
 	require('faktur.php');
 }
-mysql_select_db($database_koneksi, $koneksi);
+mysqli_select_db($database_koneksi, $koneksi);
 $query_search = sprintf(
 	"SELECT * FROM produk WHERE stok > 0 AND kodeproduk = %s OR namaproduk LIKE %s LIMIT 10",
 	GetSQLValueString($colname_search, "text"),
 	GetSQLValueString("%" . $colname_search . "%", "text")
 );
-$search = mysql_query($query_search, $koneksi) or die(mysql_error());
-$row_search = mysql_fetch_assoc($search);
-$totalRows_search = mysql_num_rows($search);
+$search = mysqli_query($query_search, $koneksi) or die(mysqli_error());
+$row_search = mysqli_fetch_assoc($search);
+$totalRows_search = mysqli_num_rows($search);
 
 //JIKA HASIL PENCARIAN 1 PRODUK MAKA LANGSUNG SIMPAN
 if ($totalRows_search == 1) {
 	require('faktur.php');
 
 	//SEBELUM ITU, DICEK JIKA PRODUK YG SAMA MAKA TAMBAHKAN STOK SAJA
-	mysql_select_db($database_koneksi, $koneksi);
+	mysqli_select_db($database_koneksi, $koneksi);
 	$cek =  sprintf(
 		"SELECT kode, faktur, qty FROM transaksitemp WHERE kode = %s AND faktur = %s",
 		GetSQLValueString($row_search['kodeproduk'], "text"),
 		GetSQLValueString($faktur, "text")
 	);
-	$rs_cek = mysql_query($cek, $koneksi) or die(mysql_error());
-	$row_rs_cek = mysql_fetch_assoc($rs_cek);
-	$totalRows_rs_cek = mysql_num_rows($rs_cek);
+	$rs_cek = mysqli_query($cek, $koneksi) or die(mysqli_error());
+	$row_rs_cek = mysqli_fetch_assoc($rs_cek);
+	$totalRows_rs_cek = mysqli_num_rows($rs_cek);
 
 	if ($totalRows_rs_cek > 0) {
 		//update / tambah qty produk
@@ -85,8 +85,8 @@ if ($totalRows_search == 1) {
 				GetSQLValueString($row_search['kodeproduk'], "text")
 			);
 
-			mysql_select_db($database_koneksi, $koneksi);
-			$hasilstok = mysql_query($stok, $koneksi) or die(mysql_error());
+			mysqli_select_db($database_koneksi, $koneksi);
+			$hasilstok = mysqli_query($stok, $koneksi) or die(mysqli_error());
 		}
 	} else {
 		require('faktur.php');
@@ -108,31 +108,31 @@ if ($totalRows_search == 1) {
 			GetSQLValueString($ta, "text")
 		);
 
-		mysql_select_db($database_koneksi, $koneksi);
-		$Result1 = mysql_query($insertSQL, $koneksi) or die(mysql_error());
+		mysqli_select_db($database_koneksi, $koneksi);
+		$Result1 = mysqli_query($insertSQL, $koneksi) or die(mysqli_error());
 	} //tutup Cek Produk yg sudah ada	  
 } //tutup pencarian produk
 
-mysql_select_db($database_koneksi, $koneksi);
+mysqli_select_db($database_koneksi, $koneksi);
 $query_trans = sprintf(
 	"SELECT * FROM transaksitemp INNER JOIN produk ON kode = kodeproduk WHERE faktur = %s ORDER BY transaksitemp.id ASC",
 	GetSQLValueString($faktur, "text")
 );
-$trans = mysql_query($query_trans, $koneksi) or die(mysql_error());
-$row_trans = mysql_fetch_assoc($trans);
-$totalRows_trans = mysql_num_rows($trans);
+$trans = mysqli_query($query_trans, $koneksi) or die(mysqli_error());
+$row_trans = mysqli_fetch_assoc($trans);
+$totalRows_trans = mysqli_num_rows($trans);
 
 //MENGUBAH NILAI QTY PADA TEMPTRANSAKSI
 if ((isset($_POST["MM_update"])) && ($_POST["MM_update"] == "formCombobox")) {
 
-	mysql_select_db($database_koneksi, $koneksi);
+	mysqli_select_db($database_koneksi, $koneksi);
 	$cek =  sprintf(
 		"SELECT stok FROM produk WHERE kodeproduk = %s",
 		GetSQLValueString($_POST['kodeCombo'], "text")
 	);
-	$rs_cek = mysql_query($cek, $koneksi) or die(mysql_error());
-	$row_rs_cek = mysql_fetch_assoc($rs_cek);
-	$totalRows_rs_cek = mysql_num_rows($rs_cek);
+	$rs_cek = mysqli_query($cek, $koneksi) or die(mysqli_error());
+	$row_rs_cek = mysqli_fetch_assoc($rs_cek);
+	$totalRows_rs_cek = mysqli_num_rows($rs_cek);
 
 	if ($_POST['qtyupdate'] >= $row_rs_cek['stok']) {
 		danger('Oops!', "Stok terbatas!! Maks. " . $row_rs_cek['stok'] . ' ');
@@ -144,21 +144,21 @@ if ((isset($_POST["MM_update"])) && ($_POST["MM_update"] == "formCombobox")) {
 			GetSQLValueString($_POST['kodeCombo'], "text")
 		);
 
-		mysql_select_db($database_koneksi, $koneksi);
-		$hasilstok = mysql_query($stok, $koneksi) or die(mysql_error());
+		mysqli_select_db($database_koneksi, $koneksi);
+		$hasilstok = mysqli_query($stok, $koneksi) or die(mysqli_error());
 	}
 
 
 
 	//untuk reload update barang	
-	mysql_select_db($database_koneksi, $koneksi);
+	mysqli_select_db($database_koneksi, $koneksi);
 	$query_trans = sprintf(
 		"SELECT * FROM transaksitemp INNER JOIN produk ON kode = kodeproduk WHERE faktur = %s ORDER BY transaksitemp.id ASC",
 		GetSQLValueString($faktur, "text")
 	);
-	$trans = mysql_query($query_trans, $koneksi) or die(mysql_error());
-	$row_trans = mysql_fetch_assoc($trans);
-	$totalRows_trans = mysql_num_rows($trans);
+	$trans = mysqli_query($query_trans, $koneksi) or die(mysqli_error());
+	$row_trans = mysqli_fetch_assoc($trans);
+	$totalRows_trans = mysqli_num_rows($trans);
 }
 
 //-----------------
@@ -167,15 +167,15 @@ if ($totalRows_search > 1) {
 	for ($i = 1; $i <= $totalRows_search; $i++) {
 		if ((isset($_POST["MM_insert"])) && ($_POST["MM_insert"] == "formx" . $i)) {
 			//SEBELUM ITU, DICEK JIKA PRODUK YG SAMA MAKA TAMBAHKAN STOK SAJA
-			mysql_select_db($database_koneksi, $koneksi);
+			mysqli_select_db($database_koneksi, $koneksi);
 			$cek =  sprintf(
 				"SELECT kode, faktur, qty FROM transaksitemp WHERE kode = %s AND faktur = %s",
 				GetSQLValueString($_POST['kodeproduk'], "text"),
 				GetSQLValueString($faktur, "text")
 			);
-			$rs_cek = mysql_query($cek, $koneksi) or die(mysql_error());
-			$row_rs_cek = mysql_fetch_assoc($rs_cek);
-			$totalRows_rs_cek = mysql_num_rows($rs_cek);
+			$rs_cek = mysqli_query($cek, $koneksi) or die(mysqli_error());
+			$row_rs_cek = mysqli_fetch_assoc($rs_cek);
+			$totalRows_rs_cek = mysqli_num_rows($rs_cek);
 
 			if ($totalRows_rs_cek > 0) {
 				//update / tambah qty produk
@@ -188,8 +188,8 @@ if ($totalRows_search > 1) {
 						GetSQLValueString($_POST['kodeproduk'], "text")
 					);
 
-					mysql_select_db($database_koneksi, $koneksi);
-					$hasilstok = mysql_query($stok, $koneksi) or die(mysql_error());
+					mysqli_select_db($database_koneksi, $koneksi);
+					$hasilstok = mysqli_query($stok, $koneksi) or die(mysqli_error());
 				}
 			} else {
 				$insertSQL = sprintf(
@@ -209,33 +209,33 @@ if ($totalRows_search > 1) {
 					GetSQLValueString($ta, "text")
 				);
 
-				mysql_select_db($database_koneksi, $koneksi);
-				$Result1 = mysql_query($insertSQL, $koneksi) or die(mysql_error());
+				mysqli_select_db($database_koneksi, $koneksi);
+				$Result1 = mysqli_query($insertSQL, $koneksi) or die(mysqli_error());
 			} //tutup Cek Produk yg sudah ada  */
 		}
 		//untuk reload update barang
-		mysql_select_db($database_koneksi, $koneksi);
+		mysqli_select_db($database_koneksi, $koneksi);
 		$query_trans = sprintf(
 			"SELECT * FROM transaksitemp INNER JOIN produk ON kode = kodeproduk WHERE faktur = %s ORDER BY transaksitemp.id ASC",
 			GetSQLValueString($faktur, "text")
 		);
-		$trans = mysql_query($query_trans, $koneksi) or die(mysql_error());
-		$row_trans = mysql_fetch_assoc($trans);
-		$totalRows_trans = mysql_num_rows($trans);
+		$trans = mysqli_query($query_trans, $koneksi) or die(mysqli_error());
+		$row_trans = mysqli_fetch_assoc($trans);
+		$totalRows_trans = mysqli_num_rows($trans);
 	}
 }
 
 if ((isset($_POST["MM_insert"])) && ($_POST["MM_insert"] == "formCari")) {
 	//SEBELUM ITU, DICEK JIKA PRODUK YG SAMA MAKA TAMBAHKAN STOK SAJA
-	mysql_select_db($database_koneksi, $koneksi);
+	mysqli_select_db($database_koneksi, $koneksi);
 	$cek =  sprintf(
 		"SELECT kode, faktur, qty FROM transaksitemp WHERE kode = %s AND faktur = %s",
 		GetSQLValueString($_POST['kodeproduk'], "text"),
 		GetSQLValueString($faktur, "text")
 	);
-	$rs_cek = mysql_query($cek, $koneksi) or die(mysql_error());
-	$row_rs_cek = mysql_fetch_assoc($rs_cek);
-	$totalRows_rs_cek = mysql_num_rows($rs_cek);
+	$rs_cek = mysqli_query($cek, $koneksi) or die(mysqli_error());
+	$row_rs_cek = mysqli_fetch_assoc($rs_cek);
+	$totalRows_rs_cek = mysqli_num_rows($rs_cek);
 
 	if ($totalRows_rs_cek > 0) {
 		//update / tambah qty produk
@@ -248,8 +248,8 @@ if ((isset($_POST["MM_insert"])) && ($_POST["MM_insert"] == "formCari")) {
 				GetSQLValueString($_POST['kodeproduk'], "text")
 			);
 
-			mysql_select_db($database_koneksi, $koneksi);
-			$hasilstok = mysql_query($stok, $koneksi) or die(mysql_error());
+			mysqli_select_db($database_koneksi, $koneksi);
+			$hasilstok = mysqli_query($stok, $koneksi) or die(mysqli_error());
 		}
 	} else {
 		$insertSQL = sprintf(
@@ -269,35 +269,35 @@ if ((isset($_POST["MM_insert"])) && ($_POST["MM_insert"] == "formCari")) {
 			GetSQLValueString($ta, "text")
 		);
 
-		mysql_select_db($database_koneksi, $koneksi);
-		$Result1 = mysql_query($insertSQL, $koneksi) or die(mysql_error());
+		mysqli_select_db($database_koneksi, $koneksi);
+		$Result1 = mysqli_query($insertSQL, $koneksi) or die(mysqli_error());
 	} //tutup Cek Produk yg sudah ada  */
 
 	//untuk reload update barang
-	mysql_select_db($database_koneksi, $koneksi);
+	mysqli_select_db($database_koneksi, $koneksi);
 	$query_trans = sprintf(
 		"SELECT * FROM transaksitemp INNER JOIN produk ON kode = kodeproduk WHERE faktur = %s ORDER BY transaksitemp.id ASC",
 		GetSQLValueString($faktur, "text")
 	);
-	$trans = mysql_query($query_trans, $koneksi) or die(mysql_error());
-	$row_trans = mysql_fetch_assoc($trans);
-	$totalRows_trans = mysql_num_rows($trans);
+	$trans = mysqli_query($query_trans, $koneksi) or die(mysqli_error());
+	$row_trans = mysqli_fetch_assoc($trans);
+	$totalRows_trans = mysqli_num_rows($trans);
 }
 
 
 
 //--------------- UBAH STATUS Y PADA FAKTUR --------------
 if ((isset($_POST["MM_update"])) && ($_POST["MM_update"] == "formSelesai")) {
-	$Start = mysql_query("START TRANSACTION", $koneksi) or die(errorQuery(mysql_error($koneksi)));
+	$Start = mysqli_query("START TRANSACTION", $koneksi) or die(errorQuery(mysqli_error($koneksi)));
 	if ($_POST["bayar"] >= $_POST["textfield3"]) {
-		mysql_select_db($database_koneksi, $koneksi);
+		mysqli_select_db($database_koneksi, $koneksi);
 		$query_temp = sprintf(
 			"SELECT * FROM transaksitemp WHERE faktur = %s ORDER BY id ASC",
 			GetSQLValueString($faktur, "text")
 		);
-		$temp = mysql_query($query_temp, $koneksi) or die(mysql_error());
-		$row_temp = mysql_fetch_assoc($temp);
-		$totalRows_temp = mysql_num_rows($temp);
+		$temp = mysqli_query($query_temp, $koneksi) or die(mysqli_error());
+		$row_temp = mysqli_fetch_assoc($temp);
+		$totalRows_temp = mysqli_num_rows($temp);
 
 		do {
 			$tempSQL = sprintf(
@@ -323,8 +323,8 @@ if ((isset($_POST["MM_update"])) && ($_POST["MM_update"] == "formSelesai")) {
 				GetSQLValueString($row_temp['kode'], "text")
 			);
 			//edit stok										 
-			mysql_select_db($database_koneksi, $koneksi);
-			$hasilstok = mysql_query($stok, $koneksi) or die(mysql_error());
+			mysqli_select_db($database_koneksi, $koneksi);
+			$hasilstok = mysqli_query($stok, $koneksi) or die(mysqli_error());
 
 			$deleteSQL = sprintf(
 				"DELETE FROM transaksitemp WHERE id=%s",
@@ -332,13 +332,13 @@ if ((isset($_POST["MM_update"])) && ($_POST["MM_update"] == "formSelesai")) {
 			);
 
 			//simpan
-			mysql_select_db($database_koneksi, $koneksi);
-			$Resulttemp = mysql_query($tempSQL, $koneksi) or die(mysql_error());
+			mysqli_select_db($database_koneksi, $koneksi);
+			$Resulttemp = mysqli_query($tempSQL, $koneksi) or die(mysqli_error());
 
 			//delete
-			mysql_select_db($database_koneksi, $koneksi);
-			$del = mysql_query($deleteSQL, $koneksi) or die(mysql_error());
-		} while ($row_temp = mysql_fetch_assoc($temp));
+			mysqli_select_db($database_koneksi, $koneksi);
+			$del = mysqli_query($deleteSQL, $koneksi) or die(mysqli_error());
+		} while ($row_temp = mysqli_fetch_assoc($temp));
 
 
 
@@ -354,11 +354,11 @@ if ((isset($_POST["MM_update"])) && ($_POST["MM_update"] == "formSelesai")) {
 			GetSQLValueString($faktur, "text")
 		);
 
-		mysql_select_db($database_koneksi, $koneksi);
-		$Result1 = mysql_query($updateSQL, $koneksi) or die(mysql_error());
+		mysqli_select_db($database_koneksi, $koneksi);
+		$Result1 = mysqli_query($updateSQL, $koneksi) or die(mysqli_error());
 
 		if ($Result1) {
-			$Commit = mysql_query("COMMIT", $koneksi) or die(errorQuery(mysql_error($koneksi)));
+			$Commit = mysqli_query("COMMIT", $koneksi) or die(errorQuery(mysqli_error($koneksi)));
 			require('faktur.php');
 			echo "<script>
 		window.open('report/kwitansi.php?id=$faktur', '', 'width=600,height=600');
@@ -380,18 +380,18 @@ if ((isset($_POST["MM_update"])) && ($_POST["MM_update"] == "formDiskon")) {
 		GetSQLValueString($_POST['kodeproduk'], "text")
 	);
 
-	mysql_select_db($database_koneksi, $koneksi);
-	$hasilstok = mysql_query($stok, $koneksi) or die(mysql_error());
+	mysqli_select_db($database_koneksi, $koneksi);
+	$hasilstok = mysqli_query($stok, $koneksi) or die(mysqli_error());
 
 	//untuk reload update barang
-	mysql_select_db($database_koneksi, $koneksi);
+	mysqli_select_db($database_koneksi, $koneksi);
 	$query_trans = sprintf(
 		"SELECT * FROM transaksitemp INNER JOIN produk ON kode = kodeproduk WHERE faktur = %s ORDER BY transaksitemp.id ASC",
 		GetSQLValueString($faktur, "text")
 	);
-	$trans = mysql_query($query_trans, $koneksi) or die(mysql_error());
-	$row_trans = mysql_fetch_assoc($trans);
-	$totalRows_trans = mysql_num_rows($trans);
+	$trans = mysqli_query($query_trans, $koneksi) or die(mysqli_error());
+	$row_trans = mysqli_fetch_assoc($trans);
+	$totalRows_trans = mysqli_num_rows($trans);
 }
 ?>
 
@@ -464,7 +464,7 @@ if ((isset($_POST["MM_update"])) && ($_POST["MM_update"] == "formDiskon")) {
 					</tr>
 				<?php
 					$no++;
-				} while ($row_search = mysql_fetch_assoc($search)); ?>
+				} while ($row_search = mysqli_fetch_assoc($search)); ?>
 			</table>
 		<?php } else { ?>
 			<p class="text-danger padding-10mm">Perhatian! Pastikan bahwa stok barang tidak kosong</p>
@@ -605,7 +605,7 @@ if ((isset($_POST["MM_update"])) && ($_POST["MM_update"] == "formDiskon")) {
 						$diskon += $row_trans['diskon'];
 						$no++;
 						$idmodal++;
-					} while ($row_trans = mysql_fetch_assoc($trans)); ?>
+					} while ($row_trans = mysqli_fetch_assoc($trans)); ?>
 					<?php global $item; ?>
 					<?php global $harga; ?>
 					<?php global $diskon; ?>
@@ -789,7 +789,7 @@ if ((isset($_POST["MM_update"])) && ($_POST["MM_update"] == "formDiskon")) {
 <?php
 if ((isset($_POST["MM_insert"])) && ($_POST["MM_insert"] == "formBarang")) {
 	require('faktur.php');
-	$Start = mysql_query("START TRANSACTION", $koneksi) or die(errorQuery(mysql_error($koneksi)));
+	$Start = mysqli_query("START TRANSACTION", $koneksi) or die(errorQuery(mysqli_error($koneksi)));
 	$insertSQL = sprintf(
 		"INSERT INTO `produk`(`kodeproduk`,`namaproduk`, `kategori`,`hargadasar`, `hargajual`, `satuan`, `stok`,`addedproduk`, `addbyproduk`) 
 				  VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)",
@@ -804,8 +804,8 @@ if ((isset($_POST["MM_insert"])) && ($_POST["MM_insert"] == "formBarang")) {
 		GetSQLValueString($ID, "int")
 	);
 
-	mysql_select_db($database_koneksi, $koneksi);
-	$Result1 = mysql_query($insertSQL, $koneksi) or die(errorQuery(mysql_error()));
+	mysqli_select_db($database_koneksi, $koneksi);
+	$Result1 = mysqli_query($insertSQL, $koneksi) or die(errorQuery(mysqli_error()));
 
 	if ($Result1) {
 		$insertSQL = sprintf(
@@ -825,11 +825,11 @@ if ((isset($_POST["MM_insert"])) && ($_POST["MM_insert"] == "formBarang")) {
 			GetSQLValueString($ta, "text")
 		);
 
-		mysql_select_db($database_koneksi, $koneksi);
-		$Result1 = mysql_query($insertSQL, $koneksi) or die(mysql_error());
+		mysqli_select_db($database_koneksi, $koneksi);
+		$Result1 = mysqli_query($insertSQL, $koneksi) or die(mysqli_error());
 
 		if ($Result1) {
-			$Commit = mysql_query("COMMIT", $koneksi) or die(errorQuery(mysql_error()));
+			$Commit = mysqli_query("COMMIT", $koneksi) or die(errorQuery(mysqli_error()));
 			refresh('?page=scan/add');
 		}
 	}

@@ -1,11 +1,11 @@
 <?php  
-mysql_select_db($database_koneksi, $koneksi);
+mysqli_select_db($database_koneksi, $koneksi);
 $query_Return = "SELECT returnproduk.*, vw_login.Nama FROM returnproduk 
 LEFT JOIN vw_login ON addbyreturn = vw_login.ID 
 WHERE tglreturn = CURDATE() ORDER BY id_return DESC";
-$Return = mysql_query($query_Return, $koneksi) or die(mysql_error());
-$row_Return = mysql_fetch_assoc($Return);
-$totalRows_Return = mysql_num_rows($Return);
+$Return = mysqli_query($query_Return, $koneksi) or die(mysqli_error());
+$row_Return = mysqli_fetch_assoc($Return);
+$totalRows_Return = mysqli_num_rows($Return);
 ?> 
 <style type="text/css">
 <!--
@@ -38,7 +38,7 @@ $totalRows_Return = mysql_num_rows($Return);
       HD : Rp. <?php echo $row_Return['hargadasar']; ?> | HJ : Rp. <?php echo $row_Return['hargajual']; ?></td>
       <td><?php echo $row_Return['ketreturn']; ?></td>
     </tr>
-    <?php } while ($row_Return = mysql_fetch_assoc($Return)); ?>
+    <?php } while ($row_Return = mysqli_fetch_assoc($Return)); ?>
     </tbody>
 </table> 
 <?php }else{

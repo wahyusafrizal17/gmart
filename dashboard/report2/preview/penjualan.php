@@ -45,7 +45,7 @@ require_once('preview/page1.php'); ?>
                       <option value="<?php echo $row_Kassa['id'] ?>" <?php if (!(strcmp($row_Kassa['id'], htmlentities($colname, ENT_COMPAT, 'utf-8')))) {
                                                                         echo "SELECTED";
                                                                       } ?>><?php echo $row_Kassa['Nama'] ?></option>
-                    <?php } while ($row_Kassa = mysql_fetch_assoc($Kassa)); ?>
+                    <?php } while ($row_Kassa = mysqli_fetch_assoc($Kassa)); ?>
                   </select>
                 </div>
               </div>
@@ -58,7 +58,7 @@ require_once('preview/page1.php'); ?>
                       <option value="<?php echo $row_Faktur['jenisbayar'] ?>" <?php if (!(strcmp($row_Faktur['jenisbayar'], htmlentities($colname, ENT_COMPAT, 'utf-8')))) {
                                                                                 echo "SELECTED";
                                                                               } ?>><?php echo $row_Faktur['jenisbayar'] ?></option>
-                    <?php } while ($row_Faktur = mysql_fetch_assoc($Faktur)); ?>
+                    <?php } while ($row_Faktur = mysqli_fetch_assoc($Faktur)); ?>
                   </select>
                 </div>
               </div>
@@ -149,8 +149,8 @@ require_once('preview/page1.php'); ?>
 
               $query_laba = sprintf("SELECT faktur, tanggal, hargadasar, harga, diskon, qty, (hargadasar * qty) as hd, (harga * qty) as hj, sum((((harga * qty) - (hargadasar * qty)))-diskon) as laba, ((harga * qty) - diskon) as sisadiskon  FROM `transaksidetail` WHERE faktur = %s GROUP BY faktur",  GetSQLValueString($row_Penjualan['kodefaktur'], "text"));
 
-              $laba = mysql_query($query_laba, $koneksi) or die(mysql_error());
-              $row_laba = mysql_fetch_assoc($laba);
+              $laba = mysqli_query($query_laba, $koneksi) or die(mysqli_error());
+              $row_laba = mysqli_fetch_assoc($laba);
               //---------
             ?>
               <tr>
@@ -193,7 +193,7 @@ require_once('preview/page1.php'); ?>
               </tr>
             <?php
               $no++;
-            } while ($row_Penjualan = mysql_fetch_assoc($rs_Penjualan)); ?>
+            } while ($row_Penjualan = mysqli_fetch_assoc($rs_Penjualan)); ?>
           </table>
         </div>
       </div>

@@ -17,8 +17,8 @@ if ((isset($_POST["MM_insert"])) && ($_POST["MM_insert"] == "form1")) {
         GetSQLValueString($_POST['id'], "int")
     );
 
-    mysql_select_db($database_koneksi, $koneksi);
-    $Result1 = mysql_query($updateSQL, $koneksi) or die(errorQuery(mysql_error()));
+    mysqli_select_db($database_koneksi, $koneksi);
+    $Result1 = mysqli_query($updateSQL, $koneksi) or die(errorQuery(mysqli_error()));
 
     //26 Desember open
     $activitySQL = sprintf(
@@ -26,8 +26,8 @@ if ((isset($_POST["MM_insert"])) && ($_POST["MM_insert"] == "form1")) {
         GetSQLValueString($actual_link, "text"),
         GetSQLValueString($ID, "int")
     );
-    mysql_select_db($database_koneksi, $koneksi);
-    $ResultSQL = mysql_query($activitySQL, $koneksi) or die(errorQuery(mysql_error()));
+    mysqli_select_db($database_koneksi, $koneksi);
+    $ResultSQL = mysqli_query($activitySQL, $koneksi) or die(errorQuery(mysqli_error()));
     //26 desember close
 
     if ($Result1) {
@@ -39,11 +39,11 @@ $colname_out  = "-1";
 if (isset($_GET['id'])) {
     $colname_out  = $_GET['id'];
 }
-mysql_select_db($database_koneksi, $koneksi);
+mysqli_select_db($database_koneksi, $koneksi);
 $query_out = sprintf("SELECT * FROM pengeluaran WHERE id = %s", GetSQLValueString($colname_out, "int"));
-$out = mysql_query($query_out, $koneksi) or die(errorQuery(mysql_error()));
-$row_out = mysql_fetch_assoc($out);
-$totalRows_out = mysql_num_rows($out);
+$out = mysqli_query($query_out, $koneksi) or die(errorQuery(mysqli_error()));
+$row_out = mysqli_fetch_assoc($out);
+$totalRows_out = mysqli_num_rows($out);
 
 ?>
 <?php if (isset($_GET['sukses'])) {

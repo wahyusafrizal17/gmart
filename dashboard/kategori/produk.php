@@ -68,7 +68,7 @@
       <td><?php echo $row_Kategori['alertproduk']; ?></td>
       <td><?php $fungsi($row_Kategori['idproduk'],'produk','produk'); ?></td>
     </tr>
-    <?php } while ($row_Kategori = mysql_fetch_assoc($rs_Kategori)); ?>
+    <?php } while ($row_Kategori = mysqli_fetch_assoc($rs_Kategori)); ?>
     </tbody>
 </table> 
 <?php }else{
