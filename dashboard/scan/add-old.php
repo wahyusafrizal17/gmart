@@ -17,15 +17,15 @@ if ((isset($_POST["MM_faktur"])) && ($_POST["MM_faktur"] == "form2")) {
 		GetSQLValueString($ta, "text")
 	);
 
-	mysqli_select_db($database_koneksi, $koneksi);
-	$Result1 = mysqli_query($insertSQL, $koneksi) or die(mysqli_error());
+	mysql_select_db($database_koneksi, $koneksi);
+	$Result1 = mysql_query($insertSQL, $koneksi) or die(mysql_error());
 
 	if ($Result1) {
 		refresh('?page=scan/add');
 	}
 }
 
-mysqli_select_db($database_koneksi, $koneksi);
+mysql_select_db($database_koneksi, $koneksi);
 $query_Faktur = sprintf(
 	"SELECT * FROM faktur WHERE tglfaktur = %s AND addbyfaktur = %s AND periode = %s AND statusfaktur = %s ORDER BY idfaktur DESC",
 	GetSQLValueString($tglsekarang, "date"),
@@ -33,9 +33,9 @@ $query_Faktur = sprintf(
 	GetSQLValueString($ta, "text"),
 	GetSQLValueString('N', "text")
 );
-$Faktur = mysqli_query($query_Faktur, $koneksi) or die(mysqli_error());
-$row_Faktur = mysqli_fetch_assoc($Faktur);
-$totalRows_Faktur = mysqli_num_rows($Faktur);
+$Faktur = mysql_query($query_Faktur, $koneksi) or die(mysql_error());
+$row_Faktur = mysql_fetch_assoc($Faktur);
+$totalRows_Faktur = mysql_num_rows($Faktur);
 //MEMBUAT NILAI FAKTUR
 
 $faktur = $row_Faktur['kodefaktur'];
@@ -43,98 +43,105 @@ if (isset($_GET['faktur'])) {
 	$faktur = $_GET['faktur'];
 }
 //---------------------------
-
 $colname_search = "--1";
+$totalRows_search = 0; // Inisialisasi agar tidak undefined
+
 if (isset($_POST['search'])) {
-	$colname_search = $_POST['search'];
-	require('faktur.php');
+    $colname_search = $_POST['search'];
+    require('faktur.php');
+
+    mysql_select_db($database_koneksi, $koneksi);
+    $query_search = sprintf(
+        "SELECT * FROM produk WHERE stok > 0 AND (kodeproduk = %s OR namaproduk LIKE %s) LIMIT 10",
+        GetSQLValueString($colname_search, "text"),
+        GetSQLValueString("%" . $colname_search . "%", "text")
+    );
+    $search = mysql_query($query_search, $koneksi) or die(mysql_error());
+    $row_search = mysql_fetch_assoc($search);
+    $totalRows_search = mysql_num_rows($search);
+
+    // Jika hanya 1 produk ditemukan, langsung proses simpan
+    if ($totalRows_search == 1) {
+        require('faktur.php');
+
+        // Cek apakah produk sudah ada di transaksi temp
+        mysql_select_db($database_koneksi, $koneksi);
+        $cek = sprintf(
+            "SELECT kode, faktur, qty FROM transaksitemp 
+             LEFT JOIN produk ON kode = kodeproduk
+             WHERE kode = %s AND faktur = %s",
+            GetSQLValueString($row_search['kodeproduk'], "text"),
+            GetSQLValueString($faktur, "text")
+        );
+        $rs_cek = mysql_query($cek, $koneksi) or die(mysql_error());
+        $row_rs_cek = mysql_fetch_assoc($rs_cek);
+        $totalRows_rs_cek = mysql_num_rows($rs_cek);
+
+        if ($totalRows_rs_cek > 0) {
+            // Jika sudah ada, tambah qty
+            if ($row_rs_cek['qty'] >= $row_search['stok']) {
+                danger('Oops!', $row_search['namaproduk'] . " - Stok terbatas!! Maks. " . $row_rs_cek['qty']);
+            } else {
+                $stok = sprintf(
+                    "UPDATE transaksitemp SET qty = qty + 1 WHERE faktur = %s AND kode = %s",
+                    GetSQLValueString($faktur, "text"),
+                    GetSQLValueString($row_search['kodeproduk'], "text")
+                );
+                mysql_select_db($database_koneksi, $koneksi);
+                $hasilstok = mysql_query($stok, $koneksi) or die(mysql_error());
+            }
+        } else {
+            // Jika belum ada, insert baru
+            $insertSQL = sprintf(
+                "INSERT INTO transaksitemp 
+                (`faktur`, `tanggal`, `kode`, `nama`, `harga`, `hargadasar`, `diskon`, `qty`, `added`, `addby`, `admintt`, `stt`, `periode`) 
+                VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)",
+                GetSQLValueString($faktur, "text"),
+                GetSQLValueString($today, "date"),
+                GetSQLValueString($row_search['kodeproduk'], "text"),
+                GetSQLValueString($row_search['namaproduk'], "text"),
+                GetSQLValueString($row_search['hargajual'], "double"),
+                GetSQLValueString($row_search['hargadasar'], "double"),
+                GetSQLValueString(0, "double"),
+                GetSQLValueString(1, "int"),
+                GetSQLValueString(time(), "int"),
+                GetSQLValueString($ID, "int"),
+                GetSQLValueString($nama, "text"),
+                GetSQLValueString($row_search['statusproduk'], "text"),
+                GetSQLValueString($ta, "text")
+            );
+
+            mysql_select_db($database_koneksi, $koneksi);
+            $Result1 = mysql_query($insertSQL, $koneksi) or die(mysql_error());
+        }
+
+        // Kosongkan input pencarian setelah berhasil
+        unset($_POST['search']);
+    }
 }
-mysqli_select_db($database_koneksi, $koneksi);
-$query_search = sprintf(
-	"SELECT * FROM produk WHERE stok > 0 AND kodeproduk = %s OR namaproduk LIKE %s LIMIT 10",
-	GetSQLValueString($colname_search, "text"),
-	GetSQLValueString("%" . $colname_search . "%", "text")
-);
-$search = mysqli_query($query_search, $koneksi) or die(mysqli_error());
-$row_search = mysqli_fetch_assoc($search);
-$totalRows_search = mysqli_num_rows($search);
 
-//JIKA HASIL PENCARIAN 1 PRODUK MAKA LANGSUNG SIMPAN
-if ($totalRows_search == 1) {
-	require('faktur.php');
-
-	//SEBELUM ITU, DICEK JIKA PRODUK YG SAMA MAKA TAMBAHKAN STOK SAJA
-	mysqli_select_db($database_koneksi, $koneksi);
-	$cek =  sprintf(
-		"SELECT kode, faktur, qty FROM transaksitemp WHERE kode = %s AND faktur = %s",
-		GetSQLValueString($row_search['kodeproduk'], "text"),
-		GetSQLValueString($faktur, "text")
-	);
-	$rs_cek = mysqli_query($cek, $koneksi) or die(mysqli_error());
-	$row_rs_cek = mysqli_fetch_assoc($rs_cek);
-	$totalRows_rs_cek = mysqli_num_rows($rs_cek);
-
-	if ($totalRows_rs_cek > 0) {
-		//update / tambah qty produk
-		if ($row_rs_cek['qty'] >= $row_search['stok']) {
-			danger('Oops!', '' . $row_search['namaproduk'] . " - Stok terbatas!! Maks. " . $row_rs_cek['qty'] . ' ');
-		} else {
-			$stok = sprintf(
-				"UPDATE transaksitemp SET qty = qty + 1 WHERE faktur = %s AND kode = %s",
-				GetSQLValueString($faktur, "text"),
-				GetSQLValueString($row_search['kodeproduk'], "text")
-			);
-
-			mysqli_select_db($database_koneksi, $koneksi);
-			$hasilstok = mysqli_query($stok, $koneksi) or die(mysqli_error());
-		}
-	} else {
-		require('faktur.php');
-
-		$insertSQL = sprintf(
-			"INSERT INTO transaksitemp (`faktur`, `tanggal`, `kode`, `nama`, `harga`, `hargadasar`, `diskon`,`qty`, `added`, `addby`, `admintt`, `stt`, `periode`) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)",
-			GetSQLValueString($faktur, "text"),
-			GetSQLValueString($today, "date"),
-			GetSQLValueString($row_search['kodeproduk'], "text"),
-			GetSQLValueString($row_search['namaproduk'], "text"),
-			GetSQLValueString($row_search['hargajual'], "double"),
-			GetSQLValueString($row_search['hargadasar'], "double"),
-			GetSQLValueString(0, "double"),
-			GetSQLValueString(1, "int"),
-			GetSQLValueString(time(), "int"),
-			GetSQLValueString($ID, "int"),
-			GetSQLValueString($nama, "text"),
-			GetSQLValueString($row_search['statusproduk'], "text"),
-			GetSQLValueString($ta, "text")
-		);
-
-		mysqli_select_db($database_koneksi, $koneksi);
-		$Result1 = mysqli_query($insertSQL, $koneksi) or die(mysqli_error());
-	} //tutup Cek Produk yg sudah ada	  
-} //tutup pencarian produk
-
-mysqli_select_db($database_koneksi, $koneksi);
+mysql_select_db($database_koneksi, $koneksi);
 $query_trans = sprintf(
 	"SELECT * FROM transaksitemp INNER JOIN produk ON kode = kodeproduk WHERE faktur = %s ORDER BY transaksitemp.id ASC",
 	GetSQLValueString($faktur, "text")
 );
-$trans = mysqli_query($query_trans, $koneksi) or die(mysqli_error());
-$row_trans = mysqli_fetch_assoc($trans);
-$totalRows_trans = mysqli_num_rows($trans);
+$trans = mysql_query($query_trans, $koneksi) or die(mysql_error());
+$row_trans = mysql_fetch_assoc($trans);
+$totalRows_trans = mysql_num_rows($trans);
 
 //MENGUBAH NILAI QTY PADA TEMPTRANSAKSI
 if ((isset($_POST["MM_update"])) && ($_POST["MM_update"] == "formCombobox")) {
 
-	mysqli_select_db($database_koneksi, $koneksi);
+	mysql_select_db($database_koneksi, $koneksi);
 	$cek =  sprintf(
 		"SELECT stok FROM produk WHERE kodeproduk = %s",
 		GetSQLValueString($_POST['kodeCombo'], "text")
 	);
-	$rs_cek = mysqli_query($cek, $koneksi) or die(mysqli_error());
-	$row_rs_cek = mysqli_fetch_assoc($rs_cek);
-	$totalRows_rs_cek = mysqli_num_rows($rs_cek);
+	$rs_cek = mysql_query($cek, $koneksi) or die(mysql_error());
+	$row_rs_cek = mysql_fetch_assoc($rs_cek);
+	$totalRows_rs_cek = mysql_num_rows($rs_cek);
 
-	if ($_POST['qtyupdate'] >= $row_rs_cek['stok']) {
+	if ($_POST['qtyupdate'] > $row_rs_cek['stok']) {
 		danger('Oops!', "Stok terbatas!! Maks. " . $row_rs_cek['stok'] . ' ');
 	} else {
 		$stok = sprintf(
@@ -144,21 +151,21 @@ if ((isset($_POST["MM_update"])) && ($_POST["MM_update"] == "formCombobox")) {
 			GetSQLValueString($_POST['kodeCombo'], "text")
 		);
 
-		mysqli_select_db($database_koneksi, $koneksi);
-		$hasilstok = mysqli_query($stok, $koneksi) or die(mysqli_error());
+		mysql_select_db($database_koneksi, $koneksi);
+		$hasilstok = mysql_query($stok, $koneksi) or die(mysql_error());
 	}
 
 
 
 	//untuk reload update barang	
-	mysqli_select_db($database_koneksi, $koneksi);
+	mysql_select_db($database_koneksi, $koneksi);
 	$query_trans = sprintf(
 		"SELECT * FROM transaksitemp INNER JOIN produk ON kode = kodeproduk WHERE faktur = %s ORDER BY transaksitemp.id ASC",
 		GetSQLValueString($faktur, "text")
 	);
-	$trans = mysqli_query($query_trans, $koneksi) or die(mysqli_error());
-	$row_trans = mysqli_fetch_assoc($trans);
-	$totalRows_trans = mysqli_num_rows($trans);
+	$trans = mysql_query($query_trans, $koneksi) or die(mysql_error());
+	$row_trans = mysql_fetch_assoc($trans);
+	$totalRows_trans = mysql_num_rows($trans);
 }
 
 //-----------------
@@ -167,15 +174,17 @@ if ($totalRows_search > 1) {
 	for ($i = 1; $i <= $totalRows_search; $i++) {
 		if ((isset($_POST["MM_insert"])) && ($_POST["MM_insert"] == "formx" . $i)) {
 			//SEBELUM ITU, DICEK JIKA PRODUK YG SAMA MAKA TAMBAHKAN STOK SAJA
-			mysqli_select_db($database_koneksi, $koneksi);
+			mysql_select_db($database_koneksi, $koneksi);
 			$cek =  sprintf(
-				"SELECT kode, faktur, qty FROM transaksitemp WHERE kode = %s AND faktur = %s",
+				"SELECT kode, faktur, qty FROM transaksitemp 
+				LEFT JOIN produk ON kode = kodeproduk
+				WHERE kode = %s AND faktur = %s",
 				GetSQLValueString($_POST['kodeproduk'], "text"),
 				GetSQLValueString($faktur, "text")
 			);
-			$rs_cek = mysqli_query($cek, $koneksi) or die(mysqli_error());
-			$row_rs_cek = mysqli_fetch_assoc($rs_cek);
-			$totalRows_rs_cek = mysqli_num_rows($rs_cek);
+			$rs_cek = mysql_query($cek, $koneksi) or die(mysql_error());
+			$row_rs_cek = mysql_fetch_assoc($rs_cek);
+			$totalRows_rs_cek = mysql_num_rows($rs_cek);
 
 			if ($totalRows_rs_cek > 0) {
 				//update / tambah qty produk
@@ -188,8 +197,8 @@ if ($totalRows_search > 1) {
 						GetSQLValueString($_POST['kodeproduk'], "text")
 					);
 
-					mysqli_select_db($database_koneksi, $koneksi);
-					$hasilstok = mysqli_query($stok, $koneksi) or die(mysqli_error());
+					mysql_select_db($database_koneksi, $koneksi);
+					$hasilstok = mysql_query($stok, $koneksi) or die(mysql_error());
 				}
 			} else {
 				$insertSQL = sprintf(
@@ -209,33 +218,35 @@ if ($totalRows_search > 1) {
 					GetSQLValueString($ta, "text")
 				);
 
-				mysqli_select_db($database_koneksi, $koneksi);
-				$Result1 = mysqli_query($insertSQL, $koneksi) or die(mysqli_error());
+				mysql_select_db($database_koneksi, $koneksi);
+				$Result1 = mysql_query($insertSQL, $koneksi) or die(mysql_error());
 			} //tutup Cek Produk yg sudah ada  */
 		}
 		//untuk reload update barang
-		mysqli_select_db($database_koneksi, $koneksi);
+		mysql_select_db($database_koneksi, $koneksi);
 		$query_trans = sprintf(
 			"SELECT * FROM transaksitemp INNER JOIN produk ON kode = kodeproduk WHERE faktur = %s ORDER BY transaksitemp.id ASC",
 			GetSQLValueString($faktur, "text")
 		);
-		$trans = mysqli_query($query_trans, $koneksi) or die(mysqli_error());
-		$row_trans = mysqli_fetch_assoc($trans);
-		$totalRows_trans = mysqli_num_rows($trans);
+		$trans = mysql_query($query_trans, $koneksi) or die(mysql_error());
+		$row_trans = mysql_fetch_assoc($trans);
+		$totalRows_trans = mysql_num_rows($trans);
 	}
 }
 
 if ((isset($_POST["MM_insert"])) && ($_POST["MM_insert"] == "formCari")) {
 	//SEBELUM ITU, DICEK JIKA PRODUK YG SAMA MAKA TAMBAHKAN STOK SAJA
-	mysqli_select_db($database_koneksi, $koneksi);
+	mysql_select_db($database_koneksi, $koneksi);
 	$cek =  sprintf(
-		"SELECT kode, faktur, qty FROM transaksitemp WHERE kode = %s AND faktur = %s",
+		"SELECT kode, faktur, qty FROM transaksitemp 
+				LEFT JOIN produk ON kode = kodeproduk
+				WHERE kode = %s AND faktur = %s",
 		GetSQLValueString($_POST['kodeproduk'], "text"),
 		GetSQLValueString($faktur, "text")
 	);
-	$rs_cek = mysqli_query($cek, $koneksi) or die(mysqli_error());
-	$row_rs_cek = mysqli_fetch_assoc($rs_cek);
-	$totalRows_rs_cek = mysqli_num_rows($rs_cek);
+	$rs_cek = mysql_query($cek, $koneksi) or die(mysql_error());
+	$row_rs_cek = mysql_fetch_assoc($rs_cek);
+	$totalRows_rs_cek = mysql_num_rows($rs_cek);
 
 	if ($totalRows_rs_cek > 0) {
 		//update / tambah qty produk
@@ -248,56 +259,63 @@ if ((isset($_POST["MM_insert"])) && ($_POST["MM_insert"] == "formCari")) {
 				GetSQLValueString($_POST['kodeproduk'], "text")
 			);
 
-			mysqli_select_db($database_koneksi, $koneksi);
-			$hasilstok = mysqli_query($stok, $koneksi) or die(mysqli_error());
+			mysql_select_db($database_koneksi, $koneksi);
+			$hasilstok = mysql_query($stok, $koneksi) or die(mysql_error());
 		}
 	} else {
-		$insertSQL = sprintf(
-			"INSERT INTO transaksitemp (`faktur`, `tanggal`, `kode`, `nama`, `harga`, `hargadasar`, `diskon`,`qty`, `added`, `addby`, `admintt`, `stt`, `periode`) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)",
-			GetSQLValueString($faktur, "text"),
-			GetSQLValueString($today, "date"),
-			GetSQLValueString($_POST['kodeproduk'], "text"),
-			GetSQLValueString($_POST['namaproduk'], "text"),
-			GetSQLValueString($_POST['hargajual'], "double"),
-			GetSQLValueString($_POST['hargadasar'], "double"),
-			GetSQLValueString(0, "double"),
-			GetSQLValueString(1, "int"),
-			GetSQLValueString(time(), "int"),
-			GetSQLValueString($ID, "int"),
-			GetSQLValueString($nama, "text"),
-			GetSQLValueString($_POST['statusproduk'], "text"),
-			GetSQLValueString($ta, "text")
-		);
+		//cek point
+		if ($_POST['stok'] > 0) {
+			$insertSQL = sprintf(
+				"INSERT INTO transaksitemp (`faktur`, `tanggal`, `kode`, `nama`, `harga`, `hargadasar`, `diskon`,`qty`, `added`, `addby`, `admintt`, `stt`, `periode`) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)",
+				GetSQLValueString($faktur, "text"),
+				GetSQLValueString($today, "date"),
+				GetSQLValueString($_POST['kodeproduk'], "text"),
+				GetSQLValueString($_POST['namaproduk'], "text"),
+				GetSQLValueString($_POST['hargajual'], "double"),
+				GetSQLValueString($_POST['hargadasar'], "double"),
+				GetSQLValueString(0, "double"),
+				GetSQLValueString(1, "int"),
+				GetSQLValueString(time(), "int"),
+				GetSQLValueString($ID, "int"),
+				GetSQLValueString($nama, "text"),
+				GetSQLValueString($_POST['statusproduk'], "text"),
+				GetSQLValueString($ta, "text")
+			);
 
-		mysqli_select_db($database_koneksi, $koneksi);
-		$Result1 = mysqli_query($insertSQL, $koneksi) or die(mysqli_error());
+			mysql_select_db($database_koneksi, $koneksi);
+			$Result1 = mysql_query($insertSQL, $koneksi) or die(mysql_error());
+		}else{
+			danger('Oops!', '' . $row_search['namaproduk'] . '- Stok tidak tersedia!!');
+		}
 	} //tutup Cek Produk yg sudah ada  */
 
 	//untuk reload update barang
-	mysqli_select_db($database_koneksi, $koneksi);
+	mysql_select_db($database_koneksi, $koneksi);
 	$query_trans = sprintf(
 		"SELECT * FROM transaksitemp INNER JOIN produk ON kode = kodeproduk WHERE faktur = %s ORDER BY transaksitemp.id ASC",
 		GetSQLValueString($faktur, "text")
 	);
-	$trans = mysqli_query($query_trans, $koneksi) or die(mysqli_error());
-	$row_trans = mysqli_fetch_assoc($trans);
-	$totalRows_trans = mysqli_num_rows($trans);
+	$trans = mysql_query($query_trans, $koneksi) or die(mysql_error());
+	$row_trans = mysql_fetch_assoc($trans);
+	$totalRows_trans = mysql_num_rows($trans);
 }
 
 
 
 //--------------- UBAH STATUS Y PADA FAKTUR --------------
 if ((isset($_POST["MM_update"])) && ($_POST["MM_update"] == "formSelesai")) {
-
-	if ($_POST["bayar"] >= $_POST["textfield3"]) {
-		mysqli_select_db($database_koneksi, $koneksi);
+	$Start = mysql_query("START TRANSACTION", $koneksi) or die(errorQuery(mysql_error($koneksi)));
+	$v_bayar = str_replace('.', '', $_POST['bayar']);
+	$v_balek = str_replace('.', '', $_POST['balek']);
+	if ($v_bayar >= $_POST["textfield3"]) {
+		mysql_select_db($database_koneksi, $koneksi);
 		$query_temp = sprintf(
 			"SELECT * FROM transaksitemp WHERE faktur = %s ORDER BY id ASC",
 			GetSQLValueString($faktur, "text")
 		);
-		$temp = mysqli_query($query_temp, $koneksi) or die(mysqli_error());
-		$row_temp = mysqli_fetch_assoc($temp);
-		$totalRows_temp = mysqli_num_rows($temp);
+		$temp = mysql_query($query_temp, $koneksi) or die(mysql_error());
+		$row_temp = mysql_fetch_assoc($temp);
+		$totalRows_temp = mysql_num_rows($temp);
 
 		do {
 			$tempSQL = sprintf(
@@ -323,8 +341,8 @@ if ((isset($_POST["MM_update"])) && ($_POST["MM_update"] == "formSelesai")) {
 				GetSQLValueString($row_temp['kode'], "text")
 			);
 			//edit stok										 
-			mysqli_select_db($database_koneksi, $koneksi);
-			$hasilstok = mysqli_query($stok, $koneksi) or die(mysqli_error());
+			mysql_select_db($database_koneksi, $koneksi);
+			$hasilstok = mysql_query($stok, $koneksi) or die(mysql_error());
 
 			$deleteSQL = sprintf(
 				"DELETE FROM transaksitemp WHERE id=%s",
@@ -332,13 +350,13 @@ if ((isset($_POST["MM_update"])) && ($_POST["MM_update"] == "formSelesai")) {
 			);
 
 			//simpan
-			mysqli_select_db($database_koneksi, $koneksi);
-			$Resulttemp = mysqli_query($tempSQL, $koneksi) or die(mysqli_error());
+			mysql_select_db($database_koneksi, $koneksi);
+			$Resulttemp = mysql_query($tempSQL, $koneksi) or die(mysql_error());
 
 			//delete
-			mysqli_select_db($database_koneksi, $koneksi);
-			$del = mysqli_query($deleteSQL, $koneksi) or die(mysqli_error());
-		} while ($row_temp = mysqli_fetch_assoc($temp));
+			mysql_select_db($database_koneksi, $koneksi);
+			$del = mysql_query($deleteSQL, $koneksi) or die(mysql_error());
+		} while ($row_temp = mysql_fetch_assoc($temp));
 
 
 
@@ -346,18 +364,43 @@ if ((isset($_POST["MM_update"])) && ($_POST["MM_update"] == "formSelesai")) {
 			"UPDATE faktur SET jenisbayar=%s, statusfaktur=%s, kembalian=%s, potongan=%s, totalbayar=%s, nohp=%s, namapelanggan=%s WHERE kodefaktur = %s",
 			GetSQLValueString($_POST['jenisbayar'], "text"),
 			GetSQLValueString('Y', "text"),
-			GetSQLValueString($_POST['balek'], "double"),
+			GetSQLValueString($v_balek, "double"),
 			GetSQLValueString($_POST['diskon'], "double"),
-			GetSQLValueString($_POST['bayar'], "double"),
+			GetSQLValueString($v_bayar, "double"),
 			GetSQLValueString($_POST['nohp'], "double"),
 			GetSQLValueString($_POST['namapelanggan'], "text"),
 			GetSQLValueString($faktur, "text")
 		);
 
-		mysqli_select_db($database_koneksi, $koneksi);
-		$Result1 = mysqli_query($updateSQL, $koneksi) or die(mysqli_error());
+		if ($_POST['namapelanggan'] != null) {
+			$query_cek = sprintf("SELECT * FROM member WHERE nama_member=%s",
+			GetSQLValueString($_POST['namapelanggan'], "text")
+			 );
+			$cek = mysql_query($query_cek, $koneksi) or die(mysql_error());
+			$row_cek = mysql_fetch_assoc($cek);
+
+			// $point = ($_POST['bayar'] - $_POST['balek']) / 10000;
+			$selisih = $v_bayar - $v_balek;
+			if ($selisih >= 0) {
+    			$point = floor($selisih / 10000);
+			} else {
+    			$point = 0;
+			}
+			$point_akhir = $row_cek['point'] + $point;
+			$updateMember = sprintf(
+				"UPDATE member SET point=%s WHERE nama_member = %s",
+				GetSQLValueString($point_akhir, "double"),
+				GetSQLValueString($_POST['namapelanggan'], "text")
+			);
+			mysql_select_db($database_koneksi, $koneksi);
+			mysql_query($updateMember, $koneksi) or die(mysql_error());
+		}
+
+		mysql_select_db($database_koneksi, $koneksi);
+		$Result1 = mysql_query($updateSQL, $koneksi) or die(mysql_error());
 
 		if ($Result1) {
+			$Commit = mysql_query("COMMIT", $koneksi) or die(errorQuery(mysql_error($koneksi)));
 			require('faktur.php');
 			echo "<script>
 		window.open('report/kwitansi.php?id=$faktur', '', 'width=600,height=600');
@@ -366,7 +409,7 @@ if ((isset($_POST["MM_update"])) && ($_POST["MM_update"] == "formSelesai")) {
 		}
 	} else {
 		echo "<script>
-		alert('Oops!, Pembayaran masih minus!');
+		alert('Oops!, Pembayaran masih minus brow!');
 	</script>";
 	}
 }
@@ -379,42 +422,68 @@ if ((isset($_POST["MM_update"])) && ($_POST["MM_update"] == "formDiskon")) {
 		GetSQLValueString($_POST['kodeproduk'], "text")
 	);
 
-	mysqli_select_db($database_koneksi, $koneksi);
-	$hasilstok = mysqli_query($stok, $koneksi) or die(mysqli_error());
+	mysql_select_db($database_koneksi, $koneksi);
+	$hasilstok = mysql_query($stok, $koneksi) or die(mysql_error());
 
 	//untuk reload update barang
-	mysqli_select_db($database_koneksi, $koneksi);
+	mysql_select_db($database_koneksi, $koneksi);
 	$query_trans = sprintf(
 		"SELECT * FROM transaksitemp INNER JOIN produk ON kode = kodeproduk WHERE faktur = %s ORDER BY transaksitemp.id ASC",
 		GetSQLValueString($faktur, "text")
 	);
-	$trans = mysqli_query($query_trans, $koneksi) or die(mysqli_error());
-	$row_trans = mysqli_fetch_assoc($trans);
-	$totalRows_trans = mysqli_num_rows($trans);
+	$trans = mysql_query($query_trans, $koneksi) or die(mysql_error());
+	$row_trans = mysql_fetch_assoc($trans);
+	$totalRows_trans = mysql_num_rows($trans);
 }
 ?>
 
 
+<style>
+@keyframes fadeInScale {
+  from {
+    opacity: 0;
+    transform: scale(0.9);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+</style>
 <div class="row">
-
-	<div class="col-md-12">
+	<div class="col-md-8 col-xs-12">
+		<label for="" class="small">SCAN BARCODE DISINI</label>
 		<form id="form1" name="form1" method="post" action="" autocomplete="off">
-
-			<div class="input-group margin">
+			
+			<div class="input-group">
 
 				<input type="text" name="search" placeholder="Masukkan Kode / Nama Produk" class="form-control" autofocus required>
+
 				<span class="input-group-btn">
-					<button type="submit" class="btn btn-info btn-flat">Search</button>
+					<button type="submit" class="btn btn-info btn-flat"><i class="fa fa-search"></i> Search</button>
+					<a href="javascript:void(0)"  class="btn btn-primary btn-flat" onclick="openCamera()"><i class="fa fa-barcode"></i> Scan</a>
 				</span>
 			</div>
 		</form>
 	</div>
+	<div class="col-md-2">
+		<a href="?page=tabulasi/penjualan" class="btn btn-warning btn-sm btn-block"><span class="fa fa-ticket"></span> Faktur Sebelumnya</a></span> <a href="" class="btn btn-info btn-sm btn-block" data-toggle="modal" data-target="#exampleModal"><span class="fa fa-ticket"></span> Add Product</a></span>
 
+	</div>
+	<div class="col-md-2">
+		<div class="small-box bg-red text-center">
 
-	<div class="clearfix"></div>
+			<label class="small">NO. FAKTUR</label>
+			<p style="font-size: 30px;"><?= $faktur; ?></p>
 
-	<div class="col-md-12">
+		</div>
+	</div>
+</div>
+<div class="row">
+	<!-- Pencarian produk jika lebih dari 1 -->
+	<div class="col-md-8">
 		<?php if ($totalRows_search > 1) { ?>
+			
 			<table width="100%" class="table table-sm table-condensed table-hover">
 				<tr bgcolor="#663399">
 					<td>
@@ -451,208 +520,227 @@ if ((isset($_POST["MM_update"])) && ($_POST["MM_update"] == "formDiskon")) {
 					</tr>
 				<?php
 					$no++;
-				} while ($row_search = mysqli_fetch_assoc($search)); ?>
+				} while ($row_search = mysql_fetch_assoc($search)); ?>
 			</table>
+
 		<?php } else { ?>
-			<marquee>Perhatian! Pastikan bahwa stok barang tidak kosong</marquee>
+			<p class="text-danger padding-10mm">Perhatian! Pastikan bahwa stok barang tidak kosong</p>
 		<?php	} ?>
 	</div> <!-- col -->
 
 	<div class="clearfix"></div>
-	<div class="col-md-12">
+	<div class="col-md-8 col-xs-12">
 
-		<h3>NO. FAKTUR : <?= $faktur; ?> <span class="pull-right">
-
-				<a href="?page=tabulasi/penjualan" class="btn btn-primary btn-sm"><span class="fa fa-ticket"></span> Faktur Sebelumnya</a></span>
-
-			<span class="pull-right">&nbsp;
-
-				<a href="" class="btn btn-success btn-sm" data-toggle="modal" data-target="#exampleModal"><span class="fa fa-ticket"></span> Add Product</a></span>
-
-		</h3>
-
-
-		<p></p>
 		<?php if ($totalRows_trans > 0) { ?>
-			<table width="100%" class="table table-sm table-condensed">
-				<thead>
-					<tr bgcolor="#006699">
-						<th width="2%">
-							<div align="center"><span class="style1">NO.</span></div>
-						</th>
-						<th width="53%">
-							<div align="center"><span class="style1">PRODUK</span></div>
-						</th>
-						<th width="53%">
-							<div align="center"><span class="style1">QTY</span></div>
-						</th>
-					</tr>
-				</thead>
-				<tbody>
-					<?php
-					$item = 0;
-					$harga = 0;
-					$diskon = 0;
-					$no = 1;
-					$idmodal = 1;
-					do { ?>
-						<tr style="font-size:22px">
-							<td>
-								<div align="center"><?php echo $no; ?></div>
-							</td>
-
-							<td class="text-uppercase"><a href="#" data-toggle="modal" data-target="#modal-default<?= $idmodal; ?>">
-									<span class="btn-block"><?php echo $row_trans['kode']; ?> - <?php echo $row_trans['nama']; ?>
-									</span>
-								</a>
-								<!-- Modal -->
-								<div class=" modal fade" id="modal-default<?= $idmodal; ?>">
-									<div class="modal-dialog">
-										<div class="modal-content">
-											<div class="modal-header">
-												<button type="button" class="close" data-dismiss="modal" aria-label="Close">
-													<span aria-hidden="true">&times;</span></button>
-												<h4 class="modal-title">DETAIL : <?php echo $row_trans['kode']; ?> - <?php echo $row_trans['nama']; ?></h4>
-											</div>
-											<div class="modal-body">
-												<div class="row">
-													<div class="col-md-6">
-														<div class="form-group">
-															<label for="">SETTING QTY</label>
-
-															<?php if ($row_trans['stok'] > 0) { ?>
-																<form id="form<?= $no; ?>" name="formCombobox" method="post" action="">
-
-																	<div class="input-group">
-																		<input type="number" name="qtyupdate" value="<?php echo htmlentities($row_trans['qty'], ENT_COMPAT, 'utf-8'); ?>" placeholder="Jumlah Beli" class="form-control input-lg" autofocus />
-																		<span class="input-group-btn">
-																			<button type="submit" class="btn btn-warning btn-lg">UBAH</button>
-																		</span>
-																	</div>
-
-																	<input type="hidden" name="MM_update" value="formCombobox" />
-																	<input type="hidden" name="kodeCombo" value="<?= $row_trans['kode']; ?>" />
-																</form>
-															<?php } else { ?>
-																<a href="?page=manage/addget&search=<?= $row_trans['kode']; ?>" target="_blank" class="form-control input-lg">Klik disini untuk Tambah Stok Darurat!</a>
-															<?php } ?>
-
-															<?php $dis = 0 * $row_trans['qty'];
-															number_format($dis); ?>
-														</div>
-													</div>
-													<div class="col-md-6">
-														<div class="form-group">
-															<label for="">SUB TOTAL</label>
-															<input type="text" class="form-control input-lg" name="" value="<?php $sub = $row_trans['harga'] * $row_trans['qty'];
-																															echo number_format($sub); ?>" readonly>
-
-														</div>
-													</div>
-												</div>
-
-
-												<div class="form-group">
-													<label for="">BERIKAN POTONGAN HARGA</label>
-													<form action="<?php echo $editFormAction; ?>" method="post" name="formDiskon" id="formDiskon">
-														<div class="input-group">
-															<input type="number" name="diskon" value="<?php echo htmlentities($row_trans['diskon'], ENT_COMPAT, 'utf-8'); ?>" placeholder="Potongan" class="form-control input-lg" autofocus />
-															<span class="input-group-btn">
-																<button type="submit" class="btn btn-info btn-lg">Apply</button>
-															</span>
-														</div>
-														<input type="hidden" name="MM_update" value="formDiskon" />
-														<input type="hidden" name="kodeproduk" value="<?= $row_trans['kode']; ?>" />
-														<input type="hidden" name="faktur" value="<?= $row_trans['faktur']; ?>" />
-													</form>
-
-												</div>
-											</div>
-											<div class="modal-footer">
-												<button type="button" class="btn btn-default pull-left" data-dismiss="modal">Close</button>
-												<a href="?page=scan/delete&id=<?php echo $row_trans['id'] ?>" class="btn btn-danger  btn-flat"><span class="fa fa-close"></span> Hapus</a>
-											</div>
-										</div>
-										<!-- /.modal-content -->
-									</div>
-									<!-- /.modal-dialog -->
-								</div>
-								<!-- /.modal -->
-							</td>
-							<td align="center">
-								<a href="#" data-toggle="modal" data-target="#modal-default<?= $idmodal; ?>">
-									<span class="btn-block"><?= $row_trans['qty']; ?></span>
-								</a>
-							</td>
+			<div id="overflowTest">
+				<table width="100%" class="table table-sm table-condensed">
+					<thead>
+						<tr bgcolor="#006699">
+							<th width="2%">
+								<div align="center"><span class="style1">NO.</span></div>
+							</th>
+							<th width="43%">
+								<div align="center"><span class="style1">PRODUK</span></div>
+							</th>
+							<th width="10%">
+								<div align="center"><span class="style1">ITEM</span></div>
+							</th>
+							<th width="23%">
+								<div align="center"><span class="style1">PRICE</span></div>
+							</th>
+							<th width="23%">
+								<div align="center"><span class="style1">SUBTOTAL</span></div>
+							</th>
 						</tr>
-					<?php
-						$item += $row_trans['qty'];
-						$harga += $sub;
-						$diskon += $row_trans['diskon'];
-						$no++;
-						$idmodal++;
-					} while ($row_trans = mysqli_fetch_assoc($trans)); ?>
-				</tbody>
-			</table>
-			<button type="button" class="btn btn-success btn-lg btn-block" data-toggle="modal" data-target="#modal-bayar">
-				<span class="fa fa-send"></span> <strong>BAYAR SEKARANG</strong>
-			</button>
+					</thead>
+					<tbody>
+						<?php
+						$item = 0;
+						$harga = 0;
+						$diskon = 0;
+						$no = 1;
+						$idmodal = 1;
+						do { ?>
+							<tr style="font-size:22px">
+								<td>
+									<div align="center"><?php echo $no; ?></div>
+								</td>
+
+								<td class="text-uppercase"><a href="#" data-toggle="modal" data-target="#modal-default<?= $idmodal; ?>">
+										<span class="btn-block"><?php echo $row_trans['kode']; ?> - <?php echo $row_trans['nama']; ?> <span class="text-danger small">
+												<?php if ($row_trans['diskon'] > 0) { ?>
+													( Disc : Rp. <?= number_format($row_trans['diskon'], 0, ",", "."); ?> )
+												<?php } ?>
+											</span>
+										</span>
+									</a>
+									<!-- Modal -->
+									<div class=" modal fade" id="modal-default<?= $idmodal; ?>">
+										<div class="modal-dialog">
+											<div class="modal-content">
+												<div class="modal-header">
+													<button type="button" class="close" data-dismiss="modal" aria-label="Close">
+														<span aria-hidden="true">&times;</span></button>
+													<h4 class="modal-title">DETAIL : <?php echo $row_trans['kode']; ?> - <?php echo $row_trans['nama']; ?></h4>
+												</div>
+												<div class="modal-body">
+													<div class="row">
+														<div class="col-md-6">
+															<div class="form-group">
+																<label for="">SETTING QTY</label>
+
+																<?php if ($row_trans['stok'] > 0) { ?>
+																	<form id="form<?= $no; ?>" name="formCombobox" method="post" action="">
+
+																		<div class="input-group">
+																			<input type="number" name="qtyupdate" value="<?php echo htmlentities($row_trans['qty'], ENT_COMPAT, 'utf-8'); ?>" placeholder="Jumlah Beli" class="form-control input-lg" autofocus />
+																			<span class="input-group-btn">
+																				<button type="submit" class="btn btn-warning btn-lg">UBAH</button>
+																			</span>
+																		</div>
+
+																		<input type="hidden" name="MM_update" value="formCombobox" />
+																		<input type="hidden" name="kodeCombo" value="<?= $row_trans['kode']; ?>" />
+																	</form>
+																<?php } else { ?>
+																	<a href="?page=manage/addget&search=<?= $row_trans['kode']; ?>" target="_blank" class="form-control input-lg">Klik disini untuk Tambah Stok Darurat!</a>
+																<?php } ?>
+
+																<?php $dis = 0 * $row_trans['qty'];
+																number_format($dis); ?>
+															</div>
+														</div>
+														<div class="col-md-6">
+															<div class="form-group">
+																<label for="">SUB TOTAL</label>
+																<input type="text" class="form-control input-lg" name="" value="<?php $sub = $row_trans['harga'] * $row_trans['qty'];
+																																echo number_format($sub); ?>" readonly>
+
+															</div>
+														</div>
+													</div>
+
+
+													<div class="form-group">
+														<label for="">BERIKAN POTONGAN HARGA</label>
+														<form action="<?php echo $editFormAction; ?>" method="post" name="formDiskon" id="formDiskon">
+															<div class="input-group">
+																<input type="number" name="diskon" value="<?php echo htmlentities($row_trans['diskon'], ENT_COMPAT, 'utf-8'); ?>" placeholder="Potongan" class="form-control input-lg" autofocus />
+																<span class="input-group-btn">
+																	<button type="submit" class="btn btn-info btn-lg">Apply</button>
+																</span>
+															</div>
+															<input type="hidden" name="MM_update" value="formDiskon" />
+															<input type="hidden" name="kodeproduk" value="<?= $row_trans['kode']; ?>" />
+															<input type="hidden" name="faktur" value="<?= $row_trans['faktur']; ?>" />
+														</form>
+
+													</div>
+												</div>
+												<div class="modal-footer">
+													<button type="button" class="btn btn-default pull-left" data-dismiss="modal">Close</button>
+													<a href="?page=scan/delete&id=<?php echo $row_trans['id'] ?>" class="btn btn-danger  btn-flat"><span class="fa fa-close"></span> Hapus</a>
+												</div>
+											</div>
+											<!-- /.modal-content -->
+										</div>
+										<!-- /.modal-dialog -->
+									</div>
+									<!-- /.modal -->
+								</td>
+								<td align="center">
+									<a href="#" data-toggle="modal" data-target="#modal-default<?= $idmodal; ?>">
+										<span class="btn-block"><?= $row_trans['qty']; ?> </span>
+									</a>
+								</td>
+								<td align="right">Rp. <?= number_format($row_trans['harga'], 0, ",", "."); ?></td>
+								<td align="right">Rp. <?php $subtotal = ($row_trans['harga'] * $row_trans['qty']) - $row_trans['diskon'];
+														echo number_format($subtotal, 0, ",", "."); ?></td>
+							</tr>
+						<?php
+							$item += $row_trans['qty'];
+							$harga += $sub;
+							$diskon += $row_trans['diskon'];
+							$no++;
+							$idmodal++;
+						} while ($row_trans = mysql_fetch_assoc($trans)); ?>
+						<?php global $item; ?>
+						<?php global $harga; ?>
+						<?php global $diskon; ?>
+						<?php global $grand;
+						$grand = $harga - $diskon; ?>
+						<tr>
+						<td colspan="3"></td>
+						<td align="right"><strong>DISKON</strong></td>
+						<td align="right">Rp. <?= number_format($diskon); ?>
+
+						</td>
+					</tr>
+					
+						
+
+
+					</tbody>
+				</table>
+
+				<?php if (!empty($faktur)) { ?>
+					<form action="<?php echo $editFormAction; ?>" method="post" name="form2" id="form2">
+						<button class="btn btn-lg btn-info btn-block"><span class="fa fa-plus-circle"></span> Buat Transaksi Baru</button>
+						<input type="hidden" name="MM_faktur" value="form2" />
+					</form>
+				<?php } ?>
+			</div>
 		<?php } else {
 			danger('Belum ada Item', 'Silahkan Cari dan Masukkan data Barang');
 		} ?>
-		<div class="modal fade" id="modal-bayar">
-			<div class="modal-dialog">
-				<form method="post" name="formSelesai" action="<?php echo $editFormAction; ?>" autocomplete="off">
-					<div class="modal-content">
 
-						<div class="modal-header">
-							<button type="button" class="close" data-dismiss="modal" aria-label="Close">
-								<span aria-hidden="true">&times;</span></button>
-							<h4 class="modal-title">RINCIAN BELANJA</h4>
 
-						</div>
-						<div class="modal-body">
-							<?php global $item; ?>
-							<?php global $harga; ?>
-							<?php global $diskon; ?>
-							<?php global $grand;
-							$grand = $harga - $diskon; ?>
-							<div class="row">
-								<div class="col-md-6">
-									<div class="form-group">
-										<label>GRANDTOTAL : </label>
-										<input class="form-control input-lg text-right" style="font-size: 35px;" type="text" value="Rp. <?= number_format($grand); ?>" readonly />
-									</div>
-								</div>
-								<div class="col-md-6">
-									<div class="form-group">
-										<label>POTONGAN</label>
-										<input name="diskon" type="text" class="form-control input-lg text-right" style="font-size: 35px;" id="textfield2" value="<?= $diskon; ?>" readonly />
-									</div>
-								</div>
-							</div>
+	</div>
 
-							<div class="row">
-								<div class="col-md-6">
-									<div class="form-group">
-										<label>UANG BAYAR</label>
+	<div class="row">
+		<div class="col-md-4 col-xs-12">
+		<?php if ($totalRows_trans > 0) { ?>
+
+			<p style="font-size: 50px; background-color:darkcyan; padding-right:15px; color:white;" class="text-right">Rp. <?= number_format($grand); ?></p>
+		<?php } ?>
+		<?php if ($totalRows_trans > 0) { ?>
+		<button type="button" class="btn btn-primary btn-block" data-toggle="modal" data-target="#exampleModal">Selesai Pembayaran</button>
+		<?php } ?>
+								
+
+		</div>
+	</div>
+	<?php if ($totalRows_trans > 0) { ?>
+<div class="modal fade" id="exampleModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="exampleModalLabel">Pembayaran</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+	  <p style="font-size: 50px; background-color:darkcyan; padding-right:15px; color:white;" class="text-right">Rp. <?= number_format($grand); ?></p>
+	  <form method="post" name="formSelesai" action="<?php echo $editFormAction; ?>" autocomplete="off">
+	  <div class="table-responsive">
+	  <table class="table no-border">
+								<tr>
+									<td width="40%"><strong>UANG BAYAR</strong></td> 
+									<td>
 										<input type="hidden" name="textfield3" id="gt" value="<?= $grand; ?>" />
-										<input type="text" name="bayar" id="tunai" class="form-control  input-lg  text-right" style="font-size: 35px;" onkeyup="kembalian();" autofocus />
-									</div>
-								</div>
-								<div class="col-md-6">
-									<div class="form-group">
-										<label>KEMBALIAN</label>
-										<input name="balek" type="text" class="form-control  input-lg  	text-right" style="font-size: 35px;" id="kembali" onkeyup="kembalian();" value="" readonly />
-									</div>
-								</div>
-							</div>
-
-							<div class="row">
-								<div class="col-md-3">
-									<div class="form-group">
-										<label>METODE PEMBAYARAN</label>
-										<select name="jenisbayar" class="form-control input-lg">
+										<input type="text" name="bayar" id="tunai" placeholder="<?= $grand; ?>" class="form-control input-lg text-right" style="font-size: 45px;" onkeyup="kembalian();" autofocus />
+									</td>
+								</tr>
+								<tr>
+									<td><strong>KEMBALIAN</strong></td>
+									<td>
+										<input name="balek" type="text" class="form-control text-right" style="font-size: 35px;" id="kembali" value="" readonly />
+									</td>
+								</tr>
+								<tr>
+									<td><strong>METODE BAYAR</strong></td>
+									<td><select name="jenisbayar" class="form-control ">
 											<option value="CASH" <?php if (!(strcmp("CASH", htmlentities($row_Faktur['jenisbayar'], ENT_COMPAT, 'utf-8')))) {
 																		echo "SELECTED";
 																	} ?>>CASH</option>
@@ -666,42 +754,157 @@ if ((isset($_POST["MM_update"])) && ($_POST["MM_update"] == "formDiskon")) {
 																			echo "SELECTED";
 																		} ?>>MERCHANT</option>
 										</select>
-									</div>
-								</div>
-								<div class="col-md-3">
-									<div class="form-group">
-										<label>NO. HP</label> (Opsional)
-										<input name="nohp" type="number" class="form-control input-lg text-uppercase" style="font-size: 22px;" />
-									</div>
+									</td>
+								</tr>
+								<tr>
+									<td><strong>NO. HP </strong><small>(Opsional)</small></td>
+									<td><input name="nohp" type="text" class="form-control  text-uppercase" style="font-size: 22px;" />
+									</td>
+								</tr>
+								<tr>
+    <td><strong>NIK PELANGGAN</strong> <br><small>(NAMA PELANGGAN)</small></td>
+    <td>
+    <select class="js-example-basic-single" name="namapelanggan" id="namapelanggan" placeholder="Pilih atau cari pelanggan">
+        <option value=""></option>
+        <?php
+        mysql_select_db($database_koneksi, $koneksi);
+        $cek = "SELECT * FROM member";
+        $rs_cek = mysql_query($cek, $koneksi) or die(mysql_error());
 
-								</div>
-								<div class="col-md-6">
-									<div class="form-group">
-										<label>NAMA PELANGGAN</label> (Opsional)
-										<input name="namapelanggan" type="text" class="form-control input-lg text-uppercase" style="font-size: 22px;" />
-									</div>
+        while ($data = mysql_fetch_assoc($rs_cek)) { ?>
+            <option value="<?php echo $data['nama_member'] ?>">
+                <?php echo $data['nik'] ?> / 
+                <?php echo $data['nomor'] ?>
+            </option>
+        <?php } ?>
+    </select>
 
-								</div>
-							</div>
+    <input type="text" readonly name="cek" class="form-control" id="cek" />
+    <input name="diskon" type="hidden" class="form-control text-right" id="textfield2" value="<?= $diskon; ?>" readonly />
+</td>
+
+</tr>
+
+	  </table>
+      </div>
+      <div class="modal-footer">
+        <!-- <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button> -->
+		<input type="hidden" name="MM_update" value="formSelesai" />
+										<button type="submit" class="btn btn-lg btn-block btn-success">
+											<span class="fa fa-print"></span> <strong>SIMPAN TRANSAKSI <strong></button>
+											</form>
+      </div>
+    </div>
+  </div>
+</div>
+<?php } ?>
+<script>
+    $(document).ready(function() {
+        $('#exampleModal').on('shown.bs.modal', function() {
+            $('.js-example-basic-single').select2({
+                theme: "bootstrap4",
+                width: '100%',
+                dropdownParent: $('#exampleModal'), 
+                placeholder: "Pilih atau cari pelanggan",
+                allowClear: true
+            });
+        });
+    });
+</script>
+<script>
+    $(document).ready(function () {
+        $('#namapelanggan').on('change', function () {
+            var selectedNama = $(this).val(); 
+            $('#cek').val(selectedNama);
+        });
+    });
+</script>
+
+	<!-- <?php if ($totalRows_trans > 0) { ?>
+		<div class="col-md-4 col-xs-12">
+		    <p style="font-size: 50px; background-color:darkcyan; padding-right:15px; color:white;" class="text-right">Rp. <?= number_format($grand); ?></p>
+			<form method="post" name="formSelesai" action="<?php echo $editFormAction; ?>" autocomplete="off">
+				<div class="small-box bg-purple">
+					<div class="inner">
+						<div class="table-responsive">
+							<table class="table no-border">
+								<tr>
+									<td width="40%"><strong>UANG BAYAR</strong></td> 
+									<td><input type="hidden" name="textfield3" id="gt" value="<?= $grand; ?>" />
+										<input type="text" name="bayar" id="tunai" placeholder="<?= $grand; ?>" class="form-control input-lg text-right" style="font-size: 45px;" onkeyup="kembalian();" autofocus />
+									</td>
+								</tr>
+								<tr>
+									<td><strong>KEMBALIAN</strong></td>
+									<td><input type="hidden" name="textfield3" id="gt" value="<?= $grand; ?>" />
+										<input name="balek" type="text" class="form-control    	text-right" style="font-size: 35px;" id="kembali" onkeyup="kembalian();" value="" readonly />
+									</td>
+								</tr>
+								<tr>
+									<td><strong>METODE BAYAR</strong></td>
+									<td><select name="jenisbayar" class="form-control ">
+											<option value="CASH" <?php if (!(strcmp("CASH", htmlentities($row_Faktur['jenisbayar'], ENT_COMPAT, 'utf-8')))) {
+																		echo "SELECTED";
+																	} ?>>CASH</option>
+											<option value="TRANSFER" <?php if (!(strcmp("TRANSFER", htmlentities($row_Faktur['jenisbayar'], ENT_COMPAT, 'utf-8')))) {
+																			echo "SELECTED";
+																		} ?>>TRANSFER</option>
+											<option value="SHOPEEPAY" <?php if (!(strcmp("SHOPEEPAY", htmlentities($row_Faktur['jenisbayar'], ENT_COMPAT, 'utf-8')))) {
+																			echo "SELECTED";
+																		} ?>>SHOPEEPAY</option>
+											<option value="MERCHANT" <?php if (!(strcmp("MERCHANT", htmlentities($row_Faktur['jenisbayar'], ENT_COMPAT, 'utf-8')))) {
+																			echo "SELECTED";
+																		} ?>>MERCHANT</option>
+										</select>
+									</td>
+								</tr>
+								<tr>
+									<td><strong>NO. HP </strong><small>(Opsional)</small></td>
+									<td><input name="nohp" type="text" class="form-control  text-uppercase" style="font-size: 22px;" />
+									</td>
+								</tr>
+								<tr>
+									<td><strong>NAMA PELANGGAN</strong> <br><small>(Opsional)</small></td>
+									<td>
+									<select name="namapelanggan" id="" class="form-control">
+										<option value=""></option>
+									<?php 
+										mysql_select_db($database_koneksi, $koneksi);
+										$cek = sprintf(
+    									"SELECT * FROM member",
+    									GetSQLValueString($row_search['kodeproduk'], "text"),
+    									GetSQLValueString($faktur, "text")
+										);
+										$rs_cek = mysql_query($cek, $koneksi) or die(mysql_error());
+
+										while ($data = mysql_fetch_assoc($rs_cek)) { ?>
+    									<option value="<?php echo $data['nama_member'] ?>"><?php echo $data['nama_member'] ?></option>
+										<?php } ?>
+
+									</select>
+										<input name="diskon" type="hidden" class="form-control  text-right" id="textfield2" value="<?= $diskon; ?>" readonly />
+									</td>
+								</tr>
+								<tr>
+									<td colspan="2">
+										<input type="hidden" name="MM_update" value="formSelesai" />
+										<button type="submit" class="btn btn-lg btn-block btn-success">
+											<span class="fa fa-print"></span> <strong>SIMPAN TRANSAKSI <strong></button>
+									</td>
+								</tr>
 
 
-
-						</div>
-						<div class="modal-footer">
-							<input type="hidden" name="MM_update" value="formSelesai" />
-							<button type="submit" class="btn btn-lg btn-block btn-success">
-								<span class="fa fa-print"></span> <strong>SAVE & PRINT <strong></button>
+							</table>
 						</div>
 					</div>
-					<!-- /.modal-content -->
-				</form>
-			</div>
-			<!-- /.modal-dialog -->
-		</div>
-		<!-- /.modal -->
+				</div>
+			</form>
 
-	</div>
-</div><!-- row -->
+		</div>
+	<?php } ?> -->
+
+</div>
+
 
 
 <hr>
@@ -760,28 +963,141 @@ if ((isset($_POST["MM_update"])) && ($_POST["MM_update"] == "formDiskon")) {
 		</div>
 	</div>
 </div>
+<script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
+<!-- Modal kamera -->
+<!-- Modal -->
+<div id="scanModal" style="
+  display: none;
+  position: fixed;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
+  background: rgba(0, 0, 0, 0.5);
+  z-index: 1050;
+  justify-content: center;
+  align-items: center;
+  font-family: Arial, sans-serif;
+">
+  <div style="
+    background: #fff;
+    border-radius: 0.5rem;
+    padding: 1.5rem;
+    width: 90%;
+    max-width: 500px;
+    box-shadow: 0 0.5rem 1rem rgba(0,0,0,0.3);
+    position: relative;
+    animation: fadeInScale 0.3s ease;
+  ">
+    <!-- Modal Header -->
+    <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #dee2e6; padding-bottom: 0.5rem; margin-bottom: 1rem;">
+      <h5 style="margin: 0;">Scan Barcode</h5>
+      <button onclick="closeCamera()" style="
+        background: none;
+        border: none;
+        font-size: 1.5rem;
+        line-height: 1;
+        cursor: pointer;
+        color: #aaa;
+      ">&times;</button>
+    </div>
+
+    <!-- Modal Body -->
+    <div style="text-align: center;">
+      <div id="reader" style="width: 100%; max-width: 300px; margin: auto;"></div>
+    </div>
+  </div>
+</div>
 
 <script type="text/javascript">
+	document.addEventListener("DOMContentLoaded", function() {
+		document.querySelector("input[name='search']").focus();
+	});
+
+	function formatRupiah(angka) {
+		if (!angka) return '';
+		return angka.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+	}
+
+	function cleanRupiah(str) {
+		return str.replace(/\./g, '').replace(/[^\d]/g, '');
+	}
+
 	function kembalian() {
-		var tunai = document.getElementById('tunai').value;
-		var total = document.getElementById('gt').value;
-		var balek = parseInt(tunai) - parseInt(total);
-		if (!isNaN(balek)) {
-			document.getElementById('kembali').value = balek;
+		let tunaiInput = document.getElementById('tunai');
+		let kembaliInput = document.getElementById('kembali');
+		let total = parseInt(document.getElementById('gt').value);
+
+		let tunaiRaw = cleanRupiah(tunaiInput.value);
+		let tunai = parseInt(tunaiRaw);
+
+		if (!isNaN(tunai)) {
+			tunaiInput.value = formatRupiah(tunai);
+			let balek = tunai - total;
+
+			if (balek === 0) {
+				kembaliInput.value = '0';
+			} else if (balek < 0) {
+				kembaliInput.value = '-' + formatRupiah(Math.abs(balek));
+			} else {
+				kembaliInput.value = formatRupiah(balek);
+			}
+		} else {
+			kembaliInput.value = "0";
 		}
+	}
+
+	let html5QrcodeScanner;
+
+	function openCamera() {
+		document.getElementById('scanModal').style.display = 'flex';
+
+		html5QrcodeScanner = new Html5Qrcode("reader");
+
+		html5QrcodeScanner.start(
+			{ facingMode: "environment" },
+			{
+				fps: 10,
+				qrbox: { width: 250, height: 250 }
+			},
+			onScanSuccess
+		).catch(err => {
+			console.error("Camera start error", err);
+		});
+	}
+
+	function closeCamera() {
+		document.getElementById('scanModal').style.display = 'none';
+		if (html5QrcodeScanner) {
+			html5QrcodeScanner.stop().then(() => {
+				html5QrcodeScanner.clear();
+			}).catch(err => {
+				console.error("Stop failed", err);
+			});
+		}
+	}
+
+	function onScanSuccess(decodedText, decodedResult) {
+		// Kirim ke ?page=scan/add pakai POST
+		const form = document.createElement('form');
+		form.method = 'POST';
+		form.action = 'welcome.php?page=scan/add';
+
+		const input = document.createElement('input');
+		input.type = 'hidden';
+		input.name = 'search';
+		input.value = decodedText;
+
+		form.appendChild(input);
+		document.body.appendChild(form);
+		form.submit();
 	}
 </script>
 
-<?php if (!empty($faktur)) { ?>
-	<form action="<?php echo $editFormAction; ?>" method="post" name="form2" id="form2">
-		<button class="btn btn-lg btn-info btn-block"><span class="fa fa-plus-circle"></span> Buat Transaksi Baru</button>
-		<input type="hidden" name="MM_faktur" value="form2" />
-	</form>
-<?php } ?>
 
 <?php
 if ((isset($_POST["MM_insert"])) && ($_POST["MM_insert"] == "formBarang")) {
 	require('faktur.php');
+
+	$Start = mysql_query("START TRANSACTION", $koneksi) or die(errorQuery(mysql_error($koneksi)));
 	$insertSQL = sprintf(
 		"INSERT INTO `produk`(`kodeproduk`,`namaproduk`, `kategori`,`hargadasar`, `hargajual`, `satuan`, `stok`,`addedproduk`, `addbyproduk`) 
 				  VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)",
@@ -796,8 +1112,8 @@ if ((isset($_POST["MM_insert"])) && ($_POST["MM_insert"] == "formBarang")) {
 		GetSQLValueString($ID, "int")
 	);
 
-	mysqli_select_db($database_koneksi, $koneksi);
-	$Result1 = mysqli_query($insertSQL, $koneksi) or die(errorQuery(mysqli_error()));
+	mysql_select_db($database_koneksi, $koneksi);
+	$Result1 = mysql_query($insertSQL, $koneksi) or die(errorQuery(mysql_error()));
 
 	if ($Result1) {
 		$insertSQL = sprintf(
@@ -814,13 +1130,14 @@ if ((isset($_POST["MM_insert"])) && ($_POST["MM_insert"] == "formBarang")) {
 			GetSQLValueString($ID, "int"),
 			GetSQLValueString($nama, "text"),
 			GetSQLValueString('Y', "text"),
-			GetSQLValueString($ta, "text")
+			GetSQLValueString($today, "text")
 		);
 
-		mysqli_select_db($database_koneksi, $koneksi);
-		$Result1 = mysqli_query($insertSQL, $koneksi) or die(mysqli_error());
+		mysql_select_db($database_koneksi, $koneksi);
+		$Result1 = mysql_query($insertSQL, $koneksi) or die(mysql_error());
 
 		if ($Result1) {
+			$Commit = mysql_query("COMMIT", $koneksi) or die(errorQuery(mysql_error()));
 			refresh('?page=scan/add');
 		}
 	}
