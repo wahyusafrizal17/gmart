@@ -67,10 +67,17 @@ require_once('preview/page1.php'); ?>
                   <label for="tgl2" class="control-label">Pilih Kategori</label>
                   <select name="kategori" id="" class="js-example-basic-single">
                     <option value="0">-- Keseluruhan --</option>
-                    <?php do {  ?>
-                      <option value="<?php echo isset($row_kategori['idkategori']) ? $row_kategori['idkategori'] : ''; ?>" <?php if (isset($row_kategori['idkategori']) && !(strcmp($row_kategori['idkategori'], htmlentities($kat, ENT_COMPAT, 'utf-8')))) {
-                                                                                                                              echo "SELECTED";
-                                                                                                                            } ?>><?php echo isset($row_kategori['namakategori']) ? $row_kategori['namakategori'] : ''; ?></option>
+                    <?php 
+                    // Reset pointer kategori ke awal
+                    mysqli_data_seek($kategori, 0);
+                    do {  
+                      $selected = "";
+                      // Cek apakah kategori ini yang dipilih
+                      if (isset($_GET['kategori']) && $_GET['kategori'] != "0" && $_GET['kategori'] == $row_kategori['idkategori']) {
+                        $selected = "SELECTED";
+                      }
+                    ?>
+                      <option value="<?php echo isset($row_kategori['idkategori']) ? $row_kategori['idkategori'] : ''; ?>" <?php echo $selected; ?>><?php echo isset($row_kategori['namakategori']) ? $row_kategori['namakategori'] : ''; ?></option>
                     <?php } while ($row_kategori = mysqli_fetch_assoc($kategori)); ?>
                   </select>
                   <script>
@@ -78,9 +85,14 @@ require_once('preview/page1.php'); ?>
                       $('.js-example-basic-single').select2({
                         theme: "bootstrap4",
                         width: '100%',
-                        placeholder: "Pilih atau cari pelanggan",
+                        placeholder: "Pilih atau cari kategori",
                         allowClear: true
                       });
+                      
+                      // Set nilai awal untuk select2 jika ada parameter kategori
+                      <?php if (isset($_GET['kategori']) && $_GET['kategori'] != "0") { ?>
+                        $('.js-example-basic-single').val('<?php echo $_GET['kategori']; ?>').trigger('change');
+                      <?php } ?>
                     });
                   </script>
                 </div>
