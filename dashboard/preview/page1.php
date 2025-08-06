@@ -119,7 +119,7 @@ if (isset($_GET['jenisbayar']) && ($_GET['jenisbayar'] != "") && isset($_GET['ka
 		GetSQLValueString($ta, "text")
 	);
 	//echo "<script>alert('ini tanggal kasir');</script>";
-} elseif(isset($_GET['kategori']) && ($_GET['kategori'] != 0) && isset($_GET['tgl1']) && isset($_GET['tgl2'])) {
+} elseif(isset($_GET['kategori']) && ($_GET['kategori'] != 0) && isset($_GET['tgl1']) && isset($_GET['tgl2']) && (!isset($_GET['kasir']) || $_GET['kasir'] == 0) && (!isset($_GET['jenisbayar']) || $_GET['jenisbayar'] == "")) {
 	$kat = $_GET['kategori'];
 	$tgl1 = $_GET['tgl1'];
 	$tgl2 = $_GET['tgl2'];
@@ -147,6 +147,108 @@ if (isset($_GET['jenisbayar']) && ($_GET['jenisbayar'] != "") && isset($_GET['ka
 		WHERE (a.tglfaktur BETWEEN %s AND %s) AND a.statusfaktur = 'Y' AND  a.periode = %s AND b.nama=c.namaproduk AND c.kategori= %s GROUP BY a.kodefaktur ORDER BY a.idfaktur DESC",
 		GetSQLValueString($tgl1, "date"),
 		GetSQLValueString($tgl2, "date"),
+		GetSQLValueString($ta, "text"),
+		GetSQLValueString($kat, "text")
+	);
+} elseif(isset($_GET['kategori']) && ($_GET['kategori'] != 0) && isset($_GET['jenisbayar']) && ($_GET['jenisbayar'] != "") && isset($_GET['tgl1']) && isset($_GET['tgl2']) && (!isset($_GET['kasir']) || $_GET['kasir'] == 0)) {
+	$kat = $_GET['kategori'];
+	$jenisbayar = $_GET['jenisbayar'];
+	$tgl1 = $_GET['tgl1'];
+	$tgl2 = $_GET['tgl2'];
+
+	$query_Penjualan = sprintf(
+		"SELECT a.idfaktur, a.tglfaktur, a.kodefaktur, a.addedfaktur, a.addbyfaktur, a.periode, a.datetimefaktur, a.kembalian, a.potongan, a.totalbayar, SUM(b.harga*b.qty) AS totalbelanja, a.statusfaktur, a.qtyprint, a.printby, a.adminfaktur, a.namapelanggan FROM faktur a,transaksidetail b,produk c
+		WHERE a.jenisbayar= %s AND (a.tglfaktur BETWEEN %s AND %s) AND a.statusfaktur = 'Y' AND a.periode = %s AND a.kodefaktur=b.faktur AND b.nama=c.namaproduk AND c.kategori= %s GROUP BY a.kodefaktur ORDER BY a.idfaktur DESC",
+		GetSQLValueString($jenisbayar, "text"),
+		GetSQLValueString($tgl1, "date"),
+		GetSQLValueString($tgl2, "date"),
+		GetSQLValueString($ta, "text"),
+		GetSQLValueString($kat, "text")
+	);
+
+	$query_total = sprintf(
+		"SELECT SUM(nominal) as jumlah FROM pengeluaran
+		WHERE tgl BETWEEN %s AND %s  ORDER BY id DESC",
+		GetSQLValueString($tgl1, "date"),
+		GetSQLValueString($tgl2, "date")
+	);
+
+	//total pendapatan
+	$query_Pendapatan = sprintf(
+		"SELECT a.idfaktur, a.tglfaktur, a.kodefaktur, a.addedfaktur, a.addbyfaktur, a.periode, a.datetimefaktur, a.kembalian, a.potongan, a.totalbayar, SUM(b.harga*b.qty) AS pendapatan, a.statusfaktur, a.qtyprint, a.printby, a.adminfaktur, a.namapelanggan FROM faktur a,transaksidetail b,produk c
+		WHERE a.jenisbayar=%s AND (a.tglfaktur BETWEEN %s AND %s) AND a.statusfaktur = 'Y' AND a.periode = %s AND b.nama=c.namaproduk AND c.kategori= %s GROUP BY a.kodefaktur ORDER BY a.idfaktur DESC",
+		GetSQLValueString($jenisbayar, "text"),
+		GetSQLValueString($tgl1, "date"),
+		GetSQLValueString($tgl2, "date"),
+		GetSQLValueString($ta, "text"),
+		GetSQLValueString($kat, "text")
+	);
+} elseif(isset($_GET['kategori']) && ($_GET['kategori'] != 0) && isset($_GET['kasir']) && ($_GET['kasir'] != 0) && isset($_GET['jenisbayar']) && ($_GET['jenisbayar'] != "") && isset($_GET['tgl1']) && isset($_GET['tgl2'])) {
+	$kat = $_GET['kategori'];
+	$colname = $_GET['kasir'];
+	$jenisbayar = $_GET['jenisbayar'];
+	$tgl1 = $_GET['tgl1'];
+	$tgl2 = $_GET['tgl2'];
+
+	$query_Penjualan = sprintf(
+		"SELECT a.idfaktur, a.tglfaktur, a.kodefaktur, a.addedfaktur, a.addbyfaktur, a.periode, a.datetimefaktur, a.kembalian, a.potongan, a.totalbayar, SUM(b.harga*b.qty) AS totalbelanja, a.statusfaktur, a.qtyprint, a.printby, a.adminfaktur, a.namapelanggan FROM faktur a,transaksidetail b,produk c
+		WHERE a.jenisbayar= %s AND a.addbyfaktur = %s AND (a.tglfaktur BETWEEN %s AND %s) AND a.statusfaktur = 'Y' AND a.periode = %s AND a.kodefaktur=b.faktur AND b.nama=c.namaproduk AND c.kategori= %s GROUP BY a.kodefaktur ORDER BY a.idfaktur DESC",
+		GetSQLValueString($jenisbayar, "text"),
+		GetSQLValueString($colname, "text"),
+		GetSQLValueString($tgl1, "date"),
+		GetSQLValueString($tgl2, "date"),
+		GetSQLValueString($ta, "text"),
+		GetSQLValueString($kat, "text")
+	);
+
+	$query_total = sprintf(
+		"SELECT SUM(nominal) as jumlah FROM pengeluaran
+		WHERE tgl BETWEEN %s AND %s  ORDER BY id DESC",
+		GetSQLValueString($tgl1, "date"),
+		GetSQLValueString($tgl2, "date")
+	);
+
+	//total pendapatan
+	$query_Pendapatan = sprintf(
+		"SELECT a.idfaktur, a.tglfaktur, a.kodefaktur, a.addedfaktur, a.addbyfaktur, a.periode, a.datetimefaktur, a.kembalian, a.potongan, a.totalbayar, SUM(b.harga*b.qty) AS pendapatan, a.statusfaktur, a.qtyprint, a.printby, a.adminfaktur, a.namapelanggan FROM faktur a,transaksidetail b,produk c
+		WHERE a.jenisbayar=%s AND a.addbyfaktur=%s AND (a.tglfaktur BETWEEN %s AND %s) AND a.statusfaktur = 'Y' AND a.periode = %s AND b.nama=c.namaproduk AND c.kategori= %s GROUP BY a.kodefaktur ORDER BY a.idfaktur DESC",
+		GetSQLValueString($jenisbayar, "text"),
+		GetSQLValueString($colname, "text"),
+		GetSQLValueString($tgl1, "date"),
+		GetSQLValueString($tgl2, "date"),
+		GetSQLValueString($ta, "text"),
+		GetSQLValueString($kat, "text")
+	);
+} elseif(isset($_GET['kategori']) && ($_GET['kategori'] != 0) && isset($_GET['kasir']) && ($_GET['kasir'] != 0) && isset($_GET['tgl1']) && isset($_GET['tgl2']) && (!isset($_GET['jenisbayar']) || $_GET['jenisbayar'] == "")) {
+	$kat = $_GET['kategori'];
+	$colname = $_GET['kasir'];
+	$tgl1 = $_GET['tgl1'];
+	$tgl2 = $_GET['tgl2'];
+
+	$query_Penjualan = sprintf(
+		"SELECT a.idfaktur, a.tglfaktur, a.kodefaktur, a.addedfaktur, a.addbyfaktur, a.periode, a.datetimefaktur, a.kembalian, a.potongan, a.totalbayar, SUM(b.harga*b.qty) AS totalbelanja, a.statusfaktur, a.qtyprint, a.printby, a.adminfaktur, a.namapelanggan FROM faktur a,transaksidetail b,produk c
+		WHERE (a.tglfaktur BETWEEN %s AND %s) AND a.statusfaktur = 'Y' AND a.addbyfaktur = %s AND a.periode = %s AND a.kodefaktur=b.faktur AND b.nama=c.namaproduk AND c.kategori= %s GROUP BY a.kodefaktur ORDER BY a.idfaktur DESC",
+		GetSQLValueString($tgl1, "date"),
+		GetSQLValueString($tgl2, "date"),
+		GetSQLValueString($colname, "text"),
+		GetSQLValueString($ta, "text"),
+		GetSQLValueString($kat, "text")
+	);
+
+	$query_total = sprintf(
+		"SELECT SUM(nominal) as jumlah FROM pengeluaran
+		WHERE tgl BETWEEN %s AND %s  ORDER BY id DESC",
+		GetSQLValueString($tgl1, "date"),
+		GetSQLValueString($tgl2, "date")
+	);
+
+	//total pendapatan
+	$query_Pendapatan = sprintf(
+		"SELECT a.idfaktur, a.tglfaktur, a.kodefaktur, a.addedfaktur, a.addbyfaktur, a.periode, a.datetimefaktur, a.kembalian, a.potongan, a.totalbayar, SUM(b.harga*b.qty) AS pendapatan, a.statusfaktur, a.qtyprint, a.printby, a.adminfaktur, a.namapelanggan FROM faktur a,transaksidetail b,produk c
+		WHERE (a.tglfaktur BETWEEN %s AND %s) AND a.statusfaktur = 'Y' AND a.addbyfaktur = %s AND a.periode = %s AND b.nama=c.namaproduk AND c.kategori= %s GROUP BY a.kodefaktur ORDER BY a.idfaktur DESC",
+		GetSQLValueString($tgl1, "date"),
+		GetSQLValueString($tgl2, "date"),
+		GetSQLValueString($colname, "text"),
 		GetSQLValueString($ta, "text"),
 		GetSQLValueString($kat, "text")
 	);
