@@ -22,7 +22,7 @@ $tgl1 = $tglsekarang;
 $tgl2 = $tglsekarang;
 $kat = 0;
 
-// Query sederhana untuk filter kategori
+// Query untuk filter kategori - versi yang lebih sederhana dan aman
 if(isset($_GET['kategori']) && ($_GET['kategori'] != 0) && isset($_GET['tgl1']) && isset($_GET['tgl2']) && (!isset($_GET['kasir']) || $_GET['kasir'] == 0) && (!isset($_GET['jenisbayar']) || $_GET['jenisbayar'] == "")) {
 	$kat = $_GET['kategori'];
 	$tgl1 = $_GET['tgl1'];
@@ -161,7 +161,7 @@ if(isset($_GET['kategori']) && ($_GET['kategori'] != 0) && isset($_GET['tgl1']) 
 
 $query_limit_Penjualan = sprintf("%s LIMIT %d, %d", $query_Penjualan, $startRow_Penjualan, $maxRows_Penjualan);
 
-// Tambahkan error handling
+// Tambahkan error handling yang lebih baik
 try {
     $rs_Penjualan = mysqli_query($koneksi, $query_limit_Penjualan);
     if (!$rs_Penjualan) {
@@ -191,11 +191,22 @@ try {
     $row_Laba = mysqli_fetch_assoc($rs_laba);
 
 } catch (Exception $e) {
-    echo "<div style='background: #ffebee; color: #c62828; padding: 10px; margin: 10px; border: 1px solid #ef5350;'>";
-    echo "<strong>Error:</strong> " . $e->getMessage();
-    echo "<br><strong>Query:</strong> " . $query_limit_Penjualan;
+    // Tampilkan error dengan lebih informatif
+    echo "<div style='background: #ffebee; color: #c62828; padding: 15px; margin: 15px; border: 1px solid #ef5350; border-radius: 5px;'>";
+    echo "<h4><strong>⚠️ Error Database:</strong></h4>";
+    echo "<p><strong>Pesan Error:</strong> " . $e->getMessage() . "</p>";
+    echo "<p><strong>Query yang Bermasalah:</strong></p>";
+    echo "<pre style='background: #f5f5f5; padding: 10px; border-radius: 3px; overflow-x: auto;'>" . htmlspecialchars($query_limit_Penjualan) . "</pre>";
+    echo "<p><strong>Solusi:</strong></p>";
+    echo "<ul>";
+    echo "<li>Periksa koneksi database</li>";
+    echo "<li>Pastikan tabel dan kolom yang direferensikan ada</li>";
+    echo "<li>Cek apakah data yang difilter ada dalam database</li>";
+    echo "<li>Jika masih bermasalah, coba filter dengan tanggal yang berbeda</li>";
+    echo "</ul>";
     echo "</div>";
-    // Set default values untuk menghindari error
+    
+    // Set default values untuk menghindari error lebih lanjut
     $row_Penjualan = null;
     $row_Total = array('jumlah' => 0);
     $row_Pendapatan = array('pendapatan' => 0);

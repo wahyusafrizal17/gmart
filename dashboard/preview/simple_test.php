@@ -3,6 +3,15 @@
 error_reporting(E_ALL);
 ini_set('display_errors', 1);
 
+// Include koneksi.php terlebih dahulu untuk mendapatkan fungsi GetSQLValueString
+if (file_exists('../../Connections/koneksi.php')) {
+    require_once('../../Connections/koneksi.php');
+} elseif (file_exists('../Connections/koneksi.php')) {
+    require_once('../Connections/koneksi.php');
+} elseif (file_exists('Connections/koneksi.php')) {
+    require_once('Connections/koneksi.php');
+}
+
 // Include header jika diperlukan
 if (file_exists('../require/header.php')) {
     require_once('../require/header.php');
