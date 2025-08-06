@@ -190,7 +190,7 @@ if (isset($_GET['jenisbayar']) && ($_GET['jenisbayar'] != "") && isset($_GET['ka
 	//mysqli_select_db($database_koneksi, $koneksi);
 	$query_Penjualan = sprintf(
 		"SELECT `idfaktur`, `tglfaktur`, `kodefaktur`, `addedfaktur`, `addbyfaktur`, `periode`, `datetimefaktur`, `kembalian`, `potongan`, `totalbayar`, (totalbayar - kembalian) AS `totalbelanja`, `statusfaktur`, `qtyprint`, `printby`, `adminfaktur`, `namapelanggan` FROM faktur
-		WHERE periode = %s AND tglfaktur BETWEEN %s AND %s  ORDER BY idfaktur DESC",
+		WHERE faktur.periode = %s AND tglfaktur BETWEEN %s AND %s  ORDER BY idfaktur DESC",
 		GetSQLValueString($ta, "text"),
 		GetSQLValueString($tgl1, "date"),
 		GetSQLValueString($tgl2, "date")
@@ -206,7 +206,7 @@ if (isset($_GET['jenisbayar']) && ($_GET['jenisbayar'] != "") && isset($_GET['ka
 	//total pendapatan
 	$query_Pendapatan = sprintf(
 		"SELECT  SUM(totalbayar - kembalian) AS `pendapatan` FROM faktur
-		WHERE periode = %s AND tglfaktur BETWEEN %s AND %s  ORDER BY idfaktur DESC",
+		WHERE faktur.periode = %s AND tglfaktur BETWEEN %s AND %s  ORDER BY idfaktur DESC",
 		GetSQLValueString($ta, "text"),
 		GetSQLValueString($tgl1, "date"),
 		GetSQLValueString($tgl2, "date")
@@ -224,7 +224,7 @@ if (isset($_GET['jenisbayar']) && ($_GET['jenisbayar'] != "") && isset($_GET['ka
 	//mysqli_select_db($database_koneksi, $koneksi);
 	$query_Penjualan = sprintf(
 		"SELECT `idfaktur`, `tglfaktur`, `kodefaktur`, `addedfaktur`, `addbyfaktur`, `periode`, `datetimefaktur`, `kembalian`, `potongan`, `totalbayar`, (totalbayar - kembalian) AS `totalbelanja`, `statusfaktur`, `qtyprint`, `printby`, `adminfaktur`, `namapelanggan` FROM faktur
-		WHERE periode = %s ORDER BY idfaktur DESC",
+		WHERE faktur.periode = %s ORDER BY idfaktur DESC",
 		GetSQLValueString($ta, "text")
 	);
 
@@ -238,15 +238,15 @@ if (isset($_GET['jenisbayar']) && ($_GET['jenisbayar'] != "") && isset($_GET['ka
 	//total pendapatan
 	$query_Pendapatan = sprintf(
 		"SELECT  SUM(totalbayar - kembalian) AS `pendapatan` FROM faktur
-		WHERE periode = %s ORDER BY idfaktur DESC",
+		WHERE faktur.periode = %s ORDER BY idfaktur DESC",
 		GetSQLValueString($ta, "text")
 	);
 
 	$query_Laba = sprintf(
-		"SELECT SUM(((harga * qty) - (hargadasar * qty)) - diskon) AS laba
+		"SELECT SUM(((transaksidetail.harga * transaksidetail.qty) - (transaksidetail.hargadasar * transaksidetail.qty)) - transaksidetail.diskon) AS laba
 		FROM transaksidetail
 		INNER JOIN faktur ON transaksidetail.faktur = faktur.kodefaktur
-		WHERE periode = %s",
+		WHERE faktur.periode = %s",
 		GetSQLValueString($ta, "text")
 	);
 }
@@ -290,7 +290,7 @@ $row_Laba = mysqli_fetch_assoc($rs_laba);
 $query_Kasir = sprintf(
 	"SELECT DISTINCT(`addbyfaktur`) as id, vw_login.Nama FROM faktur
 		LEFT JOIN vw_login ON addbyfaktur = ID
-		WHERE periode = %s ORDER BY idfaktur DESC",
+		WHERE faktur.periode = %s ORDER BY idfaktur DESC",
 	GetSQLValueString($ta, "text")
 );
 $Kassa = mysqli_query($koneksi, $query_Kasir) or die(errorQuery(mysqli_error($koneksi)));
@@ -300,7 +300,7 @@ $totalRows_Kassa = mysqli_num_rows($Kassa);
 //kasir
 $query_Faktur = sprintf(
 	"SELECT DISTINCT(`jenisbayar`) as jenisbayar FROM faktur
-		WHERE periode = %s ORDER BY idfaktur DESC",
+		WHERE faktur.periode = %s ORDER BY idfaktur DESC",
 	GetSQLValueString($ta, "text")
 );
 $Faktur = mysqli_query($koneksi, $query_Faktur) or die(errorQuery(mysqli_error($koneksi)));
