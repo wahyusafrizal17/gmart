@@ -20,10 +20,16 @@ if (isset($_GET['jenisbayar']) && ($_GET['jenisbayar'] != "") && isset($_GET['ka
 		$tgl1 = $_GET['tgl1'];
 		$tgl2 = $_GET['tgl2'];
 		$kat = $_GET['kategori'];
-		//mysqli_select_db($database_koneksi, $koneksi);
+		
 		$query_Penjualan = sprintf(
-			"SELECT a.idfaktur, a.tglfaktur, a.kodefaktur, a.addedfaktur, a.addbyfaktur, a.periode, a.datetimefaktur, a.kembalian, a.potongan, a.totalbayar, SUM(b.harga*b.qty) AS totalbelanja, a.statusfaktur, a.qtyprint, a.printby, a.adminfaktur, a.namapelanggan FROM faktur a,transaksidetail b,produk c
-		WHERE (a.tglfaktur BETWEEN %s AND %s) AND a.statusfaktur = 'Y' AND  a.addbyfaktur = %s AND  a.periode = %s AND a.kodefaktur=b.faktur AND b.nama=c.namaproduk AND c.kategori= %s GROUP BY a.kodefaktur ORDER BY a.idfaktur DESC",
+			"SELECT DISTINCT a.idfaktur, a.tglfaktur, a.kodefaktur, a.addedfaktur, a.addbyfaktur, a.periode, a.datetimefaktur, a.kembalian, a.potongan, a.totalbayar, 
+			(SELECT SUM(b2.harga * b2.qty) FROM transaksidetail b2 INNER JOIN produk c2 ON b2.nama = c2.namaproduk WHERE b2.faktur = a.kodefaktur AND c2.kategori = %s) AS totalbelanja,
+			a.statusfaktur, a.qtyprint, a.printby, a.adminfaktur, a.namapelanggan 
+			FROM faktur a 
+			WHERE (a.tglfaktur BETWEEN %s AND %s) AND a.statusfaktur = 'Y' AND a.addbyfaktur = %s AND a.periode = %s 
+			AND EXISTS (SELECT 1 FROM transaksidetail b INNER JOIN produk c ON b.nama = c.namaproduk WHERE b.faktur = a.kodefaktur AND c.kategori = %s)
+			ORDER BY a.idfaktur DESC",
+			GetSQLValueString($kat, 'text'),
 			GetSQLValueString($tgl1, "date"),
 			GetSQLValueString($tgl2, "date"),
 			GetSQLValueString($colname, "text"),
@@ -40,8 +46,30 @@ if (isset($_GET['jenisbayar']) && ($_GET['jenisbayar'] != "") && isset($_GET['ka
 
 		//total pendapatan
 		$query_Pendapatan = sprintf(
-			"SELECT a.idfaktur, a.tglfaktur, a.kodefaktur, a.addedfaktur, a.addbyfaktur, a.periode, a.datetimefaktur, a.kembalian, a.potongan, a.totalbayar, SUM(b.harga*b.qty) AS pendapatan, a.statusfaktur, a.qtyprint, a.printby, a.adminfaktur, a.namapelanggan FROM faktur a,transaksidetail b,produk c
-		WHERE (a.tglfaktur BETWEEN %s AND %s) AND a.statusfaktur = 'Y' AND a.addbyfaktur=%s AND  a.periode = %s AND b.nama=c.namaproduk AND c.kategori= %s GROUP BY a.kodefaktur ORDER BY a.idfaktur DESC",
+			"SELECT SUM(totalbelanja) AS pendapatan FROM (
+				SELECT DISTINCT a.kodefaktur,
+				(SELECT SUM(b2.harga * b2.qty) FROM transaksidetail b2 INNER JOIN produk c2 ON b2.nama = c2.namaproduk WHERE b2.faktur = a.kodefaktur AND c2.kategori = %s) AS totalbelanja
+				FROM faktur a 
+				WHERE (a.tglfaktur BETWEEN %s AND %s) AND a.statusfaktur = 'Y' AND a.addbyfaktur = %s AND a.periode = %s 
+				AND EXISTS (SELECT 1 FROM transaksidetail b INNER JOIN produk c ON b.nama = c.namaproduk WHERE b.faktur = a.kodefaktur AND c.kategori = %s)
+			) AS subquery",
+			GetSQLValueString($kat, 'text'),
+			GetSQLValueString($tgl1, "date"),
+			GetSQLValueString($tgl2, "date"),
+			GetSQLValueString($colname, "text"),
+			GetSQLValueString($ta, "text"),
+			GetSQLValueString($kat, 'text')
+		);
+
+		$query_Laba = sprintf(
+			"SELECT SUM(laba) AS laba FROM (
+				SELECT DISTINCT a.kodefaktur,
+				(SELECT SUM(((b2.harga * b2.qty) - (b2.hargadasar * b2.qty)) - b2.diskon) FROM transaksidetail b2 INNER JOIN produk c2 ON b2.nama = c2.namaproduk WHERE b2.faktur = a.kodefaktur AND c2.kategori = %s) AS laba
+				FROM faktur a 
+				WHERE (a.tglfaktur BETWEEN %s AND %s) AND a.statusfaktur = 'Y' AND a.addbyfaktur = %s AND a.periode = %s 
+				AND EXISTS (SELECT 1 FROM transaksidetail b INNER JOIN produk c ON b.nama = c.namaproduk WHERE b.faktur = a.kodefaktur AND c.kategori = %s)
+			) AS subquery",
+			GetSQLValueString($kat, 'text'),
 			GetSQLValueString($tgl1, "date"),
 			GetSQLValueString($tgl2, "date"),
 			GetSQLValueString($colname, "text"),
@@ -54,10 +82,16 @@ if (isset($_GET['jenisbayar']) && ($_GET['jenisbayar'] != "") && isset($_GET['ka
 		$tgl2 = $_GET['tgl2'];
 		$kat = $_GET['kategori'];
 		$jenisbayar = $_GET['jenisbayar'];
-		//mysqli_select_db($database_koneksi, $koneksi);
+		
 		$query_Penjualan = sprintf(
-			"SELECT a.idfaktur, a.tglfaktur, a.kodefaktur, a.addedfaktur, a.addbyfaktur, a.periode, a.datetimefaktur, a.kembalian, a.potongan, a.totalbayar, SUM(b.harga*b.qty) AS totalbelanja, a.statusfaktur, a.qtyprint, a.printby, a.adminfaktur, a.namapelanggan FROM faktur a,transaksidetail b,produk c
-		WHERE a.jenisbayar= %s  AND  a.addbyfaktur = %s AND (a.tglfaktur BETWEEN %s AND %s) AND a.statusfaktur = 'Y' AND  a.periode = %s AND a.kodefaktur=b.faktur AND b.nama=c.namaproduk AND c.kategori= %s GROUP BY a.kodefaktur ORDER BY a.idfaktur DESC",
+			"SELECT DISTINCT a.idfaktur, a.tglfaktur, a.kodefaktur, a.addedfaktur, a.addbyfaktur, a.periode, a.datetimefaktur, a.kembalian, a.potongan, a.totalbayar, 
+			(SELECT SUM(b2.harga * b2.qty) FROM transaksidetail b2 INNER JOIN produk c2 ON b2.nama = c2.namaproduk WHERE b2.faktur = a.kodefaktur AND c2.kategori = %s) AS totalbelanja,
+			a.statusfaktur, a.qtyprint, a.printby, a.adminfaktur, a.namapelanggan 
+			FROM faktur a 
+			WHERE a.jenisbayar = %s AND a.addbyfaktur = %s AND (a.tglfaktur BETWEEN %s AND %s) AND a.statusfaktur = 'Y' AND a.periode = %s 
+			AND EXISTS (SELECT 1 FROM transaksidetail b INNER JOIN produk c ON b.nama = c.namaproduk WHERE b.faktur = a.kodefaktur AND c.kategori = %s)
+			ORDER BY a.idfaktur DESC",
+			GetSQLValueString($kat, 'text'),
 			GetSQLValueString($jenisbayar, "text"),
 			GetSQLValueString($colname, "text"),
 			GetSQLValueString($tgl1, "date"),
@@ -74,17 +108,39 @@ if (isset($_GET['jenisbayar']) && ($_GET['jenisbayar'] != "") && isset($_GET['ka
 		);
 
 		//total pendapatan
-		$query_Pendapatan =
-			sprintf(
-				"SELECT a.idfaktur, a.tglfaktur, a.kodefaktur, a.addedfaktur, a.addbyfaktur, a.periode, a.datetimefaktur, a.kembalian, a.potongan, a.totalbayar, SUM(b.harga*b.qty) AS pendapatan, a.statusfaktur, a.qtyprint, a.printby, a.adminfaktur, a.namapelanggan FROM faktur a,transaksidetail b,produk c
-		WHERE a.jenisbayar=%s AND a.addbyfaktur=%s AND (a.tglfaktur BETWEEN %s AND %s) AND a.statusfaktur = 'Y'  AND  a.periode = %s AND b.nama=c.namaproduk AND c.kategori= %s GROUP BY a.kodefaktur ORDER BY a.idfaktur DESC",
-				GetSQLValueString($jenisbayar, "text"),
-				GetSQLValueString($colname, "text"),
-				GetSQLValueString($tgl1, "date"),
-				GetSQLValueString($tgl2, "date"),
-				GetSQLValueString($ta, "text"),
-				GetSQLValueString($kat, 'text')
-			);
+		$query_Pendapatan = sprintf(
+			"SELECT SUM(totalbelanja) AS pendapatan FROM (
+				SELECT DISTINCT a.kodefaktur,
+				(SELECT SUM(b2.harga * b2.qty) FROM transaksidetail b2 INNER JOIN produk c2 ON b2.nama = c2.namaproduk WHERE b2.faktur = a.kodefaktur AND c2.kategori = %s) AS totalbelanja
+				FROM faktur a 
+				WHERE a.jenisbayar = %s AND a.addbyfaktur = %s AND (a.tglfaktur BETWEEN %s AND %s) AND a.statusfaktur = 'Y' AND a.periode = %s 
+				AND EXISTS (SELECT 1 FROM transaksidetail b INNER JOIN produk c ON b.nama = c.namaproduk WHERE b.faktur = a.kodefaktur AND c.kategori = %s)
+			) AS subquery",
+			GetSQLValueString($kat, 'text'),
+			GetSQLValueString($jenisbayar, "text"),
+			GetSQLValueString($colname, "text"),
+			GetSQLValueString($tgl1, "date"),
+			GetSQLValueString($tgl2, "date"),
+			GetSQLValueString($ta, "text"),
+			GetSQLValueString($kat, 'text')
+		);
+
+		$query_Laba = sprintf(
+			"SELECT SUM(laba) AS laba FROM (
+				SELECT DISTINCT a.kodefaktur,
+				(SELECT SUM(((b2.harga * b2.qty) - (b2.hargadasar * b2.qty)) - b2.diskon) FROM transaksidetail b2 INNER JOIN produk c2 ON b2.nama = c2.namaproduk WHERE b2.faktur = a.kodefaktur AND c2.kategori = %s) AS laba
+				FROM faktur a 
+				WHERE a.jenisbayar = %s AND a.addbyfaktur = %s AND (a.tglfaktur BETWEEN %s AND %s) AND a.statusfaktur = 'Y' AND a.periode = %s 
+				AND EXISTS (SELECT 1 FROM transaksidetail b INNER JOIN produk c ON b.nama = c.namaproduk WHERE b.faktur = a.kodefaktur AND c.kategori = %s)
+			) AS subquery",
+			GetSQLValueString($kat, 'text'),
+			GetSQLValueString($jenisbayar, "text"),
+			GetSQLValueString($colname, "text"),
+			GetSQLValueString($tgl1, "date"),
+			GetSQLValueString($tgl2, "date"),
+			GetSQLValueString($ta, "text"),
+			GetSQLValueString($kat, 'text')
+		);
 	}
 
 	//echo "<script>alert('ini tanggal kasir jenis bayar');</script>";
@@ -126,8 +182,14 @@ if (isset($_GET['jenisbayar']) && ($_GET['jenisbayar'] != "") && isset($_GET['ka
 	//mysqli_select_db($database_koneksi, $koneksi);
 
 	$query_Penjualan = sprintf(
-		"SELECT a.idfaktur, a.tglfaktur, a.kodefaktur, a.addedfaktur, a.addbyfaktur, a.periode, a.datetimefaktur, a.kembalian, a.potongan, a.totalbayar, SUM(b.harga*b.qty) AS totalbelanja, a.statusfaktur, a.qtyprint, a.printby, a.adminfaktur, a.namapelanggan FROM faktur a,transaksidetail b,produk c
-		WHERE (a.tglfaktur BETWEEN %s AND %s) AND a.statusfaktur = 'Y' AND  a.periode = %s AND a.kodefaktur=b.faktur AND b.nama=c.namaproduk AND c.kategori= %s GROUP BY a.kodefaktur ORDER BY a.idfaktur DESC",
+		"SELECT DISTINCT a.idfaktur, a.tglfaktur, a.kodefaktur, a.addedfaktur, a.addbyfaktur, a.periode, a.datetimefaktur, a.kembalian, a.potongan, a.totalbayar, 
+		(SELECT SUM(b2.harga * b2.qty) FROM transaksidetail b2 INNER JOIN produk c2 ON b2.nama = c2.namaproduk WHERE b2.faktur = a.kodefaktur AND c2.kategori = %s) AS totalbelanja,
+		a.statusfaktur, a.qtyprint, a.printby, a.adminfaktur, a.namapelanggan 
+		FROM faktur a 
+		WHERE (a.tglfaktur BETWEEN %s AND %s) AND a.statusfaktur = 'Y' AND a.periode = %s 
+		AND EXISTS (SELECT 1 FROM transaksidetail b INNER JOIN produk c ON b.nama = c.namaproduk WHERE b.faktur = a.kodefaktur AND c.kategori = %s)
+		ORDER BY a.idfaktur DESC",
+		GetSQLValueString($kat, "text"),
 		GetSQLValueString($tgl1, "date"),
 		GetSQLValueString($tgl2, "date"),
 		GetSQLValueString($ta, "text"),
@@ -143,8 +205,29 @@ if (isset($_GET['jenisbayar']) && ($_GET['jenisbayar'] != "") && isset($_GET['ka
 
 	//total pendapatan
 	$query_Pendapatan = sprintf(
-		"SELECT a.idfaktur, a.tglfaktur, a.kodefaktur, a.addedfaktur, a.addbyfaktur, a.periode, a.datetimefaktur, a.kembalian, a.potongan, a.totalbayar, SUM(b.harga*b.qty) AS pendapatan, a.statusfaktur, a.qtyprint, a.printby, a.adminfaktur, a.namapelanggan FROM faktur a,transaksidetail b,produk c
-		WHERE (a.tglfaktur BETWEEN %s AND %s) AND a.statusfaktur = 'Y' AND  a.periode = %s AND b.nama=c.namaproduk AND c.kategori= %s GROUP BY a.kodefaktur ORDER BY a.idfaktur DESC",
+		"SELECT SUM(totalbelanja) AS pendapatan FROM (
+			SELECT DISTINCT a.kodefaktur,
+			(SELECT SUM(b2.harga * b2.qty) FROM transaksidetail b2 INNER JOIN produk c2 ON b2.nama = c2.namaproduk WHERE b2.faktur = a.kodefaktur AND c2.kategori = %s) AS totalbelanja
+			FROM faktur a 
+			WHERE (a.tglfaktur BETWEEN %s AND %s) AND a.statusfaktur = 'Y' AND a.periode = %s 
+			AND EXISTS (SELECT 1 FROM transaksidetail b INNER JOIN produk c ON b.nama = c.namaproduk WHERE b.faktur = a.kodefaktur AND c.kategori = %s)
+		) AS subquery",
+		GetSQLValueString($kat, "text"),
+		GetSQLValueString($tgl1, "date"),
+		GetSQLValueString($tgl2, "date"),
+		GetSQLValueString($ta, "text"),
+		GetSQLValueString($kat, "text")
+	);
+
+	$query_Laba = sprintf(
+		"SELECT SUM(laba) AS laba FROM (
+			SELECT DISTINCT a.kodefaktur,
+			(SELECT SUM(((b2.harga * b2.qty) - (b2.hargadasar * b2.qty)) - b2.diskon) FROM transaksidetail b2 INNER JOIN produk c2 ON b2.nama = c2.namaproduk WHERE b2.faktur = a.kodefaktur AND c2.kategori = %s) AS laba
+			FROM faktur a 
+			WHERE (a.tglfaktur BETWEEN %s AND %s) AND a.statusfaktur = 'Y' AND a.periode = %s 
+			AND EXISTS (SELECT 1 FROM transaksidetail b INNER JOIN produk c ON b.nama = c.namaproduk WHERE b.faktur = a.kodefaktur AND c.kategori = %s)
+		) AS subquery",
+		GetSQLValueString($kat, "text"),
 		GetSQLValueString($tgl1, "date"),
 		GetSQLValueString($tgl2, "date"),
 		GetSQLValueString($ta, "text"),
@@ -157,8 +240,14 @@ if (isset($_GET['jenisbayar']) && ($_GET['jenisbayar'] != "") && isset($_GET['ka
 	$tgl2 = $_GET['tgl2'];
 
 	$query_Penjualan = sprintf(
-		"SELECT a.idfaktur, a.tglfaktur, a.kodefaktur, a.addedfaktur, a.addbyfaktur, a.periode, a.datetimefaktur, a.kembalian, a.potongan, a.totalbayar, SUM(b.harga*b.qty) AS totalbelanja, a.statusfaktur, a.qtyprint, a.printby, a.adminfaktur, a.namapelanggan FROM faktur a,transaksidetail b,produk c
-		WHERE a.jenisbayar= %s AND (a.tglfaktur BETWEEN %s AND %s) AND a.statusfaktur = 'Y' AND a.periode = %s AND a.kodefaktur=b.faktur AND b.nama=c.namaproduk AND c.kategori= %s GROUP BY a.kodefaktur ORDER BY a.idfaktur DESC",
+		"SELECT DISTINCT a.idfaktur, a.tglfaktur, a.kodefaktur, a.addedfaktur, a.addbyfaktur, a.periode, a.datetimefaktur, a.kembalian, a.potongan, a.totalbayar, 
+		(SELECT SUM(b2.harga * b2.qty) FROM transaksidetail b2 INNER JOIN produk c2 ON b2.nama = c2.namaproduk WHERE b2.faktur = a.kodefaktur AND c2.kategori = %s) AS totalbelanja,
+		a.statusfaktur, a.qtyprint, a.printby, a.adminfaktur, a.namapelanggan 
+		FROM faktur a 
+		WHERE a.jenisbayar = %s AND (a.tglfaktur BETWEEN %s AND %s) AND a.statusfaktur = 'Y' AND a.periode = %s 
+		AND EXISTS (SELECT 1 FROM transaksidetail b INNER JOIN produk c ON b.nama = c.namaproduk WHERE b.faktur = a.kodefaktur AND c.kategori = %s)
+		ORDER BY a.idfaktur DESC",
+		GetSQLValueString($kat, "text"),
 		GetSQLValueString($jenisbayar, "text"),
 		GetSQLValueString($tgl1, "date"),
 		GetSQLValueString($tgl2, "date"),
@@ -175,8 +264,30 @@ if (isset($_GET['jenisbayar']) && ($_GET['jenisbayar'] != "") && isset($_GET['ka
 
 	//total pendapatan
 	$query_Pendapatan = sprintf(
-		"SELECT a.idfaktur, a.tglfaktur, a.kodefaktur, a.addedfaktur, a.addbyfaktur, a.periode, a.datetimefaktur, a.kembalian, a.potongan, a.totalbayar, SUM(b.harga*b.qty) AS pendapatan, a.statusfaktur, a.qtyprint, a.printby, a.adminfaktur, a.namapelanggan FROM faktur a,transaksidetail b,produk c
-		WHERE a.jenisbayar=%s AND (a.tglfaktur BETWEEN %s AND %s) AND a.statusfaktur = 'Y' AND a.periode = %s AND b.nama=c.namaproduk AND c.kategori= %s GROUP BY a.kodefaktur ORDER BY a.idfaktur DESC",
+		"SELECT SUM(totalbelanja) AS pendapatan FROM (
+			SELECT DISTINCT a.kodefaktur,
+			(SELECT SUM(b2.harga * b2.qty) FROM transaksidetail b2 INNER JOIN produk c2 ON b2.nama = c2.namaproduk WHERE b2.faktur = a.kodefaktur AND c2.kategori = %s) AS totalbelanja
+			FROM faktur a 
+			WHERE a.jenisbayar = %s AND (a.tglfaktur BETWEEN %s AND %s) AND a.statusfaktur = 'Y' AND a.periode = %s 
+			AND EXISTS (SELECT 1 FROM transaksidetail b INNER JOIN produk c ON b.nama = c.namaproduk WHERE b.faktur = a.kodefaktur AND c.kategori = %s)
+		) AS subquery",
+		GetSQLValueString($kat, "text"),
+		GetSQLValueString($jenisbayar, "text"),
+		GetSQLValueString($tgl1, "date"),
+		GetSQLValueString($tgl2, "date"),
+		GetSQLValueString($ta, "text"),
+		GetSQLValueString($kat, "text")
+	);
+
+	$query_Laba = sprintf(
+		"SELECT SUM(laba) AS laba FROM (
+			SELECT DISTINCT a.kodefaktur,
+			(SELECT SUM(((b2.harga * b2.qty) - (b2.hargadasar * b2.qty)) - b2.diskon) FROM transaksidetail b2 INNER JOIN produk c2 ON b2.nama = c2.namaproduk WHERE b2.faktur = a.kodefaktur AND c2.kategori = %s) AS laba
+			FROM faktur a 
+			WHERE a.jenisbayar = %s AND (a.tglfaktur BETWEEN %s AND %s) AND a.statusfaktur = 'Y' AND a.periode = %s 
+			AND EXISTS (SELECT 1 FROM transaksidetail b INNER JOIN produk c ON b.nama = c.namaproduk WHERE b.faktur = a.kodefaktur AND c.kategori = %s)
+		) AS subquery",
+		GetSQLValueString($kat, "text"),
 		GetSQLValueString($jenisbayar, "text"),
 		GetSQLValueString($tgl1, "date"),
 		GetSQLValueString($tgl2, "date"),
@@ -191,8 +302,14 @@ if (isset($_GET['jenisbayar']) && ($_GET['jenisbayar'] != "") && isset($_GET['ka
 	$tgl2 = $_GET['tgl2'];
 
 	$query_Penjualan = sprintf(
-		"SELECT a.idfaktur, a.tglfaktur, a.kodefaktur, a.addedfaktur, a.addbyfaktur, a.periode, a.datetimefaktur, a.kembalian, a.potongan, a.totalbayar, SUM(b.harga*b.qty) AS totalbelanja, a.statusfaktur, a.qtyprint, a.printby, a.adminfaktur, a.namapelanggan FROM faktur a,transaksidetail b,produk c
-		WHERE a.jenisbayar= %s AND a.addbyfaktur = %s AND (a.tglfaktur BETWEEN %s AND %s) AND a.statusfaktur = 'Y' AND a.periode = %s AND a.kodefaktur=b.faktur AND b.nama=c.namaproduk AND c.kategori= %s GROUP BY a.kodefaktur ORDER BY a.idfaktur DESC",
+		"SELECT DISTINCT a.idfaktur, a.tglfaktur, a.kodefaktur, a.addedfaktur, a.addbyfaktur, a.periode, a.datetimefaktur, a.kembalian, a.potongan, a.totalbayar, 
+		(SELECT SUM(b2.harga * b2.qty) FROM transaksidetail b2 INNER JOIN produk c2 ON b2.nama = c2.namaproduk WHERE b2.faktur = a.kodefaktur AND c2.kategori = %s) AS totalbelanja,
+		a.statusfaktur, a.qtyprint, a.printby, a.adminfaktur, a.namapelanggan 
+		FROM faktur a 
+		WHERE a.jenisbayar = %s AND a.addbyfaktur = %s AND (a.tglfaktur BETWEEN %s AND %s) AND a.statusfaktur = 'Y' AND a.periode = %s 
+		AND EXISTS (SELECT 1 FROM transaksidetail b INNER JOIN produk c ON b.nama = c.namaproduk WHERE b.faktur = a.kodefaktur AND c.kategori = %s)
+		ORDER BY a.idfaktur DESC",
+		GetSQLValueString($kat, "text"),
 		GetSQLValueString($jenisbayar, "text"),
 		GetSQLValueString($colname, "text"),
 		GetSQLValueString($tgl1, "date"),
@@ -210,8 +327,31 @@ if (isset($_GET['jenisbayar']) && ($_GET['jenisbayar'] != "") && isset($_GET['ka
 
 	//total pendapatan
 	$query_Pendapatan = sprintf(
-		"SELECT a.idfaktur, a.tglfaktur, a.kodefaktur, a.addedfaktur, a.addbyfaktur, a.periode, a.datetimefaktur, a.kembalian, a.potongan, a.totalbayar, SUM(b.harga*b.qty) AS pendapatan, a.statusfaktur, a.qtyprint, a.printby, a.adminfaktur, a.namapelanggan FROM faktur a,transaksidetail b,produk c
-		WHERE a.jenisbayar=%s AND a.addbyfaktur=%s AND (a.tglfaktur BETWEEN %s AND %s) AND a.statusfaktur = 'Y' AND a.periode = %s AND b.nama=c.namaproduk AND c.kategori= %s GROUP BY a.kodefaktur ORDER BY a.idfaktur DESC",
+		"SELECT SUM(totalbelanja) AS pendapatan FROM (
+			SELECT DISTINCT a.kodefaktur,
+			(SELECT SUM(b2.harga * b2.qty) FROM transaksidetail b2 INNER JOIN produk c2 ON b2.nama = c2.namaproduk WHERE b2.faktur = a.kodefaktur AND c2.kategori = %s) AS totalbelanja
+			FROM faktur a 
+			WHERE a.jenisbayar = %s AND a.addbyfaktur = %s AND (a.tglfaktur BETWEEN %s AND %s) AND a.statusfaktur = 'Y' AND a.periode = %s 
+			AND EXISTS (SELECT 1 FROM transaksidetail b INNER JOIN produk c ON b.nama = c.namaproduk WHERE b.faktur = a.kodefaktur AND c.kategori = %s)
+		) AS subquery",
+		GetSQLValueString($kat, "text"),
+		GetSQLValueString($jenisbayar, "text"),
+		GetSQLValueString($colname, "text"),
+		GetSQLValueString($tgl1, "date"),
+		GetSQLValueString($tgl2, "date"),
+		GetSQLValueString($ta, "text"),
+		GetSQLValueString($kat, "text")
+	);
+
+	$query_Laba = sprintf(
+		"SELECT SUM(laba) AS laba FROM (
+			SELECT DISTINCT a.kodefaktur,
+			(SELECT SUM(((b2.harga * b2.qty) - (b2.hargadasar * b2.qty)) - b2.diskon) FROM transaksidetail b2 INNER JOIN produk c2 ON b2.nama = c2.namaproduk WHERE b2.faktur = a.kodefaktur AND c2.kategori = %s) AS laba
+			FROM faktur a 
+			WHERE a.jenisbayar = %s AND a.addbyfaktur = %s AND (a.tglfaktur BETWEEN %s AND %s) AND a.statusfaktur = 'Y' AND a.periode = %s 
+			AND EXISTS (SELECT 1 FROM transaksidetail b INNER JOIN produk c ON b.nama = c.namaproduk WHERE b.faktur = a.kodefaktur AND c.kategori = %s)
+		) AS subquery",
+		GetSQLValueString($kat, "text"),
 		GetSQLValueString($jenisbayar, "text"),
 		GetSQLValueString($colname, "text"),
 		GetSQLValueString($tgl1, "date"),
@@ -226,8 +366,14 @@ if (isset($_GET['jenisbayar']) && ($_GET['jenisbayar'] != "") && isset($_GET['ka
 	$tgl2 = $_GET['tgl2'];
 
 	$query_Penjualan = sprintf(
-		"SELECT a.idfaktur, a.tglfaktur, a.kodefaktur, a.addedfaktur, a.addbyfaktur, a.periode, a.datetimefaktur, a.kembalian, a.potongan, a.totalbayar, SUM(b.harga*b.qty) AS totalbelanja, a.statusfaktur, a.qtyprint, a.printby, a.adminfaktur, a.namapelanggan FROM faktur a,transaksidetail b,produk c
-		WHERE (a.tglfaktur BETWEEN %s AND %s) AND a.statusfaktur = 'Y' AND a.addbyfaktur = %s AND a.periode = %s AND a.kodefaktur=b.faktur AND b.nama=c.namaproduk AND c.kategori= %s GROUP BY a.kodefaktur ORDER BY a.idfaktur DESC",
+		"SELECT DISTINCT a.idfaktur, a.tglfaktur, a.kodefaktur, a.addedfaktur, a.addbyfaktur, a.periode, a.datetimefaktur, a.kembalian, a.potongan, a.totalbayar, 
+		(SELECT SUM(b2.harga * b2.qty) FROM transaksidetail b2 INNER JOIN produk c2 ON b2.nama = c2.namaproduk WHERE b2.faktur = a.kodefaktur AND c2.kategori = %s) AS totalbelanja,
+		a.statusfaktur, a.qtyprint, a.printby, a.adminfaktur, a.namapelanggan 
+		FROM faktur a 
+		WHERE (a.tglfaktur BETWEEN %s AND %s) AND a.statusfaktur = 'Y' AND a.addbyfaktur = %s AND a.periode = %s 
+		AND EXISTS (SELECT 1 FROM transaksidetail b INNER JOIN produk c ON b.nama = c.namaproduk WHERE b.faktur = a.kodefaktur AND c.kategori = %s)
+		ORDER BY a.idfaktur DESC",
+		GetSQLValueString($kat, "text"),
 		GetSQLValueString($tgl1, "date"),
 		GetSQLValueString($tgl2, "date"),
 		GetSQLValueString($colname, "text"),
@@ -244,8 +390,30 @@ if (isset($_GET['jenisbayar']) && ($_GET['jenisbayar'] != "") && isset($_GET['ka
 
 	//total pendapatan
 	$query_Pendapatan = sprintf(
-		"SELECT a.idfaktur, a.tglfaktur, a.kodefaktur, a.addedfaktur, a.addbyfaktur, a.periode, a.datetimefaktur, a.kembalian, a.potongan, a.totalbayar, SUM(b.harga*b.qty) AS pendapatan, a.statusfaktur, a.qtyprint, a.printby, a.adminfaktur, a.namapelanggan FROM faktur a,transaksidetail b,produk c
-		WHERE (a.tglfaktur BETWEEN %s AND %s) AND a.statusfaktur = 'Y' AND a.addbyfaktur = %s AND a.periode = %s AND b.nama=c.namaproduk AND c.kategori= %s GROUP BY a.kodefaktur ORDER BY a.idfaktur DESC",
+		"SELECT SUM(totalbelanja) AS pendapatan FROM (
+			SELECT DISTINCT a.kodefaktur,
+			(SELECT SUM(b2.harga * b2.qty) FROM transaksidetail b2 INNER JOIN produk c2 ON b2.nama = c2.namaproduk WHERE b2.faktur = a.kodefaktur AND c2.kategori = %s) AS totalbelanja
+			FROM faktur a 
+			WHERE (a.tglfaktur BETWEEN %s AND %s) AND a.statusfaktur = 'Y' AND a.addbyfaktur = %s AND a.periode = %s 
+			AND EXISTS (SELECT 1 FROM transaksidetail b INNER JOIN produk c ON b.nama = c.namaproduk WHERE b.faktur = a.kodefaktur AND c.kategori = %s)
+		) AS subquery",
+		GetSQLValueString($kat, "text"),
+		GetSQLValueString($tgl1, "date"),
+		GetSQLValueString($tgl2, "date"),
+		GetSQLValueString($colname, "text"),
+		GetSQLValueString($ta, "text"),
+		GetSQLValueString($kat, "text")
+	);
+
+	$query_Laba = sprintf(
+		"SELECT SUM(laba) AS laba FROM (
+			SELECT DISTINCT a.kodefaktur,
+			(SELECT SUM(((b2.harga * b2.qty) - (b2.hargadasar * b2.qty)) - b2.diskon) FROM transaksidetail b2 INNER JOIN produk c2 ON b2.nama = c2.namaproduk WHERE b2.faktur = a.kodefaktur AND c2.kategori = %s) AS laba
+			FROM faktur a 
+			WHERE (a.tglfaktur BETWEEN %s AND %s) AND a.statusfaktur = 'Y' AND a.addbyfaktur = %s AND a.periode = %s 
+			AND EXISTS (SELECT 1 FROM transaksidetail b INNER JOIN produk c ON b.nama = c.namaproduk WHERE b.faktur = a.kodefaktur AND c.kategori = %s)
+		) AS subquery",
+		GetSQLValueString($kat, "text"),
 		GetSQLValueString($tgl1, "date"),
 		GetSQLValueString($tgl2, "date"),
 		GetSQLValueString($colname, "text"),
