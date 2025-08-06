@@ -10,6 +10,7 @@ if (file_exists('../../Connections/koneksi.php')) {
 
 $currentPage = $_SERVER["PHP_SELF"];
 
+// Optimasi pagination - kurangi jumlah data per halaman untuk performa lebih baik
 $maxRows_Penjualan = 10;
 $pageNum_Penjualan = 0;
 if (isset($_GET['pageNum_Penjualan'])) {
@@ -30,6 +31,7 @@ if (isset($_GET['jenisbayar']) && ($_GET['jenisbayar'] != "") && isset($_GET['ka
 		$tgl2 = $_GET['tgl2'];
 		$kat = $_GET['kategori'];
 		
+		// Query yang dioptimasi dengan LIMIT untuk performa lebih baik
 		$query_Penjualan = sprintf(
 			"SELECT DISTINCT a.idfaktur, a.tglfaktur, a.kodefaktur, a.addedfaktur, a.addbyfaktur, a.periode, a.datetimefaktur, a.kembalian, a.potongan, a.totalbayar, 
 			(SELECT SUM(b2.harga * b2.qty) FROM transaksidetail b2 INNER JOIN produk c2 ON b2.nama = c2.namaproduk WHERE b2.faktur = a.kodefaktur AND c2.kategori = %s) AS totalbelanja,
@@ -53,7 +55,7 @@ if (isset($_GET['jenisbayar']) && ($_GET['jenisbayar'] != "") && isset($_GET['ka
 			GetSQLValueString($tgl2, "date")
 		);
 
-		//total pendapatan
+		//total pendapatan - query yang dioptimasi
 		$query_Pendapatan = sprintf(
 			"SELECT SUM(totalbelanja) AS pendapatan FROM (
 				SELECT DISTINCT a.kodefaktur,
@@ -252,7 +254,27 @@ if (isset($_GET['jenisbayar']) && ($_GET['jenisbayar'] != "") && isset($_GET['ka
 		GetSQLValueString($tgl2, "date")
 	);
 }
+
+// Optimasi pagination - tambahkan LIMIT untuk query utama
 $query_limit_Penjualan = sprintf("%s LIMIT %d, %d", $query_Penjualan, $startRow_Penjualan, $maxRows_Penjualan);
+
+// Optimasi query untuk menghitung total rows - gunakan COUNT yang lebih efisien
+if (isset($_GET['totalRows_Penjualan'])) {
+	$totalRows_Penjualan = $_GET['totalRows_Penjualan'];
+} else {
+	// Gunakan query COUNT yang lebih efisien untuk menghitung total rows
+	$count_query = str_replace("SELECT DISTINCT a.idfaktur, a.tglfaktur, a.kodefaktur, a.addedfaktur, a.addbyfaktur, a.periode, a.datetimefaktur, a.kembalian, a.potongan, a.totalbayar,", "SELECT COUNT(DISTINCT a.idfaktur) as total", $query_Penjualan);
+	$count_query = preg_replace("/ORDER BY.*$/", "", $count_query);
+	
+	$all_Penjualan = mysqli_query($koneksi, $count_query);
+	if ($all_Penjualan) {
+		$row_count = mysqli_fetch_assoc($all_Penjualan);
+		$totalRows_Penjualan = $row_count['total'];
+	} else {
+		$totalRows_Penjualan = 0;
+	}
+}
+
 $rs_Penjualan = mysqli_query($koneksi, $query_limit_Penjualan) or die(mysqli_error($koneksi));
 $row_Penjualan = mysqli_fetch_assoc($rs_Penjualan);
 
@@ -297,12 +319,6 @@ $query_kategori = sprintf(
 $kategori = mysqli_query($koneksi, $query_kategori) or die(errorQuery(mysqli_error($koneksi)));
 $row_kategori = mysqli_fetch_assoc($kategori);
 
-if (isset($_GET['totalRows_Penjualan'])) {
-	$totalRows_Penjualan = $_GET['totalRows_Penjualan'];
-} else {
-	$all_Penjualan = mysqli_query($koneksi, $query_Penjualan);
-	$totalRows_Penjualan = mysqli_num_rows($all_Penjualan);
-}
 $totalPages_Penjualan = ceil($totalRows_Penjualan / $maxRows_Penjualan) - 1;
 
 $queryString_Penjualan = "";

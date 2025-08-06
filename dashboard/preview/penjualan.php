@@ -143,6 +143,14 @@ require_once('preview/page1.php'); ?>
             </table>
 
           </div>
+          
+          <!-- Informasi Pagination -->
+          <div class="alert alert-info">
+            <strong>Menampilkan <?= ($startRow_Penjualan + 1) ?> - <?= min($startRow_Penjualan + $maxRows_Penjualan, $totalRows_Penjualan) ?> dari <?= $totalRows_Penjualan ?> data</strong>
+            <br>
+            <small>Halaman <?= ($pageNum_Penjualan + 1) ?> dari <?= ($totalPages_Penjualan + 1) ?></small>
+          </div>
+          
           <table width="100%" class="table table-striped table-bordered">
             <tr>
               <th width="3%" bgcolor="#006699">
@@ -172,7 +180,7 @@ require_once('preview/page1.php'); ?>
             </tr>
             <?php
             $total = 0;
-            $no = 1;
+            $no = $startRow_Penjualan + 1; // Mulai nomor dari posisi pagination
             do {
 
               //hitung laba
@@ -227,6 +235,38 @@ require_once('preview/page1.php'); ?>
               $no++;
             } while ($row_Penjualan = mysqli_fetch_assoc($rs_Penjualan)); ?>
           </table>
+          
+          <!-- Pagination Controls -->
+          <?php if ($totalPages_Penjualan > 0) { ?>
+          <div class="text-center">
+            <ul class="pagination">
+              <?php if ($pageNum_Penjualan > 0) { ?>
+                <li><a href="<?= $currentPage ?>?pageNum_Penjualan=0<?= $queryString_Penjualan ?>&tgl1=<?= $tgl1 ?>&tgl2=<?= $tgl2 ?>&kasir=<?= $colname ?>&jenisbayar=<?= $jenisbayar ?>&kategori=<?= $kat ?>">&laquo; Pertama</a></li>
+                <li><a href="<?= $currentPage ?>?pageNum_Penjualan=<?= $pageNum_Penjualan - 1 ?><?= $queryString_Penjualan ?>&tgl1=<?= $tgl1 ?>&tgl2=<?= $tgl2 ?>&kasir=<?= $colname ?>&jenisbayar=<?= $jenisbayar ?>&kategori=<?= $kat ?>">&lsaquo; Sebelumnya</a></li>
+              <?php } ?>
+              
+              <?php
+              // Tampilkan maksimal 5 halaman di sekitar halaman saat ini
+              $start_page = max(0, $pageNum_Penjualan - 2);
+              $end_page = min($totalPages_Penjualan, $pageNum_Penjualan + 2);
+              
+              for ($i = $start_page; $i <= $end_page; $i++) {
+                if ($i == $pageNum_Penjualan) {
+                  echo "<li class='active'><a href='#'>" . ($i + 1) . "</a></li>";
+                } else {
+                  echo "<li><a href='" . $currentPage . "?pageNum_Penjualan=" . $i . $queryString_Penjualan . "&tgl1=" . $tgl1 . "&tgl2=" . $tgl2 . "&kasir=" . $colname . "&jenisbayar=" . $jenisbayar . "&kategori=" . $kat . "'>" . ($i + 1) . "</a></li>";
+                }
+              }
+              ?>
+              
+              <?php if ($pageNum_Penjualan < $totalPages_Penjualan) { ?>
+                <li><a href="<?= $currentPage ?>?pageNum_Penjualan=<?= $pageNum_Penjualan + 1 ?><?= $queryString_Penjualan ?>&tgl1=<?= $tgl1 ?>&tgl2=<?= $tgl2 ?>&kasir=<?= $colname ?>&jenisbayar=<?= $jenisbayar ?>&kategori=<?= $kat ?>">Selanjutnya &rsaquo;</a></li>
+                <li><a href="<?= $currentPage ?>?pageNum_Penjualan=<?= $totalPages_Penjualan ?><?= $queryString_Penjualan ?>&tgl1=<?= $tgl1 ?>&tgl2=<?= $tgl2 ?>&kasir=<?= $colname ?>&jenisbayar=<?= $jenisbayar ?>&kategori=<?= $kat ?>">Terakhir &raquo;</a></li>
+              <?php } ?>
+            </ul>
+          </div>
+          <?php } ?>
+          
         </div>
       </div>
   </div>
