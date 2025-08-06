@@ -23,27 +23,90 @@ $tgl1 = $tglsekarang;
 $tgl2 = $tglsekarang;
 $kat = 0;
 
-// Perbaikan logika filtering - tambahkan kondisi untuk kategori
-if (isset($_GET['jenisbayar']) && isset($_GET['kasir']) && isset($_GET['tgl1']) && isset($_GET['tgl2']) && isset($_GET['kategori']) && ($_GET['kategori'] != 0)) {
+// Kondisi khusus untuk kasir=0, jenisbayar=0, dengan kategori
+if (isset($_GET['jenisbayar']) && isset($_GET['kasir']) && isset($_GET['tgl1']) && isset($_GET['tgl2']) && isset($_GET['kategori']) && ($_GET['kategori'] != 0) && ($_GET['kasir'] == 0) && ($_GET['jenisbayar'] == 0)) {
 	$jenisbayar = $_GET['jenisbayar'];
 	$colname = $_GET['kasir'];
 	$tgl1 = $_GET['tgl1'];
 	$tgl2 = $_GET['tgl2'];
 	$kat = $_GET['kategori'];
 	
+	// Query untuk semua kasir, semua jenis bayar, dengan kategori
+	$query_Penjualan = sprintf(
+		"SELECT DISTINCT a.idfaktur, a.tglfaktur, a.kodefaktur, a.addedfaktur, a.addbyfaktur, a.periode, a.datetimefaktur, a.kembalian, a.potongan, a.totalbayar, 
+		(SELECT SUM(b2.harga * b2.qty) FROM transaksidetail b2 INNER JOIN produk c2 ON b2.nama = c2.namaproduk WHERE b2.faktur = a.kodefaktur AND c2.kategori = %s) AS totalbelanja,
+		a.statusfaktur, a.qtyprint, a.printby, a.adminfaktur, a.namapelanggan 
+		FROM faktur a 
+		WHERE (a.tglfaktur BETWEEN %s AND %s) AND a.statusfaktur = 'Y' AND a.periode = %s 
+		AND EXISTS (SELECT 1 FROM transaksidetail b INNER JOIN produk c ON b.nama = c.namaproduk WHERE b.faktur = a.kodefaktur AND c.kategori = %s)
+		ORDER BY a.idfaktur DESC",
+		GetSQLValueString($kat, 'text'),
+		GetSQLValueString($tgl1, "date"),
+		GetSQLValueString($tgl2, "date"),
+		GetSQLValueString($ta, "text"),
+		GetSQLValueString($kat, 'text')
+	);
+
+	$query_total = sprintf(
+		"SELECT SUM(nominal) as jumlah FROM pengeluaran
+	WHERE tgl BETWEEN %s AND %s  ORDER BY id DESC",
+		GetSQLValueString($tgl1, "date"),
+		GetSQLValueString($tgl2, "date")
+	);
+
+	//total pendapatan - query yang dioptimasi
+	$query_Pendapatan = sprintf(
+		"SELECT SUM(totalbelanja) AS pendapatan FROM (
+			SELECT DISTINCT a.kodefaktur,
+			(SELECT SUM(b2.harga * b2.qty) FROM transaksidetail b2 INNER JOIN produk c2 ON b2.nama = c2.namaproduk WHERE b2.faktur = a.kodefaktur AND c2.kategori = %s) AS totalbelanja
+			FROM faktur a 
+			WHERE (a.tglfaktur BETWEEN %s AND %s) AND a.statusfaktur = 'Y' AND a.periode = %s 
+			AND EXISTS (SELECT 1 FROM transaksidetail b INNER JOIN produk c ON b.nama = c.namaproduk WHERE b.faktur = a.kodefaktur AND c.kategori = %s)
+		) AS subquery",
+		GetSQLValueString($kat, 'text'),
+		GetSQLValueString($tgl1, "date"),
+		GetSQLValueString($tgl2, "date"),
+		GetSQLValueString($ta, "text"),
+		GetSQLValueString($kat, 'text')
+	);
+
+	$query_Laba = sprintf(
+		"SELECT SUM(laba) AS laba FROM (
+			SELECT DISTINCT a.kodefaktur,
+			(SELECT SUM(((b2.harga * b2.qty) - (b2.hargadasar * b2.qty)) - b2.diskon) FROM transaksidetail b2 INNER JOIN produk c2 ON b2.nama = c2.namaproduk WHERE b2.faktur = a.kodefaktur AND c2.kategori = %s) AS laba
+			FROM faktur a 
+			WHERE (a.tglfaktur BETWEEN %s AND %s) AND a.statusfaktur = 'Y' AND a.periode = %s 
+			AND EXISTS (SELECT 1 FROM transaksidetail b INNER JOIN produk c ON b.nama = c.namaproduk WHERE b.faktur = a.kodefaktur AND c.kategori = %s)
+		) AS subquery",
+		GetSQLValueString($kat, 'text'),
+		GetSQLValueString($tgl1, "date"),
+		GetSQLValueString($tgl2, "date"),
+		GetSQLValueString($ta, "text"),
+		GetSQLValueString($kat, 'text')
+	);
+
+// Perbaikan logika filtering - tambahkan kondisi untuk kategori
+} elseif (isset($_GET['jenisbayar']) && ($_GET['jenisbayar'] != "") && isset($_GET['kasir']) && ($_GET['kasir'] != 0) && isset($_GET['tgl1']) && isset($_GET['tgl2']) && isset($_GET['kategori']) && ($_GET['kategori'] != 0)) {
+	$jenisbayar = $_GET['jenisbayar'];
 	if ($jenisbayar == "0") {
+		$colname = $_GET['kasir'];
+		$tgl1 = $_GET['tgl1'];
+		$tgl2 = $_GET['tgl2'];
+		$kat = $_GET['kategori'];
+		
 		// Query yang dioptimasi dengan LIMIT untuk performa lebih baik
 		$query_Penjualan = sprintf(
 			"SELECT DISTINCT a.idfaktur, a.tglfaktur, a.kodefaktur, a.addedfaktur, a.addbyfaktur, a.periode, a.datetimefaktur, a.kembalian, a.potongan, a.totalbayar, 
 			(SELECT SUM(b2.harga * b2.qty) FROM transaksidetail b2 INNER JOIN produk c2 ON b2.nama = c2.namaproduk WHERE b2.faktur = a.kodefaktur AND c2.kategori = %s) AS totalbelanja,
 			a.statusfaktur, a.qtyprint, a.printby, a.adminfaktur, a.namapelanggan 
 			FROM faktur a 
-			WHERE (a.tglfaktur BETWEEN %s AND %s) AND a.statusfaktur = 'Y' AND a.periode = %s 
+			WHERE (a.tglfaktur BETWEEN %s AND %s) AND a.statusfaktur = 'Y' AND a.addbyfaktur = %s AND a.periode = %s 
 			AND EXISTS (SELECT 1 FROM transaksidetail b INNER JOIN produk c ON b.nama = c.namaproduk WHERE b.faktur = a.kodefaktur AND c.kategori = %s)
 			ORDER BY a.idfaktur DESC",
 			GetSQLValueString($kat, 'text'),
 			GetSQLValueString($tgl1, "date"),
 			GetSQLValueString($tgl2, "date"),
+			GetSQLValueString($colname, "text"),
 			GetSQLValueString($ta, "text"),
 			GetSQLValueString($kat, 'text')
 		);
@@ -61,12 +124,13 @@ if (isset($_GET['jenisbayar']) && isset($_GET['kasir']) && isset($_GET['tgl1']) 
 				SELECT DISTINCT a.kodefaktur,
 				(SELECT SUM(b2.harga * b2.qty) FROM transaksidetail b2 INNER JOIN produk c2 ON b2.nama = c2.namaproduk WHERE b2.faktur = a.kodefaktur AND c2.kategori = %s) AS totalbelanja
 				FROM faktur a 
-				WHERE (a.tglfaktur BETWEEN %s AND %s) AND a.statusfaktur = 'Y' AND a.periode = %s 
+				WHERE (a.tglfaktur BETWEEN %s AND %s) AND a.statusfaktur = 'Y' AND a.addbyfaktur = %s AND a.periode = %s 
 				AND EXISTS (SELECT 1 FROM transaksidetail b INNER JOIN produk c ON b.nama = c.namaproduk WHERE b.faktur = a.kodefaktur AND c.kategori = %s)
 			) AS subquery",
 			GetSQLValueString($kat, 'text'),
 			GetSQLValueString($tgl1, "date"),
 			GetSQLValueString($tgl2, "date"),
+			GetSQLValueString($colname, "text"),
 			GetSQLValueString($ta, "text"),
 			GetSQLValueString($kat, 'text')
 		);
@@ -76,26 +140,34 @@ if (isset($_GET['jenisbayar']) && isset($_GET['kasir']) && isset($_GET['tgl1']) 
 				SELECT DISTINCT a.kodefaktur,
 				(SELECT SUM(((b2.harga * b2.qty) - (b2.hargadasar * b2.qty)) - b2.diskon) FROM transaksidetail b2 INNER JOIN produk c2 ON b2.nama = c2.namaproduk WHERE b2.faktur = a.kodefaktur AND c2.kategori = %s) AS laba
 				FROM faktur a 
-				WHERE (a.tglfaktur BETWEEN %s AND %s) AND a.statusfaktur = 'Y' AND a.periode = %s 
+				WHERE (a.tglfaktur BETWEEN %s AND %s) AND a.statusfaktur = 'Y' AND a.addbyfaktur = %s AND a.periode = %s 
 				AND EXISTS (SELECT 1 FROM transaksidetail b INNER JOIN produk c ON b.nama = c.namaproduk WHERE b.faktur = a.kodefaktur AND c.kategori = %s)
 			) AS subquery",
 			GetSQLValueString($kat, 'text'),
 			GetSQLValueString($tgl1, "date"),
 			GetSQLValueString($tgl2, "date"),
+			GetSQLValueString($colname, "text"),
 			GetSQLValueString($ta, "text"),
 			GetSQLValueString($kat, 'text')
 		);
 	} else {
+		$colname = $_GET['kasir'];
+		$tgl1 = $_GET['tgl1'];
+		$tgl2 = $_GET['tgl2'];
+		$kat = $_GET['kategori'];
+		$jenisbayar = $_GET['jenisbayar'];
+		
 		$query_Penjualan = sprintf(
 			"SELECT DISTINCT a.idfaktur, a.tglfaktur, a.kodefaktur, a.addedfaktur, a.addbyfaktur, a.periode, a.datetimefaktur, a.kembalian, a.potongan, a.totalbayar, 
 			(SELECT SUM(b2.harga * b2.qty) FROM transaksidetail b2 INNER JOIN produk c2 ON b2.nama = c2.namaproduk WHERE b2.faktur = a.kodefaktur AND c2.kategori = %s) AS totalbelanja,
 			a.statusfaktur, a.qtyprint, a.printby, a.adminfaktur, a.namapelanggan 
 			FROM faktur a 
-			WHERE a.jenisbayar = %s AND (a.tglfaktur BETWEEN %s AND %s) AND a.statusfaktur = 'Y' AND a.periode = %s 
+			WHERE a.jenisbayar = %s AND a.addbyfaktur = %s AND (a.tglfaktur BETWEEN %s AND %s) AND a.statusfaktur = 'Y' AND a.periode = %s 
 			AND EXISTS (SELECT 1 FROM transaksidetail b INNER JOIN produk c ON b.nama = c.namaproduk WHERE b.faktur = a.kodefaktur AND c.kategori = %s)
 			ORDER BY a.idfaktur DESC",
 			GetSQLValueString($kat, 'text'),
 			GetSQLValueString($jenisbayar, "text"),
+			GetSQLValueString($colname, "text"),
 			GetSQLValueString($tgl1, "date"),
 			GetSQLValueString($tgl2, "date"),
 			GetSQLValueString($ta, "text"),
@@ -115,11 +187,12 @@ if (isset($_GET['jenisbayar']) && isset($_GET['kasir']) && isset($_GET['tgl1']) 
 				SELECT DISTINCT a.kodefaktur,
 				(SELECT SUM(b2.harga * b2.qty) FROM transaksidetail b2 INNER JOIN produk c2 ON b2.nama = c2.namaproduk WHERE b2.faktur = a.kodefaktur AND c2.kategori = %s) AS totalbelanja
 				FROM faktur a 
-				WHERE a.jenisbayar = %s AND (a.tglfaktur BETWEEN %s AND %s) AND a.statusfaktur = 'Y' AND a.periode = %s 
+				WHERE a.jenisbayar = %s AND a.addbyfaktur = %s AND (a.tglfaktur BETWEEN %s AND %s) AND a.statusfaktur = 'Y' AND a.periode = %s 
 				AND EXISTS (SELECT 1 FROM transaksidetail b INNER JOIN produk c ON b.nama = c.namaproduk WHERE b.faktur = a.kodefaktur AND c.kategori = %s)
 			) AS subquery",
 			GetSQLValueString($kat, 'text'),
 			GetSQLValueString($jenisbayar, "text"),
+			GetSQLValueString($colname, "text"),
 			GetSQLValueString($tgl1, "date"),
 			GetSQLValueString($tgl2, "date"),
 			GetSQLValueString($ta, "text"),
@@ -131,11 +204,12 @@ if (isset($_GET['jenisbayar']) && isset($_GET['kasir']) && isset($_GET['tgl1']) 
 				SELECT DISTINCT a.kodefaktur,
 				(SELECT SUM(((b2.harga * b2.qty) - (b2.hargadasar * b2.qty)) - b2.diskon) FROM transaksidetail b2 INNER JOIN produk c2 ON b2.nama = c2.namaproduk WHERE b2.faktur = a.kodefaktur AND c2.kategori = %s) AS laba
 				FROM faktur a 
-				WHERE a.jenisbayar = %s AND (a.tglfaktur BETWEEN %s AND %s) AND a.statusfaktur = 'Y' AND a.periode = %s 
+				WHERE a.jenisbayar = %s AND a.addbyfaktur = %s AND (a.tglfaktur BETWEEN %s AND %s) AND a.statusfaktur = 'Y' AND a.periode = %s 
 				AND EXISTS (SELECT 1 FROM transaksidetail b INNER JOIN produk c ON b.nama = c.namaproduk WHERE b.faktur = a.kodefaktur AND c.kategori = %s)
 			) AS subquery",
 			GetSQLValueString($kat, 'text'),
 			GetSQLValueString($jenisbayar, "text"),
+			GetSQLValueString($colname, "text"),
 			GetSQLValueString($tgl1, "date"),
 			GetSQLValueString($tgl2, "date"),
 			GetSQLValueString($ta, "text"),
@@ -206,8 +280,8 @@ if (isset($_GET['jenisbayar']) && isset($_GET['kasir']) && isset($_GET['tgl1']) 
 	$query_Laba = sprintf(
 		"SELECT SUM(((harga * qty) - (hargadasar * qty)) - diskon) AS laba
 		FROM transaksidetail
-		WHERE faktur IN (SELECT kodefaktur FROM faktur WHERE periode = %s AND tglfaktur BETWEEN %s AND %s AND statusfaktur = 'Y')",
-		GetSQLValueString($ta, "text"),
+		INNER JOIN faktur ON transaksidetail.faktur = faktur.kodefaktur
+		WHERE tglfaktur BETWEEN %s AND %s",
 		GetSQLValueString($tgl1, "date"),
 		GetSQLValueString($tgl2, "date")
 	);
@@ -225,7 +299,7 @@ if (isset($_GET['jenisbayar']) && isset($_GET['kasir']) && isset($_GET['tgl1']) 
 		GetSQLValueString($tgl1, "date"),
 		GetSQLValueString($tgl2, "date")
 	);
-	//echo "<script>alert('ini default');</script>";
+
 	//total pendapatan
 	$query_Pendapatan = sprintf(
 		"SELECT  SUM(totalbayar - kembalian) AS `pendapatan` FROM faktur
@@ -236,7 +310,8 @@ if (isset($_GET['jenisbayar']) && isset($_GET['kasir']) && isset($_GET['tgl1']) 
 	$query_Laba = sprintf(
 		"SELECT SUM(((harga * qty) - (hargadasar * qty)) - diskon) AS laba
 		FROM transaksidetail
-		WHERE faktur IN (SELECT kodefaktur FROM faktur WHERE periode = %s AND statusfaktur = 'Y')",
+		INNER JOIN faktur ON transaksidetail.faktur = faktur.kodefaktur
+		WHERE periode = %s",
 		GetSQLValueString($ta, "text")
 	);
 }
