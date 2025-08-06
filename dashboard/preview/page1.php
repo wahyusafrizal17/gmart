@@ -258,21 +258,12 @@ if (isset($_GET['jenisbayar']) && ($_GET['jenisbayar'] != "") && isset($_GET['ka
 // Optimasi pagination - tambahkan LIMIT untuk query utama
 $query_limit_Penjualan = sprintf("%s LIMIT %d, %d", $query_Penjualan, $startRow_Penjualan, $maxRows_Penjualan);
 
-// Optimasi query untuk menghitung total rows - gunakan COUNT yang lebih efisien
+// Kembalikan ke logika pagination yang sederhana dan aman
 if (isset($_GET['totalRows_Penjualan'])) {
 	$totalRows_Penjualan = $_GET['totalRows_Penjualan'];
 } else {
-	// Gunakan query COUNT yang lebih efisien untuk menghitung total rows
-	$count_query = str_replace("SELECT DISTINCT a.idfaktur, a.tglfaktur, a.kodefaktur, a.addedfaktur, a.addbyfaktur, a.periode, a.datetimefaktur, a.kembalian, a.potongan, a.totalbayar,", "SELECT COUNT(DISTINCT a.idfaktur) as total", $query_Penjualan);
-	$count_query = preg_replace("/ORDER BY.*$/", "", $count_query);
-	
-	$all_Penjualan = mysqli_query($koneksi, $count_query);
-	if ($all_Penjualan) {
-		$row_count = mysqli_fetch_assoc($all_Penjualan);
-		$totalRows_Penjualan = $row_count['total'];
-	} else {
-		$totalRows_Penjualan = 0;
-	}
+	$all_Penjualan = mysqli_query($koneksi, $query_Penjualan);
+	$totalRows_Penjualan = mysqli_num_rows($all_Penjualan);
 }
 
 $rs_Penjualan = mysqli_query($koneksi, $query_limit_Penjualan) or die(mysqli_error($koneksi));
