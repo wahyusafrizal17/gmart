@@ -156,7 +156,7 @@ require_once('page1.php'); ?>
             <?php title('success', 'HASIL PENCARIAN DITEMUKAN', 'Pada tanggal ' . $_GET['tgl1'] . ' s/d tanggal ' . $_GET['tgl2'] . ' ditemukan sebanyak ' . $totalRows_Penjualan . ' transaksi'); ?>
           <?php } ?>
 
-          <p><a href="report/penjualan.php?jenisbayar=<?= $jenisbayar ?>&tgl1=<?= $tgl1; ?>&tgl2=<?= $tgl2; ?>&kasir=<?= $colname; ?>&kategori=<?= $kat ?>" target="_blank" class="btn btn-primary"><span class="fa fa-print"></span> Cetak Laporan</a> <a href="report/penjualanitem.php?jenisbayar=<?= $jenisbayar ?>&tgl1=<?= $tgl1; ?>&tgl2=<?= $tgl2; ?>&kasir=<?= $colname; ?>&kategori=<?= $kat ?>" target="_blank" class="btn btn-info"><span class="fa fa-list"></span> Cetak Laporan Detail</a>
+          <p><a href="report/penjualan.php?jenisbayar=<?= $jenisbayar ?>&tgl1=<?= $tgl1; ?>&tgl2=<?= $tgl2; ?>&kasir=<?= $colname; ?>&kategori=<?= $kat ?>" target="_blank" class="btn btn-primary"><span class="fa fa-print"></span> Cetak Laporan</a> <a href="report/penjualanitem.php?jenisbayar=<?= $jenisbayar ?>&tgl1=<?= $tgl1; ?>&tgl2=<?= $tgl2; ?>&kasir=<?= $colname; ?>&kategori=<?= $kat ?>" target="_blank" class="btn btn-info"><span class="fa fa-list"></span> Cetak Laporan Detail</a> <a href="report/penjualanitem.php?jenisbayar=<?= $jenisbayar ?>&tgl1=<?= $tgl1; ?>&tgl2=<?= $tgl2; ?>&kasir=<?= $colname; ?>&kategori=<?= $kat ?>&show_by_category=1" target="_blank" class="btn btn-success"><span class="fa fa-chart-bar"></span> Laporan Per Kategori</a>
 
 
           </p>
