@@ -1,4 +1,0 @@
-﻿<?xml version="1.0" encoding="utf-8" ?>
-<info>
-	<infoitem key="UD_Admin" value="name:id_admin;datatype:int,name:Login;datatype:string,name:nama_admin;datatype:string,name:gender_admin;datatype:string,name:address_admin;datatype:string,name:email_admin;datatype:string,name:hp_admin;datatype:string" />
-</info>

@@ -1,4 +1,0 @@
-﻿<?xml version="1.0" encoding="utf-8" ?>
-<info>
-	<infoitem key="UD_Batalfaktur" value="name:idfaktur;datatype:int,name:tglfaktur;datatype:date,name:kodefaktur;datatype:string,name:addedfaktur;datatype:int,name:addbyfaktur;datatype:int,name:periode;datatype:string,name:datetimefaktur;datatype:timestamp,name:kembalian;datatype:real,name:potongan;datatype:real,name:totalbayar;datatype:real,name:statusfaktur;datatype:string" />
-</info>

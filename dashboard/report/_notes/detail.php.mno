@@ -1,4 +1,0 @@
-﻿<?xml version="1.0" encoding="utf-8" ?>
-<info>
-	<infoitem key="UD_DetailFaktur" value="name:faktur;datatype:string,name:tanggal;datatype:date,name:kode;datatype:string,name:nama;datatype:string,name:harga;datatype:real,name:qty;datatype:int,name:addby;datatype:int,name:stt;datatype:string,name:periode;datatype:string" />
-</info>

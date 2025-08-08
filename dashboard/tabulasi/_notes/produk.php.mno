@@ -1,5 +1,0 @@
-﻿<?xml version="1.0" encoding="utf-8" ?>
-<info>
-	<infoitem key="UD_Terlaris" value="name:nama;datatype:string,name:count(nama);datatype:int,name:sum(qty);datatype:real" />
-	<infoitem key="UD_TakTerlaris" value="name:kodeproduk;datatype:string,name:namaproduk;datatype:string,name:stok;datatype:int,name:hargadasar;datatype:real,name:hargajual;datatype:real,name:qty;datatype:int,name:periode;datatype:string" />
-</info>

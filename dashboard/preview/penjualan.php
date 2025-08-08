@@ -1,7 +1,12 @@
 <?php
 //require_once('izin.php');
-require_once('preview/page1.php'); ?>
+require_once('page1.php'); ?>
 
+<style>
+  .select2-container--bootstrap4 .select2-selection--single .select2-selection__arrow b{
+    top: 0% !important;
+  }
+</style>
 
 <div class="box box-default color-palette-box">
   <div class="box-header with-border">
@@ -10,7 +15,6 @@ require_once('preview/page1.php'); ?>
   <div class="box-body">
 
     <div class="row">
-
       <div class="col-md-12">
         <div class="row">
           <label>Cari berdasarkan tanggal </label>
@@ -65,7 +69,7 @@ require_once('preview/page1.php'); ?>
               <div class="col-md-3">
                 <div class="form-group">
                   <label for="tgl2" class="control-label">Pilih Kategori</label>
-                  <select name="kategori" id="" class="js-example-basic-single">
+                  <select name="kategori" id="" class="js-example-basic-single form-control" style="height: 34px;">
                     <option value="0">-- Keseluruhan --</option>
                     <?php 
                     // Reset pointer kategori ke awal
@@ -82,17 +86,45 @@ require_once('preview/page1.php'); ?>
                   </select>
                   <script>
                     $(document).ready(function() {
+                      // Add CSS for consistent height
+                      $('<style>')
+                        .prop('type', 'text/css')
+                        .html(`
+                          .select2-container--bootstrap4 .select2-selection--single {
+                            height: 34px !important;
+                            line-height: 32px !important;
+                          }
+                          .select2-container--bootstrap4 .select2-selection--single .select2-selection__rendered {
+                            line-height: 32px !important;
+                            padding-left: 12px !important;
+                            padding-right: 20px !important;
+                          }
+                          .select2-container--bootstrap4 .select2-selection--single .select2-selection__arrow {
+                            height: 32px !important;
+                          }
+                          .form-control {
+                            height: 34px !important;
+                          }
+                        `)
+                        .appendTo('head');
+                      
                       $('.js-example-basic-single').select2({
                         theme: "bootstrap4",
                         width: '100%',
                         placeholder: "Pilih atau cari kategori",
-                        allowClear: true
+                        allowClear: true,
+                        dropdownParent: $('body')
                       });
                       
                       // Set nilai awal untuk select2 jika ada parameter kategori
                       <?php if (isset($_GET['kategori']) && $_GET['kategori'] != "0") { ?>
                         $('.js-example-basic-single').val('<?php echo $_GET['kategori']; ?>').trigger('change');
                       <?php } ?>
+                      
+                      // Ensure consistent height after initialization
+                      setTimeout(function() {
+                        $('.select2-container--bootstrap4 .select2-selection--single').css('height', '34px');
+                      }, 100);
                     });
                   </script>
                 </div>
@@ -281,14 +313,14 @@ require_once('preview/page1.php'); ?>
           
         </div>
       </div>
+    </div>
+    <!-- /.row -->
+ <?php } else {
+       danger('Oops!', 'Transaksi tidak ditemukan');
+       echo "<br><p><a href='?page=tabulasi/penjualan' class='btn btn-warning'>Back</a></p>";
+     } ?>
   </div>
-  <!-- /.row -->
-<?php } else {
-      danger('Oops!', 'Transaksi tidak ditemukan');
-      echo "<br><p><a href='?page=tabulasi/penjualan' class='btn btn-warning'>Back</a></p>";
-    } ?>
-</div>
-<!-- /.box-body -->
+  <!-- /.box-body -->
 
 </div>
 <?php require_once('preview/page2.php'); ?>
