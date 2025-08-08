@@ -229,9 +229,9 @@ require_once('page1.php'); ?>
 
               //hitung laba
               if ($kat != 0) {
-                $query_laba = sprintf("SELECT a.faktur, a.tanggal, a.hargadasar, a.harga, a.diskon, a.qty, (a.hargadasar * a.qty) as hd, (a.harga * a.qty) as hj, sum((((a.harga * a.qty) - (a.hargadasar * a.qty)))-a.diskon) as laba, ((a.harga * a.qty) - a.diskon) as sisadiskon  FROM transaksidetail a,produk b WHERE a.faktur = %s AND a.nama=b.namaproduk AND b.kategori= %s  GROUP BY a.faktur",  GetSQLValueString($row_Penjualan['kodefaktur'], "text"), GetSQLValueString($kat, "text"));
+                $query_laba = sprintf("SELECT a.faktur, a.tanggal, a.hargadasar, a.harga, a.diskon, a.qty, (a.hargadasar * a.qty) as hd, (a.harga * a.qty) as hj, sum((((a.harga * a.qty) - (a.hargadasar * a.qty)))-a.diskon) as laba, ((a.harga * a.qty) - a.diskon) as sisadiskon  FROM transaksidetail a,produk b WHERE a.faktur = %s AND a.nama=b.namaproduk AND b.kategori= %s  GROUP BY a.faktur, a.tanggal, a.hargadasar, a.harga, a.diskon, a.qty",  GetSQLValueString($row_Penjualan['kodefaktur'], "text"), GetSQLValueString($kat, "text"));
               } else {
-                $query_laba = sprintf("SELECT faktur, tanggal, hargadasar, harga, diskon, qty, (hargadasar * qty) as hd, (harga * qty) as hj, sum((((harga * qty) - (hargadasar * qty)))-diskon) as laba, ((harga * qty) - diskon) as sisadiskon  FROM transaksidetail WHERE faktur = %s GROUP BY faktur",  GetSQLValueString($row_Penjualan['kodefaktur'], "text"));
+                $query_laba = sprintf("SELECT faktur, tanggal, hargadasar, harga, diskon, qty, (hargadasar * qty) as hd, (harga * qty) as hj, sum((((harga * qty) - (hargadasar * qty)))-diskon) as laba, ((harga * qty) - diskon) as sisadiskon  FROM transaksidetail WHERE faktur = %s GROUP BY faktur, tanggal, hargadasar, harga, diskon, qty",  GetSQLValueString($row_Penjualan['kodefaktur'], "text"));
               }
               $laba = mysqli_query($koneksi, $query_laba) or die(mysqli_error($koneksi));
               $row_laba = mysqli_fetch_assoc($laba);

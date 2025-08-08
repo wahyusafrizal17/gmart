@@ -439,7 +439,7 @@ $row_Laba = mysqli_fetch_assoc($rs_laba);
 
 //kasir
 $query_Kasir = sprintf(
-	"SELECT DISTINCT(`addbyfaktur`) as id, vw_login.Nama FROM faktur
+	"SELECT DISTINCT(`addbyfaktur`) as id, vw_login.Nama, faktur.idfaktur FROM faktur
 		LEFT JOIN vw_login ON addbyfaktur = ID
 		WHERE periode = %s ORDER BY idfaktur DESC",
 	GetSQLValueString($ta, "text")
@@ -451,7 +451,7 @@ $totalRows_Kassa = mysqli_num_rows($Kassa);
 
 //kasir
 $query_Faktur = sprintf(
-	"SELECT DISTINCT(`jenisbayar`) as jenisbayar FROM faktur
+	"SELECT DISTINCT(`jenisbayar`) as jenisbayar, idfaktur FROM faktur
 		WHERE periode = %s ORDER BY idfaktur DESC",
 	GetSQLValueString($ta, "text")
 );

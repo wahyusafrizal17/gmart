@@ -36,7 +36,10 @@ $row_Faktur = mysqli_fetch_assoc($Faktur);
 $totalRows_Faktur = mysqli_num_rows($Faktur);
 //MEMBUAT NILAI FAKTUR
 
-$faktur = $row_Faktur['kodefaktur'];
+$faktur = '';
+if ($row_Faktur) {
+	$faktur = $row_Faktur['kodefaktur'];
+}
 if (isset($_GET['faktur'])) {
 	$faktur = $_GET['faktur'];
 }
@@ -159,6 +162,65 @@ if ((isset($_POST["MM_update"])) && ($_POST["MM_update"] == "formCombobox")) {
 }
 
 //-----------------
+
+// Handle formCari (Add Cart button)
+if ((isset($_POST["MM_insert"])) && ($_POST["MM_insert"] == "formCari")) {
+	//SEBELUM ITU, DICEK JIKA PRODUK YG SAMA MAKA TAMBAHKAN STOK SAJA
+	$cek =  sprintf(
+		"SELECT kode, faktur, qty FROM transaksitemp 
+		LEFT JOIN produk ON kode = kodeproduk
+		WHERE kode = %s AND faktur = %s",
+		GetSQLValueString($_POST['kodeproduk'], "text"),
+		GetSQLValueString($faktur, "text")
+	);
+	$rs_cek = mysqli_query($koneksi, $cek) or die(mysqli_error($koneksi));
+	$row_rs_cek = mysqli_fetch_assoc($rs_cek);
+	$totalRows_rs_cek = mysqli_num_rows($rs_cek);
+
+	if ($totalRows_rs_cek > 0) {
+		//update / tambah qty produk
+		if ($row_rs_cek['qty'] >= $_POST['stok']) {
+			danger('Oops!', '' . $_POST['namaproduk'] . " - Stok terbatas!! Maks. " . $row_rs_cek['qty'] . ' ');
+		} else {
+			$stok = sprintf(
+				"UPDATE transaksitemp SET qty = qty + 1 WHERE faktur = %s AND kode = %s",
+				GetSQLValueString($faktur, "text"),
+				GetSQLValueString($_POST['kodeproduk'], "text")
+			);
+
+			$hasilstok = mysqli_query($koneksi, $stok) or die(mysqli_error($koneksi));
+		}
+	} else {
+		//insert produk baru
+		$insertSQL = sprintf(
+			"INSERT INTO transaksitemp (`faktur`, `tanggal`, `kode`, `nama`, `harga`, `hargadasar`, `diskon`, `qty`, `added`, `addby`, `admintt`, `stt`, `periode`) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)",
+			GetSQLValueString($faktur, "text"),
+			GetSQLValueString($today, "date"),
+			GetSQLValueString($_POST['kodeproduk'], "text"),
+			GetSQLValueString($_POST['namaproduk'], "text"),
+			GetSQLValueString($_POST['hargajual'], "double"),
+			GetSQLValueString($_POST['hargadasar'], "double"),
+			GetSQLValueString(0, "double"),
+			GetSQLValueString(1, "int"),
+			GetSQLValueString(time(), "int"),
+			GetSQLValueString($ID, "int"),
+			GetSQLValueString($nama, "text"),
+			GetSQLValueString($_POST['statusproduk'], "text"),
+			GetSQLValueString($ta, "text")
+		);
+
+		$Result1 = mysqli_query($koneksi, $insertSQL) or die(mysqli_error($koneksi));
+	}
+
+	//untuk reload update barang	
+	$query_trans = sprintf(
+		"SELECT * FROM transaksitemp INNER JOIN produk ON kode = kodeproduk WHERE faktur = %s ORDER BY transaksitemp.id ASC",
+		GetSQLValueString($faktur, "text")
+	);
+	$trans = mysqli_query($koneksi, $query_trans) or die(mysqli_error($koneksi));
+	$row_trans = mysqli_fetch_assoc($trans);
+	$totalRows_trans = mysqli_num_rows($trans);
+}
 
 if ($totalRows_search > 1) {
 	for ($i = 1; $i <= $totalRows_search; $i++) {
