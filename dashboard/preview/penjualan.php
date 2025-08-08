@@ -179,7 +179,6 @@ require_once('page1.php'); ?>
                 <td>Rp. <?= number_format(
                           (($row_Pendapatan && isset($row_Pendapatan['pendapatan'])) ? $row_Pendapatan['pendapatan'] : 0)
                             - (($row_Total && isset($row_Total['jumlah'])) ? $row_Total['jumlah'] : 0)
-                            - (($row_Laba && isset($row_Laba['laba'])) ? $row_Laba['laba'] : 0)
                         ); ?></td>
                 <td>Rp. <?= number_format(($row_Laba && isset($row_Laba['laba'])) ? $row_Laba['laba'] : 0); ?></td>
               </tr>
@@ -229,9 +228,9 @@ require_once('page1.php'); ?>
 
               //hitung laba
               if ($kat != 0) {
-                $query_laba = sprintf("SELECT a.faktur, a.tanggal, a.hargadasar, a.harga, a.diskon, a.qty, (a.hargadasar * a.qty) as hd, (a.harga * a.qty) as hj, sum((((a.harga * a.qty) - (a.hargadasar * a.qty)))-a.diskon) as laba, ((a.harga * a.qty) - a.diskon) as sisadiskon  FROM transaksidetail a,produk b WHERE a.faktur = %s AND a.nama=b.namaproduk AND b.kategori= %s  GROUP BY a.faktur, a.tanggal, a.hargadasar, a.harga, a.diskon, a.qty",  GetSQLValueString($row_Penjualan['kodefaktur'], "text"), GetSQLValueString($kat, "text"));
+                $query_laba = sprintf("SELECT SUM(((a.harga * a.qty) - (a.hargadasar * a.qty)) - a.diskon) as laba FROM transaksidetail a,produk b WHERE a.faktur = %s AND a.nama=b.namaproduk AND b.kategori= %s",  GetSQLValueString($row_Penjualan['kodefaktur'], "text"), GetSQLValueString($kat, "text"));
               } else {
-                $query_laba = sprintf("SELECT faktur, tanggal, hargadasar, harga, diskon, qty, (hargadasar * qty) as hd, (harga * qty) as hj, sum((((harga * qty) - (hargadasar * qty)))-diskon) as laba, ((harga * qty) - diskon) as sisadiskon  FROM transaksidetail WHERE faktur = %s GROUP BY faktur, tanggal, hargadasar, harga, diskon, qty",  GetSQLValueString($row_Penjualan['kodefaktur'], "text"));
+                $query_laba = sprintf("SELECT SUM(((harga * qty) - (hargadasar * qty)) - diskon) as laba FROM transaksidetail WHERE faktur = %s",  GetSQLValueString($row_Penjualan['kodefaktur'], "text"));
               }
               $laba = mysqli_query($koneksi, $query_laba) or die(mysqli_error($koneksi));
               $row_laba = mysqli_fetch_assoc($laba);

@@ -373,7 +373,7 @@ if ($totalRows_Kasir > 0) {
         $totalbelanja += $row_Penjualan['totalbelanja'];
         $totalpotongan += $row_Penjualan['potongan'];
 
-        //QUERY DETAIL
+        //QUERY DETAIL - Tampilkan SEMUA item dalam faktur, bukan hanya yang sesuai kategori
         $kat = $_GET['kategori'];
         if ($kat == "0") {
           $query_DetailFaktur = sprintf("SELECT faktur, tanggal, kode, td.nama, harga, qty, diskon, addby, stt, periode, vw_login.Nama as kassa, k.namakategori, (td.harga-td.hargadasar) as margin FROM transaksidetail td
@@ -382,20 +382,33 @@ if ($totalRows_Kasir > 0) {
         LEFT JOIN kategori k ON k.idkategori = p.kategori
 				WHERE faktur = %s", GetSQLValueString($row_Penjualan['kodefaktur'], "text"));
         } else {
+          // Untuk kategori tertentu, tetap tampilkan semua item tapi beri catatan
           $query_DetailFaktur = sprintf("SELECT faktur, tanggal, kode, td.nama, harga, qty, diskon, addby, stt, periode, vw_login.Nama as kassa, k.namakategori, (td.harga-td.hargadasar) as margin FROM transaksidetail td
           LEFT JOIN vw_login ON addby = vw_login.ID 
           LEFT JOIN produk p ON p.kodeproduk = td.kode
           LEFT JOIN kategori k ON k.idkategori = p.kategori
-          WHERE faktur = %s AND p.kategori= %s", GetSQLValueString($row_Penjualan['kodefaktur'], "text"), GetSQLValueString($kat, "text"));
+          WHERE faktur = %s", GetSQLValueString($row_Penjualan['kodefaktur'], "text"));
         }
         $DetailFaktur = mysqli_query($koneksi, $query_DetailFaktur) or die(mysqli_error($koneksi));
         $row_DetailFaktur = mysqli_fetch_assoc($DetailFaktur);
         $totalRows_DetailFaktur = mysqli_num_rows($DetailFaktur);
+        
+        // Hitung total dari detail items untuk verifikasi
+        $calculated_total = 0;
+        if ($row_DetailFaktur) {
+          do {
+            $calculated_total += $row_DetailFaktur['harga'] * $row_DetailFaktur['qty'];
+          } while ($row_DetailFaktur = mysqli_fetch_assoc($DetailFaktur));
+          // Reset pointer untuk loop berikutnya
+          mysqli_data_seek($DetailFaktur, 0);
+          $row_DetailFaktur = mysqli_fetch_assoc($DetailFaktur);
+        }
+
         //hitung laba
         if ($kat != 0) {
-          $query_laba = sprintf("SELECT a.faktur, a.tanggal, a.hargadasar, a.harga, a.diskon, a.qty, (a.hargadasar * a.qty) as hd, (a.harga * a.qty) as hj, sum((((a.harga * a.qty) - (a.hargadasar * a.qty)))-a.diskon) as laba, ((a.harga * a.qty) - a.diskon) as sisadiskon  FROM transaksidetail a,produk b WHERE a.faktur = %s AND a.nama=b.namaproduk AND b.kategori= %s  GROUP BY a.faktur, a.tanggal, a.hargadasar, a.harga, a.diskon, a.qty",  GetSQLValueString($row_Penjualan['kodefaktur'], "text"), GetSQLValueString($kat, "text"));
+          $query_laba = sprintf("SELECT SUM(((a.harga * a.qty) - (a.hargadasar * a.qty)) - a.diskon) as laba FROM transaksidetail a,produk b WHERE a.faktur = %s AND a.nama=b.namaproduk AND b.kategori= %s",  GetSQLValueString($row_Penjualan['kodefaktur'], "text"), GetSQLValueString($kat, "text"));
         } else {
-          $query_laba = sprintf("SELECT faktur, tanggal, hargadasar, harga, diskon, qty, (hargadasar * qty) as hd, (harga * qty) as hj, sum((((harga * qty) - (hargadasar * qty)))-diskon) as laba, ((harga * qty) - diskon) as sisadiskon  FROM transaksidetail WHERE faktur = %s GROUP BY faktur, tanggal, hargadasar, harga, diskon, qty",  GetSQLValueString($row_Penjualan['kodefaktur'], "text"));
+          $query_laba = sprintf("SELECT SUM(((harga * qty) - (hargadasar * qty)) - diskon) as laba FROM transaksidetail WHERE faktur = %s",  GetSQLValueString($row_Penjualan['kodefaktur'], "text"));
         }
         $laba = mysqli_query($koneksi, $query_laba) or die(mysqli_error($koneksi));
         $row_laba = mysqli_fetch_assoc($laba);
@@ -418,14 +431,15 @@ if ($totalRows_Kasir > 0) {
           <td><?php echo $row_Penjualan['datetimefaktur']; ?> </td>
           <td>
             <div align="right">Rp. <?php echo number_format($row_Penjualan['totalbelanja']); ?></div>
+            <?php if ($calculated_total != $row_Penjualan['totalbelanja']) { ?>
+              <small style="color: red;">(Detail: Rp. <?php echo number_format($calculated_total); ?>)</small>
+            <?php } ?>
           </td>
           <td>
             <div align="right">Rp. <?php echo number_format($row_Penjualan['potongan']); ?></div>
           </td>
           <td>
-            <div align="right">Rp. <?php
-
-                                    echo number_format($tlaba); ?></div>
+            <div align="right">Rp. <?php echo number_format($tlaba); ?></div>
           </td>
           <td>
             <div align="center"><?php echo $row_Penjualan['adminfaktur']; ?></div>
@@ -463,7 +477,7 @@ if ($totalRows_Kasir > 0) {
                   $sub = $row_DetailFaktur['harga'] * $row_DetailFaktur['qty'];
                   $total += $sub;
                   // $disk += $row_DetailFaktur['diskon'];
-                  $totalmargin += $row_DetailFaktur['margin'];
+                  $totalmargin += ($row_DetailFaktur['margin'] * $row_DetailFaktur['qty']) - $row_DetailFaktur['diskon'];
                 ?>
                   <tr>
                     <td><?= $no; ?></td>
@@ -473,7 +487,7 @@ if ($totalRows_Kasir > 0) {
                       <div align="right">Rp. <?php echo number_format($sub); ?></div>
                     </td>
                     <td>
-                      <div align="right">Rp. <?php echo number_format($row_DetailFaktur['margin'] * $row_DetailFaktur['qty']); ?></div>
+                      <div align="right">Rp. <?php echo number_format(($row_DetailFaktur['margin'] * $row_DetailFaktur['qty']) - $row_DetailFaktur['diskon']); ?></div>
                     </td>
                   </tr>
                 <?php
@@ -491,9 +505,17 @@ if ($totalRows_Kasir > 0) {
                   <div align="right">Rp. <?php echo number_format($total); ?></div>
                 </td>
                 <td>
-                  <div align="right">Rp. <?php echo number_format($tlaba); ?></div>
+                  <div align="right">Rp. <?php echo number_format($totalmargin); ?></div>
                 </td>
               </tr>
+              <?php if ($total != $row_Penjualan['totalbelanja']) { ?>
+              <tr>
+                <td colspan="2" style="color: red; font-size: 12px;">
+                  <strong>⚠️ PERHATIAN:</strong> Total detail (Rp. <?php echo number_format($total); ?>) tidak sama dengan total faktur (Rp. <?php echo number_format($row_Penjualan['totalbelanja']); ?>)
+                </td>
+                <td colspan="3">&nbsp;</td>
+              </tr>
+              <?php } ?>
             </table>
             <p></p>
           </td>
@@ -543,11 +565,11 @@ if ($totalRows_Kasir > 0) {
         <td colspan="5">&nbsp;</td>
 
         <th>
-          <div align="right">TOTAL LABA
+          <div align="right">TOTAL LABA BERSIH
           </div>
         </th>
         <td>
-          <div align="right"><?= number_format($totalLaba - ((isset($row_Total) && isset($row_Total['jumlah'])) ? $row_Total['jumlah'] : 0)); ?>
+          <div align="right"><?= number_format($totalLaba); ?>
           </div>
         </td>
       </tr>
@@ -561,4 +583,5 @@ if ($totalRows_Kasir > 0) {
     <?php require('ttd.php'); ?>
   <?php } else {
   danger('Oops!', 'Transaksi tidak ditemukan');
+} ?>
 } ?>
