@@ -439,8 +439,15 @@ if ($show_by_category) {
       $totalpotongan = 0;
       $nomor = 1;
       $totalLaba = 0;
+      $seenFaktur = array();
 
       do {
+
+        // Skip if faktur already rendered
+        if (isset($seenFaktur[$row_Penjualan['kodefaktur']])) {
+          continue;
+        }
+        $seenFaktur[$row_Penjualan['kodefaktur']] = true;
 
         $totalbelanja += $row_Penjualan['totalbelanja'];
         $totalpotongan += $row_Penjualan['potongan'];

@@ -224,8 +224,15 @@ require_once('page1.php'); ?>
             <?php
             $total = 0;
             $no = $startRow_Penjualan + 1; // Mulai nomor dari posisi pagination
+            $seenFaktur = array();
             do {
 
+              // Skip if faktur already rendered
+              if (isset($seenFaktur[$row_Penjualan['kodefaktur']])) {
+                continue;
+              }
+              $seenFaktur[$row_Penjualan['kodefaktur']] = true;
+ 
               //hitung laba
               if ($kat != 0) {
                 $query_laba = sprintf("SELECT SUM(((a.harga * a.qty) - (a.hargadasar * a.qty)) - a.diskon) as laba FROM transaksidetail a,produk b WHERE a.faktur = %s AND a.nama=b.namaproduk AND b.kategori= %s",  GetSQLValueString($row_Penjualan['kodefaktur'], "text"), GetSQLValueString($kat, "text"));
