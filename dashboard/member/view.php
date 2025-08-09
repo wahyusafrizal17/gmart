@@ -52,7 +52,7 @@ $totalRows_Member = mysqli_num_rows($Member);
       <td><?php echo $row_Member['point']; ?> Point</td>
       <td><?php $fungsi($row_Member['id_member'],'member','member'); ?>
           <a href="?page=member/tukarpoint&id_member=<?php echo $row_Member['id_member']; ?>" class="btn btn-success btn-sm">Tukar Point</a>
-          <?php if (isset($_SESSION['MM_Level']) && $_SESSION['MM_Level'] == 1) { ?>
+          <?php if (isset($_SESSION['MM_Level']) && $_SESSION['MM_Level'] == 2) { ?>
           <button class="btn btn-primary btn-sm" data-toggle="modal" data-target="#editPoint<?= $row_Member['id_member']; ?>">Edit Point</button>
 
           <div class="modal fade" id="editPoint<?= $row_Member['id_member']; ?>" tabindex="-1" role="dialog">
