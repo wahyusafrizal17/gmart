@@ -449,7 +449,6 @@ if ($show_by_category) {
         }
         $seenFaktur[$row_Penjualan['kodefaktur']] = true;
 
-        $totalbelanja += $row_Penjualan['totalbelanja'];
         $totalpotongan += $row_Penjualan['potongan'];
 
         //QUERY DETAIL - Tampilkan SEMUA item dalam faktur, bukan hanya yang sesuai kategori
@@ -461,12 +460,12 @@ if ($show_by_category) {
         LEFT JOIN kategori k ON k.idkategori = p.kategori
 				WHERE faktur = %s", GetSQLValueString($row_Penjualan['kodefaktur'], "text"));
         } else {
-          // Untuk kategori tertentu, tetap tampilkan semua item tapi beri catatan
+          // Untuk kategori tertentu, tampilkan hanya item sesuai kategori
           $query_DetailFaktur = sprintf("SELECT faktur, tanggal, kode, td.nama, harga, qty, diskon, addby, stt, periode, vw_login.Nama as kassa, k.namakategori, (td.harga-td.hargadasar) as margin FROM transaksidetail td
           LEFT JOIN vw_login ON addby = vw_login.ID 
           LEFT JOIN produk p ON p.kodeproduk = td.kode
           LEFT JOIN kategori k ON k.idkategori = p.kategori
-          WHERE faktur = %s", GetSQLValueString($row_Penjualan['kodefaktur'], "text"));
+          WHERE faktur = %s AND p.kategori = %s", GetSQLValueString($row_Penjualan['kodefaktur'], "text"), GetSQLValueString($kat, "text"));
         }
         $DetailFaktur = mysqli_query($koneksi, $query_DetailFaktur) or die(mysqli_error($koneksi));
         $row_DetailFaktur = mysqli_fetch_assoc($DetailFaktur);
@@ -482,6 +481,9 @@ if ($show_by_category) {
           mysqli_data_seek($DetailFaktur, 0);
           $row_DetailFaktur = mysqli_fetch_assoc($DetailFaktur);
         }
+
+        // Akumulasi TOTAL BELANJA dari subtotal detail (bukan dari tabel faktur)
+        $totalbelanja += $calculated_total;
 
         //hitung laba
         if ($kat != 0) {
@@ -509,10 +511,10 @@ if ($show_by_category) {
           </td>
           <td><?php echo $row_Penjualan['datetimefaktur']; ?> </td>
           <td>
-            <div align="right">Rp. <?php echo number_format($row_Penjualan['totalbelanja']); ?></div>
-            <?php if ($calculated_total != $row_Penjualan['totalbelanja']) { ?>
+            <div align="right">Rp. <?php echo number_format($calculated_total); ?></div>
+            <!-- <?php if ($calculated_total != $row_Penjualan['totalbelanja']) { ?>
               <small style="color: red;">(Detail: Rp. <?php echo number_format($calculated_total); ?>)</small>
-            <?php } ?>
+            <?php } ?> -->
           </td>
           <td>
             <div align="right">Rp. <?php echo number_format($row_Penjualan['potongan']); ?></div>
@@ -587,14 +589,7 @@ if ($show_by_category) {
                   <div align="right">Rp. <?php echo number_format($totalmargin); ?></div>
                 </td>
               </tr>
-              <?php if ($total != $row_Penjualan['totalbelanja']) { ?>
-              <tr>
-                <td colspan="2" style="color: red; font-size: 12px;">
-                  <strong>⚠️ PERHATIAN:</strong> Total detail (Rp. <?php echo number_format($total); ?>) tidak sama dengan total faktur (Rp. <?php echo number_format($row_Penjualan['totalbelanja']); ?>)
-                </td>
-                <td colspan="3">&nbsp;</td>
-              </tr>
-              <?php } ?>
+              
             </table>
             <p></p>
           </td>

@@ -74,6 +74,8 @@ require_once('page1.php'); ?>
                     <?php 
                     // Reset pointer kategori ke awal
                     mysqli_data_seek($kategori, 0);
+                    // Refetch first row after resetting pointer to avoid duplicating the first item
+                    $row_kategori = mysqli_fetch_assoc($kategori);
                     do {  
                       $selected = "";
                       // Cek apakah kategori ini yang dipilih
