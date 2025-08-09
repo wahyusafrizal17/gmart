@@ -3,8 +3,8 @@ require_once('izin.php');
 //mysqli_select_db($database_koneksi, $koneksi);
 //$query_Admin = "SELECT id_admin, Login, nama_admin, gender_admin, address_admin, email_admin, hp_admin FROM tb_admin WHERE cabang_id = '".$cabang."' ORDER BY nama_admin ASC";
 
-// Handle update point
-if ((isset($_POST['MM_update'])) && $_POST['MM_update'] === 'update_point') {
+// Handle update point (admin only)
+if ((isset($_POST['MM_update'])) && $_POST['MM_update'] === 'update_point' && isset($_SESSION['MM_Level']) && $_SESSION['MM_Level'] == 1) {
   $newPoint = isset($_POST['point']) && $_POST['point'] !== '' ? $_POST['point'] : 0;
   $updatePointSQL = sprintf(
     "UPDATE member SET point=%s WHERE id_member=%s",
@@ -52,6 +52,7 @@ $totalRows_Member = mysqli_num_rows($Member);
       <td><?php echo $row_Member['point']; ?> Point</td>
       <td><?php $fungsi($row_Member['id_member'],'member','member'); ?>
           <a href="?page=member/tukarpoint&id_member=<?php echo $row_Member['id_member']; ?>" class="btn btn-success btn-sm">Tukar Point</a>
+          <?php if (isset($_SESSION['MM_Level']) && $_SESSION['MM_Level'] == 1) { ?>
           <button class="btn btn-primary btn-sm" data-toggle="modal" data-target="#editPoint<?= $row_Member['id_member']; ?>">Edit Point</button>
 
           <div class="modal fade" id="editPoint<?= $row_Member['id_member']; ?>" tabindex="-1" role="dialog">
@@ -66,7 +67,7 @@ $totalRows_Member = mysqli_num_rows($Member);
                     <div class="form-group">
                       <label>Point</label>
                       <?php $currentPoint = ($row_Member['point'] === null || $row_Member['point'] === '') ? 0 : $row_Member['point']; ?>
-                      <input type="number" step="1" min="0" class="form-control" name="point" value="<?= htmlspecialchars($currentPoint); ?>" placeholder="0" style="display: flex;"/>
+                      <input type="number" step="1" min="0" class="form-control" name="point" value="<?= htmlspecialchars($currentPoint); ?>" placeholder="0" style="display: flex;" />
                     </div>
                   </div>
                   <div class="modal-footer">
@@ -79,6 +80,7 @@ $totalRows_Member = mysqli_num_rows($Member);
               </div>
             </div>
           </div>
+          <?php } ?>
       </td>
     </tr>
     <?php 
