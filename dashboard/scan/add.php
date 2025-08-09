@@ -4,6 +4,11 @@ if (isset($_SERVER['QUERY_STRING'])) {
 	$editFormAction .= "?" . htmlentities($_SERVER['QUERY_STRING']);
 }
 
+// Auto-create faktur on page load if none exists
+require_once('faktur.php');
+// Ensure $kodeacak available if used later
+if (!isset($kodeacak) || empty($kodeacak)) { $kodeacak = time(); }
+
 //MENYIMPAN NOMOR FAKTUR ----
 if ((isset($_POST["MM_faktur"])) && ($_POST["MM_faktur"] == "form2")) {
 	$insertSQL = sprintf(

@@ -13,11 +13,17 @@ require_once('page1.php'); ?>
     <h3 class="box-title"><i class="fa fa-tag"></i> BUAT LAPORAN PENJUALAN BERDASARKAN TANGGAL</h3>
   </div>
   <div class="box-body">
+    <style>
+      .summary-sticky { position: absolute; left: 10px; top: 145px; right: 0; z-index: 10; }
+      /* Jarak dari atas (di bawah area filter) bisa disesuaikan */
+      .penjualan-table-wrapper { margin-top: 100px; }
+      .box-body { position: relative; }
+    </style>
 
     <div class="row">
       <div class="col-md-12">
         <div class="row">
-          <label>Cari berdasarkan tanggal </label>
+          <!-- <label>Cari berdasarkan tanggal </label> -->
           <form class="form-horizontal" name="periode" action="" method="get">
             <div class="box-body">
               <div class="col-md-2">
@@ -131,10 +137,10 @@ require_once('page1.php'); ?>
                   </script>
                 </div>
               </div>
-              <div class="col-md-3">
+              <div class="col-md-12 text-right">
                 <div class="form-group">
-                  <label for="kategori" class="control-label"> &nbsp;</label>
-                  <button type="submit" class="btn btn-block btn-info pull-right">Filter</button>
+                  <!-- <label for="kategori" class="control-label"> &nbsp;</label> -->
+                  <button type="submit" class="btn btn-block btn-info pull-right" style="width: 15%;">Filter</button>
                 </div>
               </div>
             </div>
@@ -145,8 +151,6 @@ require_once('page1.php'); ?>
         </div>
       </div>
     </div>
-    <br />
-    <br />
     <?php if ($totalRows_Penjualan > 0) { ?>
 
       <div class="row">
@@ -163,39 +167,8 @@ require_once('page1.php'); ?>
 
           </p>
 
-          <div class="table-responsive">
+          <div class="table-responsive penjualan-table-wrapper">
 
-            <table class="table table-hover">
-              <thead>
-                <tr>
-                  <th>Total Pendapatan</th>
-                  <th>Total Pengeluaran</th>
-                  <th>Uang GMART </th>
-                  <th>Laba</th>
-                </tr>
-              </thead>
-
-              <tr>
-                <td>Rp. <?= number_format(($row_Pendapatan && isset($row_Pendapatan['pendapatan'])) ? $row_Pendapatan['pendapatan'] : 0); ?></td>
-                <td>Rp. <?= number_format(($row_Total && isset($row_Total['jumlah'])) ? $row_Total['jumlah'] : 0); ?></td>
-                <td>Rp. <?= number_format(
-                          (($row_Pendapatan && isset($row_Pendapatan['pendapatan'])) ? $row_Pendapatan['pendapatan'] : 0)
-                            - (($row_Total && isset($row_Total['jumlah'])) ? $row_Total['jumlah'] : 0)
-                        ); ?></td>
-                <td>Rp. <?= number_format(($row_Laba && isset($row_Laba['laba'])) ? $row_Laba['laba'] : 0); ?></td>
-              </tr>
-
-            </table>
-
-          </div>
-          
-          <!-- Informasi Pagination -->
-          <div class="alert alert-info">
-            <strong>Menampilkan <?= ($startRow_Penjualan + 1) ?> - <?= min($startRow_Penjualan + $maxRows_Penjualan, $totalRows_Penjualan) ?> dari <?= $totalRows_Penjualan ?> data</strong>
-            <br>
-            <small>Halaman <?= ($pageNum_Penjualan + 1) ?> dari <?= ($totalPages_Penjualan + 1) ?></small>
-          </div>
-          
           <table width="100%" class="table table-striped table-bordered">
             <tr>
               <th width="3%" bgcolor="#006699">
@@ -227,6 +200,9 @@ require_once('page1.php'); ?>
             $total = 0;
             $no = $startRow_Penjualan + 1; // Mulai nomor dari posisi pagination
             $seenFaktur = array();
+            $sumRowBelanja = 0;
+            $sumRowPotongan = 0;
+            $sumRowLaba = 0;
             do {
 
               // Skip if faktur already rendered
@@ -261,6 +237,9 @@ require_once('page1.php'); ?>
               $row_subtotal = mysqli_fetch_assoc($rs_subtotal);
               $calculated_total = isset($row_subtotal['subtotal']) ? (float)$row_subtotal['subtotal'] : 0;
               //---------
+              $sumRowBelanja += $calculated_total;
+              $sumRowPotongan += (float)($row_Penjualan['potongan'] ?? 0);
+              $sumRowLaba += (float)($row_laba['laba'] ?? 0);
             ?>
               <tr>
                 <td>
@@ -304,7 +283,64 @@ require_once('page1.php'); ?>
               $no++;
             } while ($row_Penjualan = mysqli_fetch_assoc($rs_Penjualan)); ?>
           </table>
-          
+
+          <?php
+            // Grand totals (tanpa pagination): hitung berdasarkan semua faktur di $query_Penjualan
+            $grandBelanja = 0; $grandLaba = 0; $grandPotongan = 0;
+            if (isset($query_Penjualan) && !empty($query_Penjualan)) {
+              $rsAll = mysqli_query($koneksi, $query_Penjualan) or die(mysqli_error($koneksi));
+              $codes = [];
+              while ($ra = mysqli_fetch_assoc($rsAll)) {
+                if (!empty($ra['kodefaktur'])) {
+                  $codes[] = "'" . mysqli_real_escape_string($koneksi, $ra['kodefaktur']) . "'";
+                }
+              }
+              if (count($codes) > 0) {
+                $inCodes = implode(',', $codes);
+                if ($kat != 0) {
+                  $qBelanjaAll = "SELECT SUM(td.harga*td.qty) AS totalbelanja FROM transaksidetail td INNER JOIN produk p ON td.nama=p.namaproduk WHERE p.kategori=" . GetSQLValueString($kat, 'text') . " AND td.faktur IN ($inCodes)";
+                  $qLabaAll = "SELECT SUM(((td.harga*td.qty)-(td.hargadasar*td.qty))-td.diskon) AS laba FROM transaksidetail td INNER JOIN produk p ON td.nama=p.namaproduk WHERE p.kategori=" . GetSQLValueString($kat, 'text') . " AND td.faktur IN ($inCodes)";
+                } else {
+                  $qBelanjaAll = "SELECT SUM(harga*qty) AS totalbelanja FROM transaksidetail WHERE faktur IN ($inCodes)";
+                  $qLabaAll = "SELECT SUM(((harga*qty)-(hargadasar*qty))-diskon) AS laba FROM transaksidetail WHERE faktur IN ($inCodes)";
+                }
+                $rBelAll = mysqli_query($koneksi, $qBelanjaAll) or die(mysqli_error($koneksi));
+                $rowBelAll = mysqli_fetch_assoc($rBelAll);
+                $grandBelanja = (float)($rowBelAll['totalbelanja'] ?? 0);
+
+                $rLabAll = mysqli_query($koneksi, $qLabaAll) or die(mysqli_error($koneksi));
+                $rowLabAll = mysqli_fetch_assoc($rLabAll);
+                $grandLaba = (float)($rowLabAll['laba'] ?? 0);
+
+                $qPotAll = "SELECT SUM(potongan) AS totalpotongan FROM faktur WHERE kodefaktur IN ($inCodes)";
+                $rPotAll = mysqli_query($koneksi, $qPotAll) or die(mysqli_error($koneksi));
+                $rowPotAll = mysqli_fetch_assoc($rPotAll);
+                $grandPotongan = (float)($rowPotAll['totalpotongan'] ?? 0);
+              }
+            }
+          ?>
+
+          <div class="summary-sticky">
+            <div class="table-responsive">
+              <table class="table table-hover">
+                <thead>
+                  <tr>
+                    <th>TOTAL BELANJA</th>
+                    <th>LABA</th>
+                    <th>TOTAL POTONGAN</th>
+                    <th>PENGELUARAN</th>
+                  </tr>
+                </thead>
+                <tr>
+                  <td>Rp. <?= number_format($grandBelanja > 0 ? $grandBelanja : $sumRowBelanja); ?></td>
+                  <td>Rp. <?= number_format($grandLaba > 0 ? $grandLaba : $sumRowLaba); ?></td>
+                  <td>Rp. <?= number_format($grandPotongan > 0 ? $grandPotongan : $sumRowPotongan); ?></td>
+                  <td>Rp. <?= number_format(($row_Total && isset($row_Total['jumlah'])) ? $row_Total['jumlah'] : 0); ?></td>
+                </tr>
+              </table>
+            </div>
+          </div>
+ 
           <!-- Pagination Controls -->
           <?php if ($totalPages_Penjualan > 0) { ?>
           <div class="text-center">

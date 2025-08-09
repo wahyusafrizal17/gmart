@@ -463,13 +463,15 @@ if ($show_by_category) {
         $row_DetailFaktur = mysqli_fetch_assoc($DetailFaktur);
         $totalRows_DetailFaktur = mysqli_num_rows($DetailFaktur);
         
-        // Hitung total dari detail items untuk verifikasi
+        // Hitung total dan laba dari detail items (satu kali loop)
         $calculated_total = 0;
+        $precomputed_laba = 0;
         if ($row_DetailFaktur) {
           do {
             $calculated_total += $row_DetailFaktur['harga'] * $row_DetailFaktur['qty'];
+            $precomputed_laba += (($row_DetailFaktur['margin'] * $row_DetailFaktur['qty']) - $row_DetailFaktur['diskon']);
           } while ($row_DetailFaktur = mysqli_fetch_assoc($DetailFaktur));
-          // Reset pointer untuk loop berikutnya
+          // Reset pointer untuk loop berikutnya (render tabel detail)
           mysqli_data_seek($DetailFaktur, 0);
           $row_DetailFaktur = mysqli_fetch_assoc($DetailFaktur);
         }
@@ -477,16 +479,8 @@ if ($show_by_category) {
         // Akumulasi TOTAL BELANJA dari subtotal detail (bukan dari tabel faktur)
         $totalbelanja += $calculated_total;
 
-        //hitung laba
-        if ($kat != 0) {
-          $query_laba = sprintf("SELECT SUM(((a.harga * a.qty) - (a.hargadasar * a.qty)) - a.diskon) as laba FROM transaksidetail a,produk b WHERE a.faktur = %s AND a.nama=b.namaproduk AND b.kategori= %s",  GetSQLValueString($row_Penjualan['kodefaktur'], "text"), GetSQLValueString($kat, "text"));
-        } else {
-          $query_laba = sprintf("SELECT SUM(((harga * qty) - (hargadasar * qty)) - diskon) as laba FROM transaksidetail WHERE faktur = %s",  GetSQLValueString($row_Penjualan['kodefaktur'], "text"));
-        }
-        $laba = mysqli_query($koneksi, $query_laba) or die(mysqli_error($koneksi));
-        $row_laba = mysqli_fetch_assoc($laba);
-
-        $tlaba = $row_laba['laba'] ?? 0;
+        // Gunakan laba yang sudah dihitung dari loop detail di atas
+        $tlaba = $precomputed_laba;
 
         $totalLaba += $tlaba;
         //---------
@@ -627,18 +621,6 @@ if ($show_by_category) {
           </div>
         </td>
       </tr>
-      <tr>
-        <td colspan="5">&nbsp;</td>
-
-        <th>
-          <div align="right">TOTAL LABA BERSIH
-          </div>
-        </th>
-        <td>
-          <div align="right"><?= number_format($totalLaba); ?>
-          </div>
-        </td>
-      </tr>
     </table>
     <p>
       <br>
@@ -649,5 +631,4 @@ if ($show_by_category) {
     <?php require('ttd.php'); ?>
   <?php } else {
   danger('Oops!', 'Transaksi tidak ditemukan');
-} ?>
 } ?>
