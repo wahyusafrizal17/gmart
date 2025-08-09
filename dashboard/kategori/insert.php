@@ -7,14 +7,15 @@ if (isset($_SERVER['QUERY_STRING'])) {
 
  
 if ((isset($_POST["MM_insert"])) && ($_POST["MM_insert"] == "form1")) {
-  $insertSQL = sprintf("INSERT INTO kategori (`namakategori`, `ketkategori`, `addedkategori`, `addbykategori`) VALUES (%s, %s, %s, %s)",
+  $insertSQL = sprintf("INSERT INTO kategori (`namakategori`, `ketkategori`, `addedkategori`, `addbykategori`, `updatedkategori`) VALUES (%s, %s, %s, %s, %s)",
                        GetSQLValueString($_POST['namakategori'], "text"),
                        GetSQLValueString($_POST['ketkategori'], "text"),
 					   GetSQLValueString(time() , "int"),
-					   GetSQLValueString($ID, "int"));
+					   GetSQLValueString($ID, "int"),
+                       GetSQLValueString(time() , "int"));
 
-  mysqli_select_db($database_koneksi, $koneksi);
-  $Result1 = mysqli_query($insertSQL, $koneksi) or die(errorQuery(mysqli_error()));
+  mysqli_select_db($koneksi, $database_koneksi);
+  $Result1 = mysqli_query($koneksi, $insertSQL) or die(errorQuery(mysqli_error($koneksi)));
   
   if ($Result1) {
   	refresh('?page=kategori/view&sukses');
@@ -24,7 +25,7 @@ if ((isset($_POST["MM_insert"])) && ($_POST["MM_insert"] == "form1")) {
 
 ?> 
 <?php if (isset($_GET['sukses'])) { 
-   		sukses('Data kategori berhasil tersimpan');
+    		sukses('Data kategori berhasil tersimpan');
 } ?>
 <?php
 	titleSimpan('ENTRY DATA KATEGORI','kategori');

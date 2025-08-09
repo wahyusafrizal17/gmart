@@ -21,14 +21,14 @@ if ((isset($_POST["MM_insert"])) && ($_POST["MM_insert"] == "form2")) {
 					   GetSQLValueString($ID, "text"),
 					   GetSQLValueString($ta, "text"));
 
-  mysqli_select_db($database_koneksi, $koneksi);
-  $Result1 = mysqli_query($insertSQL, $koneksi) or die(mysqli_error());
+  mysqli_select_db($koneksi, $database_koneksi);
+  $Result1 = mysqli_query($koneksi, $insertSQL) or die(mysqli_error($koneksi));
   
   $stokSQL = sprintf("UPDATE produk SET stok = stok + %s WHERE idproduk=%s",
                        GetSQLValueString($_POST['qty'], "int"),
 					   GetSQLValueString($_POST['produkID'], "int"));
-  mysqli_select_db($database_koneksi, $koneksi);
-  $StokResult1 = mysqli_query($stokSQL, $koneksi) or die(mysqli_error());
+  mysqli_select_db($koneksi, $database_koneksi);
+  $StokResult1 = mysqli_query($koneksi, $stokSQL) or die(mysqli_error($koneksi));
   
   
 }
@@ -37,18 +37,18 @@ $colname_search = "--1";
 if (isset($_GET['search'])) {
   $colname_search = $_GET['search'];
 }
-mysqli_select_db($database_koneksi, $koneksi);
+mysqli_select_db($koneksi, $database_koneksi);
 $query_search = sprintf("SELECT * FROM produk WHERE kodeproduk = %s OR namaproduk LIKE %s", GetSQLValueString($colname_search, "text"), GetSQLValueString("%" . $colname_search . "%", "text"));
-$search = mysqli_query($query_search, $koneksi) or die(mysqli_error());
+$search = mysqli_query($koneksi, $query_search) or die(mysqli_error($koneksi));
 $row_search = mysqli_fetch_assoc($search);
 $totalRows_search = mysqli_num_rows($search);
 
 
-mysqli_select_db($database_koneksi, $koneksi);
+mysqli_select_db($koneksi, $database_koneksi);
 $query_history = sprintf("SELECT stok.*, vw_login.Nama FROM stok 
 LEFT JOIN vw_login ON addby = ID 
 WHERE barcode = %s OR namaproduk LIKE %s ORDER BY id_stok DESC", GetSQLValueString($colname_search, "text"), GetSQLValueString("%" . $colname_search . "%", "text"));
-$history = mysqli_query($query_history, $koneksi) or die(mysqli_error());
+$history = mysqli_query($koneksi, $query_history) or die(mysqli_error($koneksi));
 $row_history = mysqli_fetch_assoc($history);
 $totalRows_history = mysqli_num_rows($history);
 ?>
@@ -58,7 +58,7 @@ $totalRows_history = mysqli_num_rows($history);
         <form id="form1" name="form1" method="post" action="">
         
                  
-                  
+                   
                   <label>Cari Produk</label>
                     <div class="input-group margin">
                         

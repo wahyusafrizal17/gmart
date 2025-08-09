@@ -5,7 +5,7 @@ function GetSQLValueString($theValue, $theType, $theDefinedValue = "", $theNotDe
 {
   $theValue = false ? stripslashes($theValue) : $theValue;
 
-  $theValue = function_exists("mysqli_real_escape_string") ? mysqli_real_escape_string($theValue) : addslashes($theValue);
+  $theValue = function_exists("mysqli_real_escape_string") ? mysqli_real_escape_string($koneksi, $theValue) : addslashes($theValue);
 
   switch ($theType) {
     case "text":
@@ -33,9 +33,9 @@ $colname_barcode = "-1";
 if (isset($_GET['barcode'])) {
   $colname_barcode = $_GET['barcode'];
 }
-mysqli_select_db($database_koneksi, $koneksi);
+mysqli_select_db($koneksi, $database_koneksi);
 $query_barcode = sprintf("SELECT kodeproduk, namaproduk, hargajual, kategori FROM produk WHERE kodeproduk = %s", GetSQLValueString($colname_barcode, "text"));
-$barcode = mysqli_query($query_barcode, $koneksi) or die(mysqli_error());
+$barcode = mysqli_query($koneksi, $query_barcode) or die(mysqli_error($koneksi));
 $row_barcode = mysqli_fetch_assoc($barcode);
 $totalRows_barcode = mysqli_num_rows($barcode);
 

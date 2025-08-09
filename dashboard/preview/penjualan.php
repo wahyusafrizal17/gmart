@@ -158,9 +158,10 @@ require_once('page1.php'); ?>
         <div class="col-md-12">
 
 
-          <?php if (isset($_GET['tgl1']) && isset($_GET['tgl2'])) { ?>
-            <?php title('success', 'HASIL PENCARIAN DITEMUKAN', 'Pada tanggal ' . $_GET['tgl1'] . ' s/d tanggal ' . $_GET['tgl2'] . ' ditemukan sebanyak ' . $totalRows_Penjualan . ' transaksi'); ?>
-          <?php } ?>
+          <?php 
+          // Tampilkan alert hasil pencarian selalu, gunakan $tgl1 & $tgl2 default dari page1.php
+          title('success', 'HASIL PENCARIAN DITEMUKAN', 'Pada tanggal ' . $tgl1 . ' s/d tanggal ' . $tgl2 . ' ditemukan sebanyak ' . $totalRows_Penjualan . ' transaksi'); 
+          ?>
 
           <p><a href="report/penjualan.php?jenisbayar=<?= $jenisbayar ?>&tgl1=<?= $tgl1; ?>&tgl2=<?= $tgl2; ?>&kasir=<?= $colname; ?>&kategori=<?= $kat ?>" target="_blank" class="btn btn-primary"><span class="fa fa-print"></span> Cetak Laporan</a> <a href="report/penjualanitem.php?jenisbayar=<?= $jenisbayar ?>&tgl1=<?= $tgl1; ?>&tgl2=<?= $tgl2; ?>&kasir=<?= $colname; ?>&kategori=<?= $kat ?>" target="_blank" class="btn btn-info"><span class="fa fa-list"></span> Cetak Laporan Detail</a> <a href="report/penjualanitem.php?jenisbayar=<?= $jenisbayar ?>&tgl1=<?= $tgl1; ?>&tgl2=<?= $tgl2; ?>&kasir=<?= $colname; ?>&kategori=<?= $kat ?>&show_by_category=1" target="_blank" class="btn btn-success"><span class="fa fa-chart-bar"></span> Laporan Per Kategori</a>
 

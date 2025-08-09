@@ -4,18 +4,13 @@ if (isset($_SERVER['QUERY_STRING'])) {
 	$editFormAction .= "?" . htmlentities($_SERVER['QUERY_STRING']);
 }
 
-// Auto-create faktur on page load if none exists
-require_once('faktur.php');
-// Ensure $kodeacak available if used later
-if (!isset($kodeacak) || empty($kodeacak)) { $kodeacak = time(); }
-
 //MENYIMPAN NOMOR FAKTUR ----
 if ((isset($_POST["MM_faktur"])) && ($_POST["MM_faktur"] == "form2")) {
 	$insertSQL = sprintf(
 		"INSERT INTO faktur (tglfaktur, statusfaktur, kodefaktur, addedfaktur, addbyfaktur, adminfaktur, periode) VALUES (%s, %s, %s, %s, %s, %s, %s)",
 		GetSQLValueString($today, "date"),
 		GetSQLValueString('N', "text"),
-		GetSQLValueString($kodeacak, "text"),
+		GetSQLValueString(time(), "text"),
 		GetSQLValueString(time(), "int"),
 		GetSQLValueString($ID, "int"),
 		GetSQLValueString($nama, "text"),
@@ -48,13 +43,49 @@ if ($row_Faktur) {
 if (isset($_GET['faktur'])) {
 	$faktur = $_GET['faktur'];
 }
+// If the selected open faktur has no items yet, treat as no faktur
+if (!empty($faktur)) {
+	$cek_items = sprintf(
+		"SELECT COUNT(*) AS c FROM transaksitemp WHERE faktur = %s",
+		GetSQLValueString($faktur, "text")
+	);
+	$rs_items = mysqli_query($koneksi, $cek_items) or die(mysqli_error($koneksi));
+	$row_items = mysqli_fetch_assoc($rs_items);
+	if ((int)$row_items['c'] === 0) {
+		$faktur = '';
+	}
+}
+
+// Helper: create faktur only when needed (before first item insert)
+if (!function_exists('ensureOpenFakturIfNeeded')) {
+	function ensureOpenFakturIfNeeded(&$faktur, $koneksi, $today, $ID, $nama, $ta) {
+		if (empty($faktur)) {
+			$kodeBaru = time();
+			$insertSQL = sprintf(
+				"INSERT INTO faktur (tglfaktur, statusfaktur, kodefaktur, addedfaktur, addbyfaktur, adminfaktur, periode, qtyprint, printby) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)",
+				GetSQLValueString($today, "date"),
+				GetSQLValueString('N', "text"),
+				GetSQLValueString($kodeBaru, "text"),
+				GetSQLValueString(time(), "int"),
+				GetSQLValueString($ID, "int"),
+				GetSQLValueString($nama, "text"),
+				GetSQLValueString($ta, "text"),
+				GetSQLValueString(0, "int"),
+				'NULL'
+			);
+			$ok = mysqli_query($koneksi, $insertSQL) or die(mysqli_error($koneksi));
+			if ($ok) {
+				$faktur = $kodeBaru;
+			}
+		}
+	}
+}
 //---------------------------
 $colname_search = "--1";
 $totalRows_search = 0; // Inisialisasi agar tidak undefined
 
 if (isset($_POST['search'])) {
     $colname_search = $_POST['search'];
-    require('faktur.php');
 
     $query_search = sprintf(
         "SELECT * FROM produk WHERE stok > 0 AND (kodeproduk = %s OR namaproduk LIKE %s) LIMIT 10",
@@ -65,9 +96,10 @@ if (isset($_POST['search'])) {
     $row_search = mysqli_fetch_assoc($search);
     $totalRows_search = mysqli_num_rows($search);
 
-    // Jika hanya 1 produk ditemukan, langsung proses simpan
+    // Jika hanya 1 produk ditemukan, langsung proses simpan (ini artinya akan insert/update item)
     if ($totalRows_search == 1) {
-        require('faktur.php');
+        // Pastikan faktur ada sebelum insert/update item pertama
+        ensureOpenFakturIfNeeded($faktur, $koneksi, $today, $ID, $nama, $ta);
 
         // Cek apakah produk sudah ada di transaksi temp
         $cek = sprintf(
@@ -170,6 +202,8 @@ if ((isset($_POST["MM_update"])) && ($_POST["MM_update"] == "formCombobox")) {
 
 // Handle formCari (Add Cart button)
 if ((isset($_POST["MM_insert"])) && ($_POST["MM_insert"] == "formCari")) {
+	// Pastikan faktur ada sebelum insert/update item pertama
+	ensureOpenFakturIfNeeded($faktur, $koneksi, $today, $ID, $nama, $ta);
 	//SEBELUM ITU, DICEK JIKA PRODUK YG SAMA MAKA TAMBAHKAN STOK SAJA
 	$cek =  sprintf(
 		"SELECT kode, faktur, qty FROM transaksitemp 
@@ -230,6 +264,8 @@ if ((isset($_POST["MM_insert"])) && ($_POST["MM_insert"] == "formCari")) {
 if ($totalRows_search > 1) {
 	for ($i = 1; $i <= $totalRows_search; $i++) {
 		if ((isset($_POST["MM_insert"])) && ($_POST["MM_insert"] == "formx" . $i)) {
+			// Pastikan faktur ada sebelum insert/update item pertama
+			ensureOpenFakturIfNeeded($faktur, $koneksi, $today, $ID, $nama, $ta);
 			//SEBELUM ITU, DICEK JIKA PRODUK YG SAMA MAKA TAMBAHKAN STOK SAJA
 			$cek =  sprintf(
 				"SELECT kode, faktur, qty FROM transaksitemp 
@@ -326,7 +362,7 @@ if ((isset($_POST["MM_update"])) && ($_POST["MM_update"] == "formSelesai")) {
 				GetSQLValueString($row_temp['qty'], "int"),
 				GetSQLValueString($row_temp['kode'], "text")
 			);
-			//edit stok										 
+			//edit stok						 
 			$hasilstok = mysqli_query($koneksi, $stok) or die(mysqli_error($koneksi));
 
 			$deleteSQL = sprintf(
@@ -452,7 +488,7 @@ if ((isset($_POST["MM_update"])) && ($_POST["MM_update"] == "formDiskon")) {
 		<div class="small-box bg-red text-center">
 
 			<label class="small">NO. FAKTUR</label>
-			<p style="font-size: 30px;"><?= $faktur; ?></p>
+			<p style="font-size: 30px;"><?= ($totalRows_trans > 0) ? $faktur : '' ; ?></p>
 
 		</div>
 	</div>
@@ -570,19 +606,19 @@ if ((isset($_POST["MM_update"])) && ($_POST["MM_update"] == "formDiskon")) {
 																<?php if ($row_trans['stok'] > 0) { ?>
 																	<form id="form<?= $no; ?>" name="formCombobox" method="post" action="">
 
-																		<div class="input-group">
-																			<input type="number" name="qtyupdate" value="<?php echo htmlentities($row_trans['qty'], ENT_COMPAT, 'utf-8'); ?>" placeholder="Jumlah Beli" class="form-control input-lg" autofocus />
-																			<span class="input-group-btn">
-																				<button type="submit" class="btn btn-warning btn-lg">UBAH</button>
-																			</span>
-																		</div>
+																	<div class="input-group">
+																		<input type="number" name="qtyupdate" value="<?php echo htmlentities($row_trans['qty'], ENT_COMPAT, 'utf-8'); ?>" placeholder="Jumlah Beli" class="form-control input-lg" autofocus />
+																		<span class="input-group-btn">
+																			<button type="submit" class="btn btn-warning btn-lg">UBAH</button>
+																		</span>
+																	</div>
 
-																		<input type="hidden" name="MM_update" value="formCombobox" />
-																		<input type="hidden" name="kodeCombo" value="<?= $row_trans['kode']; ?>" />
-																	</form>
-																<?php } else { ?>
-																	<a href="?page=manage/addget&search=<?= $row_trans['kode']; ?>" target="_blank" class="form-control input-lg">Klik disini untuk Tambah Stok Darurat!</a>
-																<?php } ?>
+																	<input type="hidden" name="MM_update" value="formCombobox" />
+																	<input type="hidden" name="kodeCombo" value="<?= $row_trans['kode']; ?>" />
+																</form>
+															<?php } else { ?>
+																<a href="?page=manage/addget&search=<?= $row_trans['kode']; ?>" target="_blank" class="form-control input-lg">Klik disini untuk Tambah Stok Darurat!</a>
+															<?php } ?>
 
 																<?php $dis = 0 * $row_trans['qty'];
 																number_format($dis); ?>
@@ -592,7 +628,7 @@ if ((isset($_POST["MM_update"])) && ($_POST["MM_update"] == "formDiskon")) {
 															<div class="form-group">
 																<label for="">SUB TOTAL</label>
 																<input type="text" class="form-control input-lg" name="" value="<?php $sub = $row_trans['harga'] * $row_trans['qty'];
-																																echo number_format($sub); ?>" readonly>
+																																										echo number_format($sub); ?>" readonly>
 
 															</div>
 														</div>
@@ -633,7 +669,7 @@ if ((isset($_POST["MM_update"])) && ($_POST["MM_update"] == "formDiskon")) {
 								</td>
 								<td align="right">Rp. <?= number_format($row_trans['harga'], 0, ",", "."); ?></td>
 								<td align="right">Rp. <?php $subtotal = ($row_trans['harga'] * $row_trans['qty']) - $row_trans['diskon'];
-														echo number_format($subtotal, 0, ",", "."); ?></td>
+									echo number_format($subtotal, 0, ",", "."); ?></td>
 							</tr>
 						<?php
 							$item += $row_trans['qty'];
@@ -661,7 +697,7 @@ if ((isset($_POST["MM_update"])) && ($_POST["MM_update"] == "formDiskon")) {
 					</tbody>
 				</table>
 
-				<?php if (!empty($faktur)) { ?>
+				<?php if ($totalRows_trans > 0) { ?>
 					<form action="<?php echo $editFormAction; ?>" method="post" name="form2" id="form2">
 						<button class="btn btn-lg btn-info btn-block"><span class="fa fa-plus-circle"></span> Buat Transaksi Baru</button>
 						<input type="hidden" name="MM_faktur" value="form2" />
@@ -720,17 +756,17 @@ if ((isset($_POST["MM_update"])) && ($_POST["MM_update"] == "formDiskon")) {
 									<td><strong>METODE BAYAR</strong></td>
 									<td><select name="jenisbayar" class="form-control ">
 											<option value="CASH" <?php if (!(strcmp("CASH", htmlentities($row_Faktur['jenisbayar'], ENT_COMPAT, 'utf-8')))) {
-																		echo "SELECTED";
-																	} ?>>CASH</option>
+												echo "SELECTED";
+											} ?>>CASH</option>
 											<option value="TRANSFER" <?php if (!(strcmp("TRANSFER", htmlentities($row_Faktur['jenisbayar'], ENT_COMPAT, 'utf-8')))) {
-																			echo "SELECTED";
-																		} ?>>TRANSFER</option>
+													echo "SELECTED";
+												} ?>>TRANSFER</option>
 											<option value="SHOPEEPAY" <?php if (!(strcmp("SHOPEEPAY", htmlentities($row_Faktur['jenisbayar'], ENT_COMPAT, 'utf-8')))) {
-																			echo "SELECTED";
-																		} ?>>SHOPEEPAY</option>
+													echo "SELECTED";
+												} ?>>SHOPEEPAY</option>
 											<option value="MERCHANT" <?php if (!(strcmp("MERCHANT", htmlentities($row_Faktur['jenisbayar'], ENT_COMPAT, 'utf-8')))) {
-																			echo "SELECTED";
-																		} ?>>MERCHANT</option>
+													echo "SELECTED";
+												} ?>>MERCHANT</option>
 										</select>
 									</td>
 								</tr>
@@ -740,36 +776,36 @@ if ((isset($_POST["MM_update"])) && ($_POST["MM_update"] == "formDiskon")) {
 									</td>
 								</tr>
 								<tr>
-    <td><strong>NIK PELANGGAN</strong> <br><small>(NAMA PELANGGAN)</small></td>
-    <td>
-    <select class="js-example-basic-single" name="namapelanggan" id="namapelanggan" placeholder="Pilih atau cari pelanggan">
-        <option value=""></option>
-        <?php
-        $cek = "SELECT * FROM member";
-        $rs_cek = mysqli_query($koneksi, $cek) or die(mysqli_error($koneksi));
+				<td><strong>NIK PELANGGAN</strong> <br><small>(NAMA PELANGGAN)</small></td>
+				<td>
+				<select class="js-example-basic-single" name="namapelanggan" id="namapelanggan" placeholder="Pilih atau cari pelanggan">
+					<option value=""></option>
+					<?php
+					$cek = "SELECT * FROM member";
+					$rs_cek = mysqli_query($koneksi, $cek) or die(mysqli_error($koneksi));
 
-        while ($data = mysqli_fetch_assoc($rs_cek)) { ?>
-            <option value="<?php echo $data['nama_member'] ?>">
-                <?php echo $data['nik'] ?> / 
-                <?php echo $data['nomor'] ?>
-            </option>
-        <?php } ?>
-    </select>
+					while ($data = mysqli_fetch_assoc($rs_cek)) { ?>
+						<option value="<?php echo $data['nama_member'] ?>">
+							<?php echo $data['nik'] ?> / 
+							<?php echo $data['nomor'] ?>
+						</option>
+					<?php } ?>
+				</select>
 
-    <input type="text" readonly name="cek" class="form-control" id="cek" />
-    <input name="diskon" type="hidden" class="form-control text-right" id="textfield2" value="<?= $diskon; ?>" readonly />
-</td>
+				<input type="text" readonly name="cek" class="form-control" id="cek" />
+				<input name="diskon" type="hidden" class="form-control text-right" id="textfield2" value="<?= $diskon; ?>" readonly />
+			</td>
 
-</tr>
+			</tr>
 
 	  </table>
       </div>
       <div class="modal-footer">
         <!-- <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button> -->
 		<input type="hidden" name="MM_update" value="formSelesai" />
-										<button type="submit" class="btn btn-lg btn-block btn-success">
-											<span class="fa fa-print"></span> <strong>SIMPAN TRANSAKSI <strong></button>
-											</form>
+								<button type="submit" class="btn btn-lg btn-block btn-success">
+									<span class="fa fa-print"></span> <strong>SIMPAN TRANSAKSI <strong></button>
+									</form>
       </div>
     </div>
   </div>
@@ -821,17 +857,17 @@ if ((isset($_POST["MM_update"])) && ($_POST["MM_update"] == "formDiskon")) {
 									<td><strong>METODE BAYAR</strong></td>
 									<td><select name="jenisbayar" class="form-control ">
 											<option value="CASH" <?php if (!(strcmp("CASH", htmlentities($row_Faktur['jenisbayar'], ENT_COMPAT, 'utf-8')))) {
-																		echo "SELECTED";
-																	} ?>>CASH</option>
+												echo "SELECTED";
+											} ?>>CASH</option>
 											<option value="TRANSFER" <?php if (!(strcmp("TRANSFER", htmlentities($row_Faktur['jenisbayar'], ENT_COMPAT, 'utf-8')))) {
-																			echo "SELECTED";
-																		} ?>>TRANSFER</option>
+													echo "SELECTED";
+												} ?>>TRANSFER</option>
 											<option value="SHOPEEPAY" <?php if (!(strcmp("SHOPEEPAY", htmlentities($row_Faktur['jenisbayar'], ENT_COMPAT, 'utf-8')))) {
-																			echo "SELECTED";
-																		} ?>>SHOPEEPAY</option>
+													echo "SELECTED";
+												} ?>>SHOPEEPAY</option>
 											<option value="MERCHANT" <?php if (!(strcmp("MERCHANT", htmlentities($row_Faktur['jenisbayar'], ENT_COMPAT, 'utf-8')))) {
-																			echo "SELECTED";
-																		} ?>>MERCHANT</option>
+													echo "SELECTED";
+												} ?>>MERCHANT</option>
 										</select>
 									</td>
 								</tr>
@@ -933,7 +969,7 @@ if ((isset($_POST["MM_update"])) && ($_POST["MM_update"] == "formDiskon")) {
 					<button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
 					<button type="submit" class="btn btn-primary">Add Cart</button>
 				</div>
-				<input type="hidden" name="kodeproduk" value="<?= $kodeacak; ?>" />
+				<input type="hidden" name="kodeproduk" value="<?= time(); ?>" />
 				<input type="hidden" name="MM_insert" value="formBarang" />
 			</form>
 		</div>
@@ -1072,7 +1108,8 @@ if ((isset($_POST["MM_update"])) && ($_POST["MM_update"] == "formDiskon")) {
 
 <?php
 if ((isset($_POST["MM_insert"])) && ($_POST["MM_insert"] == "formBarang")) {
-	require('faktur.php');
+	// Pastikan faktur ada sebelum memasukkan produk baru ke keranjang
+	ensureOpenFakturIfNeeded($faktur, $koneksi, $today, $ID, $nama, $ta);
 
 	$Start = mysqli_query($koneksi, "START TRANSACTION") or die(errorQuery(mysqli_error($koneksi)));
 	$insertSQL = sprintf(
