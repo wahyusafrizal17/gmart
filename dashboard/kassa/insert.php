@@ -9,14 +9,25 @@ if (isset($_SERVER['QUERY_STRING'])) {
 if ((isset($_POST["MM_insert"])) && ($_POST["MM_insert"] == "form1")) {
   // Hash the password using PHP's password_hash()
   $hashedPassword = password_hash($_POST['pwd_kassa'], PASSWORD_DEFAULT);
-  $insertSQL = sprintf("INSERT INTO kassa (`user_kassa`, `pwd_kassa`, `nama_kassa`, `alamat_kassa`, `telp_kassa`, `added_kassa`,`addby_kassa`) VALUES (%s, %s, %s, %s, %s, %s, %s)",
+  // Defaults for not-null fields
+  $status = 'Y';
+  $level = 3; // default kasir level
+  $key = bin2hex(random_bytes(8));
+  $now = time();
+
+  $insertSQL = sprintf("INSERT INTO kassa (`user_kassa`, `pwd_kassa`, `nama_kassa`, `alamat_kassa`, `telp_kassa`, `added_kassa`, `updated_kassa`, `addby_kassa`, `status_kassa`, `level_kassa`, `key_kassa`) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)",
                        GetSQLValueString($_POST['user_kassa'], "text"),
                        GetSQLValueString($hashedPassword, "text"),
-					   GetSQLValueString($_POST['nama_kassa'], "text"),
-					   GetSQLValueString($_POST['alamat_kassa'], "text"),
-					   GetSQLValueString($_POST['telp_kassa'], "text"),
-					   GetSQLValueString(time() , "int"),
-					   GetSQLValueString($ID, "int"));
+				       GetSQLValueString($_POST['nama_kassa'], "text"),
+				       GetSQLValueString($_POST['alamat_kassa'], "text"),
+				       GetSQLValueString($_POST['telp_kassa'], "text"),
+				       GetSQLValueString($now , "int"),
+				       GetSQLValueString($now , "int"),
+				       GetSQLValueString($ID, "int"),
+                       GetSQLValueString($status, "text"),
+                       GetSQLValueString($level, "int"),
+                       GetSQLValueString($key, "text")
+                      );
 
   $Result1 = mysqli_query($koneksi, $insertSQL) or die(errorQuery(mysqli_error($koneksi)));
   
@@ -28,7 +39,7 @@ if ((isset($_POST["MM_insert"])) && ($_POST["MM_insert"] == "form1")) {
 
 ?> 
 <?php if (isset($_GET['sukses'])) { 
-   		sukses('Data kassa berhasil tersimpan');
+    		sukses('Data kassa berhasil tersimpan');
 } ?>
 <?php
 	titleSimpan('ENTRY DATA KASIR','kasir');

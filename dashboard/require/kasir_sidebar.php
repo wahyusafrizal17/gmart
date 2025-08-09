@@ -6,7 +6,7 @@ if (isset($_GET['faktur'])) {
 }
 //mysqli_select_db($database_koneksi, $koneksi);
 $query_rs_search = sprintf("SELECT faktur FROM transaksitemp WHERE faktur = %s", GetSQLValueString($colname_rs_search, "text"));
-$rs_search = mysqli_query($query_rs_search, $koneksi) or die(errorQuery(mysqli_error()));
+$rs_search = mysqli_query($koneksi, $query_rs_search) or die(errorQuery(mysqli_error($koneksi)));
 $row_rs_search = mysqli_fetch_assoc($rs_search);
 $totalRows_rs_search = mysqli_num_rows($rs_search);
 
