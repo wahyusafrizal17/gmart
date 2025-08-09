@@ -52,6 +52,13 @@ if (!empty($faktur)) {
 	$rs_items = mysqli_query($koneksi, $cek_items) or die(mysqli_error($koneksi));
 	$row_items = mysqli_fetch_assoc($rs_items);
 	if ((int)$row_items['c'] === 0) {
+		// Hapus faktur terbuka yang kosong agar tidak nyangkut
+		$del_empty_faktur = sprintf(
+			"DELETE FROM faktur WHERE kodefaktur=%s AND statusfaktur=%s",
+			GetSQLValueString($faktur, "text"),
+			GetSQLValueString('N', 'text')
+		);
+		mysqli_query($koneksi, $del_empty_faktur) or die(mysqli_error($koneksi));
 		$faktur = '';
 	}
 }
@@ -418,7 +425,7 @@ if ((isset($_POST["MM_update"])) && ($_POST["MM_update"] == "formSelesai")) {
 
 		if ($Result1) {
 			$Commit = mysqli_query($koneksi, "COMMIT") or die(errorQuery(mysqli_error($koneksi)));
-			require('faktur.php');
+			// Jangan buat faktur baru otomatis setelah pembayaran
 			echo "<script>
 		window.open('report/kwitansi.php?id=$faktur', '', 'width=600,height=600');
 		document.location.href='?page=scan/add';
@@ -754,19 +761,12 @@ if ((isset($_POST["MM_update"])) && ($_POST["MM_update"] == "formDiskon")) {
 								</tr>
 								<tr>
 									<td><strong>METODE BAYAR</strong></td>
-									<td><select name="jenisbayar" class="form-control ">
-											<option value="CASH" <?php if (!(strcmp("CASH", htmlentities($row_Faktur['jenisbayar'], ENT_COMPAT, 'utf-8')))) {
-												echo "SELECTED";
-											} ?>>CASH</option>
-											<option value="TRANSFER" <?php if (!(strcmp("TRANSFER", htmlentities($row_Faktur['jenisbayar'], ENT_COMPAT, 'utf-8')))) {
-													echo "SELECTED";
-												} ?>>TRANSFER</option>
-											<option value="SHOPEEPAY" <?php if (!(strcmp("SHOPEEPAY", htmlentities($row_Faktur['jenisbayar'], ENT_COMPAT, 'utf-8')))) {
-													echo "SELECTED";
-												} ?>>SHOPEEPAY</option>
-											<option value="MERCHANT" <?php if (!(strcmp("MERCHANT", htmlentities($row_Faktur['jenisbayar'], ENT_COMPAT, 'utf-8')))) {
-													echo "SELECTED";
-												} ?>>MERCHANT</option>
+									<td><?php $jenisbayarCurrent = (isset($row_Faktur) && is_array($row_Faktur) && isset($row_Faktur['jenisbayar'])) ? $row_Faktur['jenisbayar'] : 'CASH'; ?>
+										<select name="jenisbayar" class="form-control ">
+											<option value="CASH" <?= ($jenisbayarCurrent === 'CASH') ? 'SELECTED' : ''; ?>>CASH</option>
+											<option value="TRANSFER" <?= ($jenisbayarCurrent === 'TRANSFER') ? 'SELECTED' : ''; ?>>TRANSFER</option>
+											<option value="SHOPEEPAY" <?= ($jenisbayarCurrent === 'SHOPEEPAY') ? 'SELECTED' : ''; ?>>SHOPEEPAY</option>
+											<option value="MERCHANT" <?= ($jenisbayarCurrent === 'MERCHANT') ? 'SELECTED' : ''; ?>>MERCHANT</option>
 										</select>
 									</td>
 								</tr>

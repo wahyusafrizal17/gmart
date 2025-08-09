@@ -16,8 +16,8 @@ if ((isset($_POST["MM_insert"])) && ($_POST["MM_insert"] == "form1")) {
         GetSQLValueString($nama, "text")
     );
 
-    mysqli_select_db($database_koneksi, $koneksi);
-    $Result1 = mysqli_query($insertSQL, $koneksi) or die(errorQuery(mysqli_error()));
+    mysqli_select_db($koneksi, $database_koneksi);
+    $Result1 = mysqli_query($koneksi, $insertSQL) or die(errorQuery(mysqli_error($koneksi)));
 
     if ($Result1) {
         refresh('?page=pengeluaran/view&sukses');
