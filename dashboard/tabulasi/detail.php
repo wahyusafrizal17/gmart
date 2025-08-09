@@ -3,7 +3,35 @@ $colname_DetailFaktur = "-1";
 if (isset($_GET['faktur'])) {
   $colname_DetailFaktur = $_GET['faktur'];
 }
-$query_DetailFaktur = sprintf("SELECT faktur, tanggal, kode, transaksidetail.nama, harga, qty, diskon, addby, stt, periode, vw_login.Nama as kassa FROM transaksidetail LEFT JOIN vw_login ON addby = vw_login.ID WHERE faktur = %s", GetSQLValueString($colname_DetailFaktur, "text"));
+
+// Optional category filter (0/null = all)
+$kategoriFilter = isset($_GET['kategori']) ? $_GET['kategori'] : "0";
+
+if ($kategoriFilter !== "0" && $kategoriFilter !== "" && $kategoriFilter !== null) {
+  // Filter detail berdasarkan kategori pilihan
+  $query_DetailFaktur = sprintf(
+    "SELECT faktur, tanggal, kode, td.nama, harga, qty, diskon, addby, stt, periode, vw_login.Nama as kassa, k.namakategori 
+     FROM transaksidetail td 
+     LEFT JOIN vw_login ON addby = vw_login.ID 
+     LEFT JOIN produk p ON td.nama = p.namaproduk 
+     LEFT JOIN kategori k ON k.idkategori = p.kategori 
+     WHERE faktur = %s AND p.kategori = %s",
+    GetSQLValueString($colname_DetailFaktur, "text"),
+    GetSQLValueString($kategoriFilter, "text")
+  );
+} else {
+  // Tampilkan semua item faktur
+  $query_DetailFaktur = sprintf(
+    "SELECT faktur, tanggal, kode, td.nama, harga, qty, diskon, addby, stt, periode, vw_login.Nama as kassa, k.namakategori 
+     FROM transaksidetail td 
+     LEFT JOIN vw_login ON addby = vw_login.ID 
+     LEFT JOIN produk p ON td.nama = p.namaproduk 
+     LEFT JOIN kategori k ON k.idkategori = p.kategori 
+     WHERE faktur = %s",
+    GetSQLValueString($colname_DetailFaktur, "text")
+  );
+}
+
 $DetailFaktur = mysqli_query($koneksi, $query_DetailFaktur) or die(mysqli_error($koneksi));
 $row_DetailFaktur = mysqli_fetch_assoc($DetailFaktur);
 $totalRows_DetailFaktur = mysqli_num_rows($DetailFaktur);

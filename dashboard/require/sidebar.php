@@ -28,6 +28,7 @@ if (isset($_GET['Search'])) {
     <form action="" method="get" class="sidebar-form">
       <div class="input-group">
         <input type="hidden" name="page" value="tabulasi/detail">
+        <input type="hidden" name="kategori" value="<?= isset($_GET['kategori']) ? htmlspecialchars($_GET['kategori']) : 0 ?>">
         <input type="text" name="faktur" class="form-control" placeholder="Cari Faktur...">
         <span class="input-group-btn">
           <button type="submit" id="search-btn" class="btn btn-flat">

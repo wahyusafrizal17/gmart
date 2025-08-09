@@ -119,7 +119,7 @@
                   </td>
                   <td>
                     <?php if ($row_Penjualan['statusfaktur'] == 'Y') { ?>
-                      <a href="?page=tabulasi/detail&faktur=<?php echo $row_Penjualan['kodefaktur']; ?>" class="btn btn-primary"><span class="fa fa-list"></span> Lihat Detail</a>
+                      <a href="?page=tabulasi/detail&faktur=<?php echo $row_Penjualan['kodefaktur']; ?>&kategori=<?= isset($_GET['kategori']) ? $_GET['kategori'] : 0 ?>" class="btn btn-primary"><span class="fa fa-list"></span> Lihat Detail</a>
                     <?php } else { ?>
                       <a href="?page=scan/add&faktur=<?php echo $row_Penjualan['kodefaktur']; ?>" class="btn btn-warning"><span class="fa fa-list"></span> Lanjutkan</a>
                     <?php } ?>

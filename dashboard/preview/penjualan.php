@@ -243,6 +243,23 @@ require_once('page1.php'); ?>
               }
               $laba = mysqli_query($koneksi, $query_laba) or die(mysqli_error($koneksi));
               $row_laba = mysqli_fetch_assoc($laba);
+
+              // Hitung TOTAL BELANJA dari detail (ikuti filter kategori bila ada)
+              if ($kat != 0) {
+                $query_subtotal = sprintf(
+                  "SELECT SUM(td.harga * td.qty) AS subtotal FROM transaksidetail td INNER JOIN produk p ON td.nama = p.namaproduk WHERE td.faktur = %s AND p.kategori = %s",
+                  GetSQLValueString($row_Penjualan['kodefaktur'], "text"),
+                  GetSQLValueString($kat, "text")
+                );
+              } else {
+                $query_subtotal = sprintf(
+                  "SELECT SUM(harga * qty) AS subtotal FROM transaksidetail WHERE faktur = %s",
+                  GetSQLValueString($row_Penjualan['kodefaktur'], "text")
+                );
+              }
+              $rs_subtotal = mysqli_query($koneksi, $query_subtotal) or die(mysqli_error($koneksi));
+              $row_subtotal = mysqli_fetch_assoc($rs_subtotal);
+              $calculated_total = isset($row_subtotal['subtotal']) ? (float)$row_subtotal['subtotal'] : 0;
               //---------
             ?>
               <tr>
@@ -258,7 +275,7 @@ require_once('page1.php'); ?>
                   Pelanggan : <?php echo $row_Penjualan['namapelanggan']; ?>
                 </td>
                 <td>
-                  <div align="right">Rp. <?php echo number_format($row_Penjualan['totalbelanja']); ?></div>
+                  <div align="right">Rp. <?php echo number_format($calculated_total); ?></div>
                 </td>
                 <td>
                   <div align="right">Rp. <?php echo number_format($row_Penjualan['potongan']); ?></div>
@@ -271,7 +288,7 @@ require_once('page1.php'); ?>
                 </td>
                 <td>
                   <?php if ($row_Penjualan['statusfaktur'] == 'Y') { ?>
-                    <a href="?page=tabulasi/detail&faktur=<?php echo $row_Penjualan['kodefaktur']; ?>" class="btn btn-primary"><span class="fa fa-list"></span> Lihat Detail</a>
+                    <a href="?page=tabulasi/detail&faktur=<?php echo $row_Penjualan['kodefaktur']; ?>&kategori=<?= $kat ?>" class="btn btn-primary"><span class="fa fa-list"></span> Lihat Detail</a>
                   <?php } else { ?>
                     <a href="?page=scan/add&faktur=<?php echo $row_Penjualan['kodefaktur']; ?>" class="btn btn-warning"><span class="fa fa-list"></span> Lanjutkan</a>
                   <?php } ?>

@@ -454,18 +454,10 @@ if ($show_by_category) {
         //QUERY DETAIL - Tampilkan SEMUA item dalam faktur, bukan hanya yang sesuai kategori
         $kat = $_GET['kategori'];
         if ($kat == "0") {
-          $query_DetailFaktur = sprintf("SELECT faktur, tanggal, kode, td.nama, harga, qty, diskon, addby, stt, periode, vw_login.Nama as kassa, k.namakategori, (td.harga-td.hargadasar) as margin FROM transaksidetail td
-				LEFT JOIN vw_login ON addby = vw_login.ID 
-				LEFT JOIN produk p ON p.kodeproduk = td.kode
-        LEFT JOIN kategori k ON k.idkategori = p.kategori
-				WHERE faktur = %s", GetSQLValueString($row_Penjualan['kodefaktur'], "text"));
+          $query_DetailFaktur = sprintf("SELECT faktur, tanggal, kode, td.nama, harga, qty, diskon, addby, stt, periode, vw_login.Nama as kassa, k.namakategori, (td.harga-td.hargadasar) as margin FROM transaksidetail td\n\t\t\t\t\t\tLEFT JOIN vw_login ON addby = vw_login.ID \n\t\t\t\t\t\tLEFT JOIN produk p ON td.nama = p.namaproduk\n        LEFT JOIN kategori k ON k.idkategori = p.kategori\n\t\t\t\t\t\tWHERE faktur = %s", GetSQLValueString($row_Penjualan['kodefaktur'], "text"));
         } else {
           // Untuk kategori tertentu, tampilkan hanya item sesuai kategori
-          $query_DetailFaktur = sprintf("SELECT faktur, tanggal, kode, td.nama, harga, qty, diskon, addby, stt, periode, vw_login.Nama as kassa, k.namakategori, (td.harga-td.hargadasar) as margin FROM transaksidetail td
-          LEFT JOIN vw_login ON addby = vw_login.ID 
-          LEFT JOIN produk p ON p.kodeproduk = td.kode
-          LEFT JOIN kategori k ON k.idkategori = p.kategori
-          WHERE faktur = %s AND p.kategori = %s", GetSQLValueString($row_Penjualan['kodefaktur'], "text"), GetSQLValueString($kat, "text"));
+          $query_DetailFaktur = sprintf("SELECT faktur, tanggal, kode, td.nama, harga, qty, diskon, addby, stt, periode, vw_login.Nama as kassa, k.namakategori, (td.harga-td.hargadasar) as margin FROM transaksidetail td\n          LEFT JOIN vw_login ON addby = vw_login.ID \n          LEFT JOIN produk p ON td.nama = p.namaproduk\n          LEFT JOIN kategori k ON k.idkategori = p.kategori\n          WHERE faktur = %s AND p.kategori = %s", GetSQLValueString($row_Penjualan['kodefaktur'], "text"), GetSQLValueString($kat, "text"));
         }
         $DetailFaktur = mysqli_query($koneksi, $query_DetailFaktur) or die(mysqli_error($koneksi));
         $row_DetailFaktur = mysqli_fetch_assoc($DetailFaktur);

@@ -114,7 +114,7 @@
                     <div align="center"><?php echo $row_Penjualan['Nama']; ?></div>
                   </td>
                   <td>
-                    <a href="?page=tabulasi/detail&faktur=<?php echo $row_Penjualan['kodefaktur']; ?>" class="btn btn-primary"><span class="fa fa-list"></span> Lihat Detail</a>
+                    <a href="?page=tabulasi/detail&faktur=<?php echo $row_Penjualan['kodefaktur']; ?>&kategori=<?= isset($_GET['kategori']) ? $_GET['kategori'] : 0 ?>" class="btn btn-primary"><span class="fa fa-list"></span> Lihat Detail</a>
 
                     <?php
                     if ($row_Penjualan['statusfaktur'] == 'Y') {
