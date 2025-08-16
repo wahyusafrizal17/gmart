@@ -10,14 +10,6 @@ if (isset($_SERVER['QUERY_STRING'])) {
 
 // Fungsi untuk membuat transaksi baru
 if ((isset($_POST["MM_faktur"])) && ($_POST["MM_faktur"] == "form2")) {
-	// Hapus semua transaksi temp yang ada
-	$delete_all_temp = "DELETE FROM transaksitemp";
-	mysqli_query($koneksi, $delete_all_temp) or die(mysqli_error($koneksi));
-	
-	// Hapus semua faktur terbuka
-	$delete_all_faktur = "DELETE FROM faktur WHERE statusfaktur = 'N'";
-	mysqli_query($koneksi, $delete_all_faktur) or die(mysqli_error($koneksi));
-	
 	// Buat faktur baru
 	$kodeBaru = time();
 	$insertSQL = sprintf(
@@ -30,13 +22,11 @@ if ((isset($_POST["MM_faktur"])) && ($_POST["MM_faktur"] == "form2")) {
 		GetSQLValueString($nama, "text"),
 		GetSQLValueString($ta, "text")
 	);
+	
 	$Result1 = mysqli_query($koneksi, $insertSQL) or die(mysqli_error($koneksi));
 	
 	if ($Result1) {
-		echo "<script>alert('Transaksi baru berhasil dibuat!');</script>";
 		refresh('?page=scan/add');
-	} else {
-		echo "<script>alert('Gagal membuat transaksi baru!');</script>";
 	}
 }
 
@@ -50,7 +40,6 @@ $query_Faktur = sprintf(
 $Faktur = mysqli_query($koneksi, $query_Faktur) or die(mysqli_error($koneksi));
 $row_Faktur = mysqli_fetch_assoc($Faktur);
 $totalRows_Faktur = mysqli_num_rows($Faktur);
-//MEMBUAT NILAI FAKTUR
 
 $faktur = '';
 if ($row_Faktur) {
@@ -60,24 +49,7 @@ if (isset($_GET['faktur'])) {
 	$faktur = $_GET['faktur'];
 }
 // If the selected open faktur has no items yet, treat as no faktur
-if (!empty($faktur)) {
-	$cek_items = sprintf(
-		"SELECT COUNT(*) AS c FROM transaksitemp WHERE faktur = %s",
-		GetSQLValueString($faktur, "text")
-	);
-	$rs_items = mysqli_query($koneksi, $cek_items) or die(mysqli_error($koneksi));
-	$row_items = mysqli_fetch_assoc($rs_items);
-	if ((int)$row_items['c'] === 0) {
-		// Hapus faktur terbuka yang kosong agar tidak nyangkut
-		$del_empty_faktur = sprintf(
-			"DELETE FROM faktur WHERE kodefaktur=%s AND statusfaktur=%s",
-			GetSQLValueString($faktur, "text"),
-			GetSQLValueString('N', 'text')
-		);
-		mysqli_query($koneksi, $del_empty_faktur) or die(mysqli_error($koneksi));
-		$faktur = '';
-	}
-}
+// REMOVED: Auto-delete empty faktur to allow multiple open fakturs
 
 // Helper: create faktur only when needed (before first item insert)
 if (!function_exists('ensureOpenFakturIfNeeded')) {
