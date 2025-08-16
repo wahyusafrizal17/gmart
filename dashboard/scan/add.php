@@ -1,26 +1,42 @@
 <?php
+
+
 $editFormAction = $_SERVER['PHP_SELF'];
 if (isset($_SERVER['QUERY_STRING'])) {
 	$editFormAction .= "?" . htmlentities($_SERVER['QUERY_STRING']);
 }
 
-//MENYIMPAN NOMOR FAKTUR ----
+
+
+// Fungsi untuk membuat transaksi baru
 if ((isset($_POST["MM_faktur"])) && ($_POST["MM_faktur"] == "form2")) {
+	// Hapus semua transaksi temp yang ada
+	$delete_all_temp = "DELETE FROM transaksitemp";
+	mysqli_query($koneksi, $delete_all_temp) or die(mysqli_error($koneksi));
+	
+	// Hapus semua faktur terbuka
+	$delete_all_faktur = "DELETE FROM faktur WHERE statusfaktur = 'N'";
+	mysqli_query($koneksi, $delete_all_faktur) or die(mysqli_error($koneksi));
+	
+	// Buat faktur baru
+	$kodeBaru = time();
 	$insertSQL = sprintf(
 		"INSERT INTO faktur (tglfaktur, statusfaktur, kodefaktur, addedfaktur, addbyfaktur, adminfaktur, periode) VALUES (%s, %s, %s, %s, %s, %s, %s)",
 		GetSQLValueString($today, "date"),
 		GetSQLValueString('N', "text"),
-		GetSQLValueString(time(), "text"),
+		GetSQLValueString($kodeBaru, "text"),
 		GetSQLValueString(time(), "int"),
 		GetSQLValueString($ID, "int"),
 		GetSQLValueString($nama, "text"),
 		GetSQLValueString($ta, "text")
 	);
-
 	$Result1 = mysqli_query($koneksi, $insertSQL) or die(mysqli_error($koneksi));
-
+	
 	if ($Result1) {
+		echo "<script>alert('Transaksi baru berhasil dibuat!');</script>";
 		refresh('?page=scan/add');
+	} else {
+		echo "<script>alert('Gagal membuat transaksi baru!');</script>";
 	}
 }
 
@@ -706,7 +722,7 @@ if ((isset($_POST["MM_update"])) && ($_POST["MM_update"] == "formDiskon")) {
 
 				<?php if ($totalRows_trans > 0) { ?>
 					<form action="<?php echo $editFormAction; ?>" method="post" name="form2" id="form2">
-						<button class="btn btn-lg btn-info btn-block"><span class="fa fa-plus-circle"></span> Buat Transaksi Baru</button>
+						<button type="submit" class="btn btn-lg btn-info btn-block"><span class="fa fa-plus-circle"></span> Buat Transaksi Baru</button>
 						<input type="hidden" name="MM_faktur" value="form2" />
 					</form>
 				<?php } ?>
