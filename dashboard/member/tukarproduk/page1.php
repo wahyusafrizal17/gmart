@@ -25,13 +25,13 @@ $currentPage = $_SERVER["PHP_SELF"];
 		$query_Produk = "SELECT * FROM tukarproduk a, produk b, kategori c WHERE a.produk = b.idproduk AND b.kategori = c.idkategori ORDER BY a.produk DESC";
 	}	
 	$query_limit_Produk = sprintf("%s LIMIT %d, %d", $query_Produk, $startRow_Produk, $maxRows_Produk);
-	$rs_Produk = mysqli_query($query_limit_Produk, $koneksi) or die(mysqli_error());
+	$rs_Produk = mysqli_query($koneksi, $query_limit_Produk) or die(mysqli_error($koneksi));
 	$row_Produk = mysqli_fetch_assoc($rs_Produk);
 	
 	if (isset($_GET['totalRows_Produk'])) {
 	  $totalRows_Produk = $_GET['totalRows_Produk'];
 	} else {
-	  $all_Produk = mysqli_query($query_Produk, $koneksi);
+	  $all_Produk = mysqli_query($koneksi, $query_Produk);
 	  $totalRows_Produk = mysqli_num_rows($all_Produk);
 	}
 	$totalPages_Produk = ceil($totalRows_Produk/$maxRows_Produk)-1;
