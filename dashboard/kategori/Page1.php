@@ -32,13 +32,13 @@ $currentPage = $_SERVER["PHP_SELF"];
 		GetSQLValueString($colname_kategori, "int"));
 	}	
 	$query_limit_Kategori = sprintf("%s LIMIT %d, %d", $query_Kategori, $startRow_Kategori, $maxRows_Kategori);
-	$rs_Kategori = mysqli_query($query_limit_Kategori, $koneksi) or die(mysqli_error());
+	$rs_Kategori = mysqli_query($koneksi, $query_limit_Kategori) or die(mysqli_error($koneksi));
 	$row_Kategori = mysqli_fetch_assoc($rs_Kategori);
 	
 	if (isset($_GET['totalRows_Kategori'])) {
 	  $totalRows_Kategori = $_GET['totalRows_Kategori'];
 	} else {
-	  $all_Kategori = mysqli_query($query_Kategori, $koneksi);
+	  $all_Kategori = mysqli_query($koneksi, $query_Kategori);
 	  $totalRows_Kategori = mysqli_num_rows($all_Kategori);
 	}
 	$totalPages_Kategori = ceil($totalRows_Kategori/$maxRows_Kategori)-1;

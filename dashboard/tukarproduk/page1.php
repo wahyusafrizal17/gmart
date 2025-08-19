@@ -13,16 +13,19 @@ $currentPage = $_SERVER["PHP_SELF"];
 	$colname = "-1";
 	if (isset($_GET['cari'])) {
 		 $colname = $_GET['cari'];
-		 //mysqli_select_db($database_koneksi, $koneksi);
-		$query_Produk = sprintf("SELECT * FROM returnproduk a, produk b, kategori c WHERE a.produkreturn = b.kodeproduk AND b.kategori = c.idkategori
-		AND b.namaproduk LIKE %s OR namakategori = %s OR kodeproduk = %s
-		ORDER BY a.produkreturn DESC", 
-		GetSQLValueString("%". $colname ."%", "text"),		
-		GetSQLValueString($colname, "text"),
-		GetSQLValueString($colname, "text"));
+		 // Search within tukarproduk items joined to produk and kategori
+		$query_Produk = sprintf(
+			"SELECT * FROM tukarproduk a, produk b, kategori c 
+			WHERE a.produk = b.idproduk AND b.kategori = c.idkategori 
+			AND (b.namaproduk LIKE %s OR c.namakategori = %s OR b.kodeproduk = %s) 
+			ORDER BY a.produk DESC",
+			GetSQLValueString("%" . $colname . "%", "text"),
+			GetSQLValueString($colname, "text"),
+			GetSQLValueString($colname, "text")
+		);
 	}else{
-	//mysqli_select_db($database_koneksi, $koneksi);
-		$query_Produk = "SELECT * FROM returnproduk a, produk b, kategori c WHERE a.produkreturn = b.kodeproduk AND b.kategori = c.idkategori ORDER BY a.produkreturn DESC";
+		// Default list of tukarproduk items
+		$query_Produk = "SELECT * FROM tukarproduk a, produk b, kategori c WHERE a.produk = b.idproduk AND b.kategori = c.idkategori ORDER BY a.produk DESC";
 	}	
 	$query_limit_Produk = sprintf("%s LIMIT %d, %d", $query_Produk, $startRow_Produk, $maxRows_Produk);
 	$rs_Produk = mysqli_query($koneksi, $query_limit_Produk) or die(mysqli_error($koneksi));
